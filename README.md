@@ -32,6 +32,8 @@ Aside easily add new archers, you also can:
 * Drop Hat, on Right stick to the Right while Idle (Or L key)
 * Kill yourself, on Right stick to the Left while Aim an arrow (Or K key)
 
+Check how to create your custom archer [here](https://github.com/RedDude/ArcherLoader/wiki)
+
 ## Install
 <details><summary><b>Instructions</b></summary>
  
@@ -74,6 +76,11 @@ I can help!They can be extracted pretty easily now. Send me the files on [discor
 <details><summary><b>Where I can find more custom Archers?</b></summary>
 Check in [here](https://discord.com/channels/248961953656078337/1109173629918384230)
 </details>
+
+<details><summary><b>Hiw can I create a custom Archers</b></summary>
+Check how to create your custom archer [here](https://github.com/RedDude/ArcherLoader/wiki)
+</details>
+
  
 <details><b><summary>The custom character is not showing up, that I should do?</b></summary>
   
