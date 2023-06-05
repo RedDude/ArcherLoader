@@ -54,6 +54,15 @@ It should work in any PC version (8 players, Steam, Itchi, GoG) of the game
 
 <h2><b>FAQ</b></h2>
   
+<details><summary><b>The game crashes before it even loads or the Mod doesn't load! (Windows only)</b></summary>	 
+If the game crashes before loading, or you see an error in the console that says 
+
+An attempt was made to load an assembly from a network location which would have caused the assembly to be sandboxed in previous 
+versions of the .NET Framework.
+
+on Windows, head into the mod dll, open the properties and hit the unblock checkbox at the bottom.
+</details>
+ 
 <details><summary><b>Help I got an older archer stuck in main atlas! what I can do?</b></summary>
 I can help!They can be extracted pretty easily now. Send me the files on [discord](https://discord.com/channels/248961953656078337/825482637216186421) and I see what I can do.
 </details>
