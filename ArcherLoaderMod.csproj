@@ -1,0 +1,72 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>10</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">D:\Games\TowerFall-FortRise\Mods\$(AssemblyName)</OutputPath>
+    <OutputPath Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">D:\Games\TowerFall-FortRise\Mods\$(AssemblyName)-Debug</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="Content/Atlas/**/*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Content/CustomArchers/**/*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CustomArchers/**/*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="meta.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <Reference Include="0Harmony, Version=2.2.2.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>D:\Games\TowerFall-FortRise\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="FNA, Version=20.12.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>D:\Games\TowerFall-FortRise\FNA.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="MMHOOK_TowerFall">
+      <HintPath>D:\Games\TowerFall-FortRise\MMHOOK_TowerFall.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="MonoMod.RuntimeDetour, Version=22.7.31.1, Culture=neutral, PublicKeyToken=null">
+      <HintPath>D:\Games\TowerFall-FortRise\MonoMod.RuntimeDetour.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="MonoMod.Utils, Version=22.7.31.1, Culture=neutral, PublicKeyToken=null">
+      <HintPath>D:\Games\TowerFall-FortRise\MonoMod.Utils.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="TowerFall">
+      <HintPath>D:\Games\TowerFall-FortRise\TowerFall.exe</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Content\Atlas\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="Content\Atlas\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Content\Atlas\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Content\CustomArchers" />
+    <Folder Include="CustomArchers" />
+  </ItemGroup>
+</Project>

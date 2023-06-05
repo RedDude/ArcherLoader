@@ -1,0 +1,9 @@
+D:\Games\TowerFall\BepInEx\plugins\net452\CustomArcherLoad.dll
+D:\Games\TowerFall\BepInEx\plugins\net452\CustomArcherLoad.pdb
+E:\Projects\towerfall-archer-loader\CustomArcherLoad\obj\Release\net452\CustomArcherLoad.csprojAssemblyReference.cache
+E:\Projects\towerfall-archer-loader\CustomArcherLoad\obj\Release\net452\CustomArcherLoad.AssemblyInfoInputs.cache
+E:\Projects\towerfall-archer-loader\CustomArcherLoad\obj\Release\net452\CustomArcherLoad.AssemblyInfo.cs
+E:\Projects\towerfall-archer-loader\CustomArcherLoad\obj\Release\net452\CustomArcherLoad.csproj.CoreCompileInputs.cache
+E:\Projects\towerfall-archer-loader\CustomArcherLoad\obj\Release\net452\CustomArcherLoad.csproj.CopyComplete
+E:\Projects\towerfall-archer-loader\CustomArcherLoad\obj\Release\net452\CustomArcherLoad.dll
+E:\Projects\towerfall-archer-loader\CustomArcherLoad\obj\Release\net452\CustomArcherLoad.pdb

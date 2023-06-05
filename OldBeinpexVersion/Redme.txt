@@ -1,0 +1,26 @@
+Installation Instructions:
+Copy the contents from "CopyContentsToMainGameFolder" to the game main folder (aka game Root)
+(you game root is probably:C:\SteamLibrary\steamapps\common\TowerFall\)
+If you are on Steam, also copy the contents from "SteamFix" to the Main Game folder
+Copy "Celeste" folder to "Content/Mod/CustomArchers" (it will created automatically at the first run, if you don't create it yourself)
+
+Install complete!
+
+It should work in *any PC version* (8 players, Steam, Itchi, GoG) of the game
+
+Troubleshooting
+The game crashes before it even loads! (Windows only)
+If the game crashes before loading, or you see an error in the console that says 
+
+An attempt was made to load an assembly from a network location which would have caused the assembly to be sandboxed in previous 
+versions of the .NET Framework.
+
+on Windows, head into the BepInEx/core and BepInEx/plugins folders, open the properties for each DLL,
+and hit the unblock checkbox at the bottom.
+
+All credits for the Madeline atlas/spriteData goes to Challengin' Chuck, HMaeght and EXOK
+Sounds by EXOK and Rip by Challengin' Chuck
+Victory music by EXOK and Rip by RedDude
+Mod By RedDude 
+RedDude#0933
+https://discord.com/channels/248961953656078337/825482637216186421

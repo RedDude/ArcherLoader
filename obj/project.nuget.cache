@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "Z/OX1UgxlEYqCktP/QbtdCobx3Zi8UFiqARcVO6KGqNQP3Q3ymsRWqfPBTKBmaaII7E3y6C+opWnp1q06NHryg==",
+  "success": true,
+  "projectFilePath": "E:\\Projects\\towerfall-archer-loader\\FortRiseMod\\ArcherLoaderMod\\ArcherLoaderMod.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Red\\.nuget\\packages\\microsoft.netframework.referenceassemblies\\1.0.3\\microsoft.netframework.referenceassemblies.1.0.3.nupkg.sha512",
+    "C:\\Users\\Red\\.nuget\\packages\\microsoft.netframework.referenceassemblies.net472\\1.0.3\\microsoft.netframework.referenceassemblies.net472.1.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}

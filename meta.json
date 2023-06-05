@@ -1,0 +1,7 @@
+{
+	"name": "Archer Loader",
+	"version": "0.10.0",
+	"author": "RedDude",
+	"description": "Load Custom Archers easily by just Drag n Drop and create Archers with custom hair, wings, ghost, particles, layers and even taunts and skins for archers",
+	"dll": "ArcherLoaderMod.dll"
+}

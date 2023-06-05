@@ -1,0 +1,61 @@
+{
+  "format": 1,
+  "restore": {
+    "E:\\Projects\\towerfall-archer-loader\\FortRiseMod\\CustomArcherLoaderMod\\CustomArcherLoaderMod.csproj": {}
+  },
+  "projects": {
+    "E:\\Projects\\towerfall-archer-loader\\FortRiseMod\\CustomArcherLoaderMod\\CustomArcherLoaderMod.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "E:\\Projects\\towerfall-archer-loader\\FortRiseMod\\CustomArcherLoaderMod\\CustomArcherLoaderMod.csproj",
+        "projectName": "CustomArcherLoaderMod",
+        "projectPath": "E:\\Projects\\towerfall-archer-loader\\FortRiseMod\\CustomArcherLoaderMod\\CustomArcherLoaderMod.csproj",
+        "packagesPath": "C:\\Users\\Red\\.nuget\\packages\\",
+        "outputPath": "E:\\Projects\\towerfall-archer-loader\\FortRiseMod\\CustomArcherLoaderMod\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\Red\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net472"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net472": {
+            "targetAlias": "net472",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net472": {
+          "targetAlias": "net472",
+          "dependencies": {
+            "Microsoft.NETFramework.ReferenceAssemblies": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[1.0.3, )",
+              "autoReferenced": true
+            },
+            "MonoMod": {
+              "target": "Package",
+              "version": "[22.5.1.1, )"
+            },
+            "MonoMod.RuntimeDetour": {
+              "target": "Package",
+              "version": "[22.5.1.1, )"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.203\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

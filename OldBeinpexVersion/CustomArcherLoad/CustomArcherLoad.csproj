@@ -1,0 +1,53 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net452</TargetFramework>
+        <LangVersion>9</LangVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+      <PlatformTarget>x86</PlatformTarget>
+        <OutputPath>D:\Games\TowerFall\BepInEx\plugins</OutputPath>
+<!--        <OutputPath>D:\SteamLibrary\steamapps\common\TowerFall\BepInEx\plugins</OutputPath>-->
+      
+<!--        <OutputPath> D:\Games\TF-8P\BepInEx\plugins</OutputPath>-->
+       
+        <!--        <OutputPath>bin\Debug\</OutputPath>-->
+        <!--    <Target Name="CopyCustomContent" AfterTargets="AfterBuild">-->
+        <!--        <Copy SourceFiles="foo.txt" DestinationFolder="$(OutDir)" />-->
+        <!--    </Target>-->
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <PlatformTarget>x86</PlatformTarget>
+        <OutputPath>D:\Games\TowerFall\BepInEx\plugins</OutputPath>
+<!--        <OutputPath>D:\SteamLibrary\steamapps\common\TowerFall\BepInEx\plugins</OutputPath>-->
+<!--        <OutputPath>D:\Games\TF-8P\BepInEx\plugins</OutputPath>-->
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Reference Include="0Harmony, Version=2.10.0.0, Culture=neutral, PublicKeyToken=null">
+        <HintPath>D:\SteamLibrary\steamapps\common\TowerFall\BepInEx\core\0Harmony.dll</HintPath>
+      </Reference>
+      <Reference Include="BepInEx.Core, Version=6.0.0.0, Culture=neutral, PublicKeyToken=null">
+        <HintPath>D:\SteamLibrary\steamapps\common\TowerFall\BepInEx\core\BepInEx.Core.dll</HintPath>
+      </Reference>
+      <Reference Include="BepInEx.NetLauncher.Common, Version=6.0.0.0, Culture=neutral, PublicKeyToken=null">
+        <HintPath>D:\SteamLibrary\steamapps\common\TowerFall\BepInEx.NetLauncher.Common.dll</HintPath>
+      </Reference>
+      <Reference Include="BepInEx.Preloader.Core, Version=6.0.0.0, Culture=neutral, PublicKeyToken=null">
+        <HintPath>D:\SteamLibrary\steamapps\common\TowerFall\BepInEx\core\BepInEx.Preloader.Core.dll</HintPath>
+      </Reference>
+      <Reference Include="Microsoft.Xna.Framework, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553">
+        <HintPath>..\Microsoft.Xna.Framework.dll</HintPath>
+      </Reference>
+      <Reference Include="Microsoft.Xna.Framework.Xact, Version=4.0.0.0, Culture=neutral, PublicKeyToken=842cf8be1de50553">
+        <HintPath>D:\SteamLibrary\steamapps\common\TowerFall\Microsoft.Xna.Framework.Xact.dll</HintPath>
+      </Reference>
+      <Reference Include="TowerFall, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+        <HintPath>D:\SteamLibrary\steamapps\common\TowerFall\TowerFall.exe</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    
+</Project>

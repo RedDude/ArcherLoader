@@ -1,0 +1,45 @@
+{
+  "format": 1,
+  "restore": {
+    "E:\\Projects\\towerfall-archer-loader\\CustomArcherLoad\\CustomArcherLoad.csproj": {}
+  },
+  "projects": {
+    "E:\\Projects\\towerfall-archer-loader\\CustomArcherLoad\\CustomArcherLoad.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "E:\\Projects\\towerfall-archer-loader\\CustomArcherLoad\\CustomArcherLoad.csproj",
+        "projectName": "CustomArcherLoad",
+        "projectPath": "E:\\Projects\\towerfall-archer-loader\\CustomArcherLoad\\CustomArcherLoad.csproj",
+        "packagesPath": "C:\\Users\\Red\\.nuget\\packages\\",
+        "outputPath": "E:\\Projects\\towerfall-archer-loader\\CustomArcherLoad\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\Red\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net452"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net452": {
+            "targetAlias": "net452",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net452": {
+          "targetAlias": "net452",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.203\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,21 @@
+D:\Games\TowerFall - FortRise\Mods\Debug\Content\Atlas\atlas.png
+D:\Games\TowerFall - FortRise\Mods\Debug\Content\Atlas\atlas.xml
+D:\Games\TowerFall - FortRise\Mods\Debug\Content\Atlas\variant.ase
+D:\Games\TowerFall - FortRise\Mods\Debug\meta.json
+D:\Games\TowerFall - FortRise\Mods\Debug\ArcherLoaderMod.dll
+D:\Games\TowerFall - FortRise\Mods\Debug\ArcherLoaderMod.pdb
+E:\Projects\towerfall-archer-loader\FortRiseMod\ArcherLoaderMod\obj\Debug\ArcherLoaderMod.csproj.AssemblyReference.cache
+E:\Projects\towerfall-archer-loader\FortRiseMod\ArcherLoaderMod\obj\Debug\ArcherLoaderMod.GeneratedMSBuildEditorConfig.editorconfig
+E:\Projects\towerfall-archer-loader\FortRiseMod\ArcherLoaderMod\obj\Debug\ArcherLoaderMod.AssemblyInfoInputs.cache
+E:\Projects\towerfall-archer-loader\FortRiseMod\ArcherLoaderMod\obj\Debug\ArcherLoaderMod.AssemblyInfo.cs
+E:\Projects\towerfall-archer-loader\FortRiseMod\ArcherLoaderMod\obj\Debug\ArcherLoaderMod.csproj.CoreCompileInputs.cache
+E:\Projects\towerfall-archer-loader\FortRiseMod\ArcherLoaderMod\obj\Debug\ArcherLoaderMod.dll
+E:\Projects\towerfall-archer-loader\FortRiseMod\ArcherLoaderMod\obj\Debug\ArcherLoaderMod.pdb
+D:\Games\TowerFall-FortRise\Mods\ArcherLoaderMod-Debug\Content\Atlas\atlas.png
+D:\Games\TowerFall-FortRise\Mods\ArcherLoaderMod-Debug\Content\Atlas\atlas.xml
+D:\Games\TowerFall-FortRise\Mods\ArcherLoaderMod-Debug\meta.json
+D:\Games\TowerFall-FortRise\Mods\ArcherLoaderMod-Debug\ArcherLoaderMod.dll
+D:\Games\TowerFall-FortRise\Mods\ArcherLoaderMod-Debug\ArcherLoaderMod.pdb
+D:\Games\TowerFall-FortRise\Mods\ArcherLoaderMod-Debug\Content\Atlas\atlas.ase
+D:\Games\TowerFall-FortRise\Mods\ArcherLoaderMod-Debug\CustomArchers\You_can_put_custom_archers_here.md
+D:\Games\TowerFall-FortRise\Mods\ArcherLoaderMod-Debug\Content\CustomArchers\You_can_put_custom_archers_here.md
