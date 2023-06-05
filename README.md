@@ -77,7 +77,7 @@ I can help!They can be extracted pretty easily now. Send me the files on [discor
 Check in [here](https://discord.com/channels/248961953656078337/1109173629918384230)
 </details>
 
-<details><summary><b>Hiw can I create a custom Archers</b></summary>
+<details><summary><b>How can I create a custom Archers</b></summary>
 Check how to create your custom archer [here](https://github.com/RedDude/ArcherLoader/wiki)
 </details>
 
