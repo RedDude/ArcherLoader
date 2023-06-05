@@ -19,7 +19,7 @@ Add Custom Archers for Towerfall easily by just Drag n Drop and create Archers w
 * SFX and Victory songs - customs archers can have their special voice and song
 * Skins - Press up and down for more skins for a specific archer
 * Hair - White hair no more
-* Taunts - Variant or Global enabled, V key on Right stick down
+* Taunts - Variant or Global enabled, Duck and Move the Right Stick down (Or V key)
 * Ghost
 * Wings
 * Particles
@@ -27,6 +27,10 @@ Add Custom Archers for Towerfall easily by just Drag n Drop and create Archers w
 * Tools for help creators
   - Quick start the game in a specify archer, set teams command, set hats and heads and corpse a key away.
 
+Aside easily add new archers, you also can:
+
+* Drop Hat, on Right stick to the Right while Idle (Or L key)
+* Kill yourself, on Right stick to the Left while Aim an arrow (Or K key)
 
 ## Install
 <details><summary><b>Instructions</b></summary>
