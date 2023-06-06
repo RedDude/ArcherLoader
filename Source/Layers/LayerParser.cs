@@ -8,25 +8,25 @@ namespace ArcherLoaderMod.Layer
 {
     public class LayerParser
     {
-        public static void ParseLayer(ArcherCustomData data, XmlElement xml)
+        public static void Parse(ArcherCustomData data, XmlElement xml)
         {
-            if (xml.HasChild("Particle"))
+            if (xml.HasChild("Layer"))
             {
-                var info = HandleParticle(xml["Particle"]);
+                var info = HandleLayer(xml["Layer"]);
                 data.LayerInfos.Add(info);
             }
 
-            if (!xml.HasChild("Layer")) return;
+            if (!xml.HasChild("Layers")) return;
 
-            foreach (var o in xml["Layer"])
+            foreach (var o in xml["Layers"])
             {
-                if (o is not XmlElement {Name: "Particle"}) continue;
-                var info = HandleParticle(xml["Particle"]);
+                if (o is not XmlElement {Name: "Layer"}) continue;
+                var info = HandleLayer(xml["Layer"]);
                 data.LayerInfos.Add(info);
             }
         }
 
-        private static LayerInfo HandleParticle(XmlElement xml)
+        private static LayerInfo HandleLayer(XmlElement xml)
         {
             if (FortEntrance.Settings.DisableLayers)
                 return null;

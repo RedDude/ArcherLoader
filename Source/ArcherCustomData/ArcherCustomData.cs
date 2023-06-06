@@ -4,8 +4,10 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using ArcherLoaderMod.Hair;
+using ArcherLoaderMod.Layer;
 using ArcherLoaderMod.Layers;
 using ArcherLoaderMod.Particles;
+using ArcherLoaderMod.Source.Layers.PortraitLayers;
 using Microsoft.Xna.Framework;
 using Monocle;
 using TowerFall;
@@ -38,6 +40,7 @@ namespace ArcherLoaderMod
     public ArcherData.BreathingInfo Breathing;
     public ArcherData.ArcherTypes ArcherType;
 
+    
     public HairInfo HairInfo;
 
     public readonly List<ParticlesInfo> ParticlesInfos = new();
@@ -70,6 +73,8 @@ namespace ArcherLoaderMod
     public Sprite<string> TauntSpriteData;
     public ArcherCustomMeta Meta;
     
+    public bool PrismaticGem;
+    public bool PrismaticArcher;
 
     public ArcherCustomData(XmlElement xml, Atlas atlas, Atlas menuAtlas, ArcherData.ArcherTypes archerType,
       string archerId, string path)
@@ -177,7 +182,9 @@ namespace ArcherLoaderMod
 
       HairParser.Parse(this, xml);
       ParticleParser.ParseParticles(this, xml);
-
+      LayerParser.Parse(this, xml);
+      PortraitLayerParser.Parse(this, xml);
+      HandleMeta(xml);
       // SFX need to be done after the sounds are loaded
 
       EightPlayersNotJoinedPortraitTopOffset = xml.ChildInt(nameof(EightPlayersNotJoinedPortraitTopOffset), 0);
@@ -431,6 +438,7 @@ namespace ArcherLoaderMod
     
     public bool RequiresDarkWorldDLC { get; set; }
     public List<LayerInfo> LayerInfos { get; set; }
+    public List<PortraitLayerInfo> PortraitLayerInfos { get; set; }
 
     private void Parse(ArcherData original, XmlElement xml, bool requiresDarkWorldDLC, Atlas atlas,
       Atlas menuAtlas, ArcherData.ArcherTypes archerType, string archerId, string folderPath)
@@ -537,6 +545,8 @@ namespace ArcherLoaderMod
 
       HairParser.Parse(this, xml, original);
       ParticleParser.ParseParticles(this, xml);
+      LayerParser.Parse(this, xml);
+      PortraitLayerParser.Parse(this, xml);
       HandleMeta(xml);
         
       Taunt = xml.ChildText(nameof(Taunt), null);

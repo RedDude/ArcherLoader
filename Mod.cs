@@ -11,6 +11,7 @@ using ArcherLoaderMod.Layers;
 using ArcherLoaderMod.Particles;
 using ArcherLoaderMod.Patch;
 using ArcherLoaderMod.Skin;
+using ArcherLoaderMod.Source.Layers.PortraitLayers;
 using ArcherLoaderMod.Taunt;
 using ArcherLoaderMod.Wings;
 using FortRise;
@@ -74,6 +75,7 @@ namespace ArcherLoaderMod
             VictoryMusicPatcher.Load();
             SkinPatcher.Load();
             LayerPatch.Load();
+            PortraitLayerPatch.Load();
 
             HandleQuickStart();
         }
@@ -514,6 +516,7 @@ namespace ArcherLoaderMod
             VictoryMusicPatcher.Unload();
             SkinPatcher.Unload();
             LayerPatch.Unload();
+            PortraitLayerPatch.Unload();
         }
 
         public static void OnVariantsRegister(MatchVariants variants, bool noPerPlayer = false)
