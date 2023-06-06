@@ -56,3 +56,6 @@ Tools/Extrator/BaseArchersResources
 Tools/Extrator/CreateAtlas/images
 Tools/Extrator/All sprites from main atlas/
 Tools/Extrator/CreateAtlas/output/
+obj/
+.vs/
+.vscode

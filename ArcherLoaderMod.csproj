@@ -55,18 +55,20 @@
 
   <ItemGroup>
     <Compile Remove="Content\Atlas\**" />
+    <Compile Remove="OldBeinpexVersion\**" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Remove="Content\Atlas\**" />
+    <EmbeddedResource Remove="OldBeinpexVersion\**" />
   </ItemGroup>
 
   <ItemGroup>
     <None Remove="Content\Atlas\**" />
+    <None Remove="OldBeinpexVersion\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Content\CustomArchers" />
-    <Folder Include="CustomArchers" />
+    <Folder Include="Source" />
   </ItemGroup>
 </Project>

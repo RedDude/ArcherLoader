@@ -13,6 +13,18 @@ namespace ArcherLoaderMod
         [SettingsName("Taunt Always On")]
         public bool TauntAlwaysOn;
 
+        [SettingsName("Quick Start")]
+        public bool QuickStart;
+        
+        [SettingsName("Quick Start Player 1 Character index (careful)"), SettingsNumber(-1)]
+        public int Player1CharacterIndex;
+        
+        [SettingsName("Quick Start Player 2 Character index (careful)"), SettingsNumber(-1)]
+        public int Player2CharacterIndex = -1;
+        
+        [SettingsName("Quick Start Player 3 Character index (careful)"), SettingsNumber(-1)]
+        public int Player3CharacterIndex;
+
         [SettingsName("Taunt too much causes self-combustion")]
         public bool TauntTooExplode;
 
@@ -30,19 +42,14 @@ namespace ArcherLoaderMod
         
         [SettingsName("Disable Hairs")]
         public bool DisableHairs = false;
+
+        [SettingsName("Disable Layers")]
+        public bool DisableLayers = false;
         
-        [SettingsName("Quick Start")]
-        public bool QuickStart;
+        public bool DisableCustomGhosts = false;
         
-        [SettingsName("Quick Start Player 1 Character index (careful)"), SettingsNumber(-1)]
-        public int Player1CharacterIndex;
-        
-        [SettingsName("Quick Start Player 2 Character index (careful)"), SettingsNumber(-1)]
-        public int Player2CharacterIndex = -1;
-        
-        [SettingsName("Quick Start Player 3 Character index (careful)"), SettingsNumber(-1)]
-        public int Player3CharacterIndex;
-        
+        public bool DisableCustomWings = false;
+
         // [SettingsNumber(0, 20, 2)]
         // public int OnStepping;
 

@@ -73,7 +73,7 @@ namespace ArcherLoaderMod
             GhostPatcher.Load();
             VictoryMusicPatcher.Load();
             SkinPatcher.Load();
-            // LayerPatch.Load();
+            LayerPatch.Load();
 
             HandleQuickStart();
         }
@@ -513,7 +513,7 @@ namespace ArcherLoaderMod
             HairPatcher.Unload();
             VictoryMusicPatcher.Unload();
             SkinPatcher.Unload();
-            // LayerPatch.Unload();
+            LayerPatch.Unload();
         }
 
         public static void OnVariantsRegister(MatchVariants variants, bool noPerPlayer = false)
