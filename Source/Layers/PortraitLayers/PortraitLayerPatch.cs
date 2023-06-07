@@ -38,37 +38,46 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
         
         private static void OnArcherPortraitOnUpdate(ArcherPortrait.orig_Update orig, TowerFall.ArcherPortrait self)
         {
-            
+            orig(self);
         }
 
         private static void OnArcherPortraitOnLeave(ArcherPortrait.orig_Leave orig, TowerFall.ArcherPortrait self)
         {
+            orig(self);
             if (!portraitLayers.ContainsKey(self)) return;
             var layers = portraitLayers[self];
             if (layers == null) return;
             foreach (var portraitLayerInfo in layers)
             {
-                if(portraitLayerInfo.layerInfo.AttachTo == PortraitLayersAttachType.Join) 
-                    portraitLayerInfo.Visible = false;
+                portraitLayerInfo.Visible = portraitLayerInfo.layerInfo.AttachTo == PortraitLayersAttachType.NotJoin;
             }
         }
 
         private static void OnArcherPortraitOnStartJoined(ArcherPortrait.orig_StartJoined orig, TowerFall.ArcherPortrait self)
         {
+            orig(self);
             if (!portraitLayers.ContainsKey(self)) return;
             var layers = portraitLayers[self];
             if (layers == null) return;
             foreach (var portraitLayerInfo in layers)
             {
-                if(portraitLayerInfo.layerInfo.AttachTo == PortraitLayersAttachType.NotJoin) 
-                    portraitLayerInfo.Visible = false;
+                portraitLayerInfo.Visible = portraitLayerInfo.layerInfo.AttachTo == PortraitLayersAttachType.Join;
             }
         }
 
         private static void OnSetCharacter(ArcherPortrait.orig_SetCharacter origSetCharacter, TowerFall.ArcherPortrait archerPortrait, int characterIndex, ArcherData.ArcherTypes altSelect, int moveDir)
         {
+            if (portraitLayers.ContainsKey(archerPortrait))
+            {
+                var currentLayers = portraitLayers[archerPortrait];
+                if (currentLayers == null) return;
+                foreach (var portraitLayerInfo in currentLayers)
+                {
+                    portraitLayerInfo.Visible = false;
+                }
+            }
+        
             origSetCharacter(archerPortrait, characterIndex, altSelect, moveDir);
-            
             var data = ArcherData.Get(characterIndex, altSelect);
 
             var exist = Mod.ArcherCustomDataDict.TryGetValue(data, out var archerCustomData);
@@ -76,29 +85,43 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             
             var layerInfos = archerCustomData.PortraitLayerInfos;
             if (layerInfos == null) return;
-            
-            if (!portraitLayers.ContainsKey(archerPortrait)) return;
-            var layers = portraitLayers[archerPortrait];
-            if (layers == null)
+
+            if (!portraitLayers.ContainsKey(archerPortrait))
             {
-                layers = new List<PortraitLayerSpriteComponent>(layerInfos.Count);
-                portraitLayers[archerPortrait] = layers;
+                var flashSprite = DynamicData.For(archerPortrait).Get<Sprite<string>>("flash");
+                var flashIndex = -1;
+                for (var i = 0; i < archerPortrait.Components.Count; i++)
+                {
+                    if (archerPortrait.Components[i] == flashSprite)
+                    {
+                        flashIndex = i;
+                    }
+                }
+                
+                var newLayers = new List<PortraitLayerSpriteComponent>(layerInfos.Count);
                 foreach (var portraitLayerInfo in layerInfos)
                 {
                     var layer = new PortraitLayerSpriteComponent(portraitLayerInfo,true, false);
                     archerPortrait.Add(layer);
-                    layers.Add(layer);
+                    newLayers.Add(layer);
+                    archerPortrait.Components.Remove(layer);
+                    archerPortrait.Components.Insert(flashIndex, layer);
                 }
+                portraitLayers[archerPortrait] = newLayers;
             }
-
+            
+            var layers = portraitLayers[archerPortrait];
             foreach (var portraitLayerInfo in layers)
             {
-                portraitLayerInfo.Visible = portraitLayerInfo.layerInfo.AttachTo switch
+                if (portraitLayerInfo.layerInfo.AttachTo == PortraitLayersAttachType.Join)
+                    portraitLayerInfo.Visible = false;
+                else if (portraitLayerInfo.layerInfo.AttachTo == PortraitLayersAttachType.NotJoin)
                 {
-                    PortraitLayersAttachType.Join => false,
-                    PortraitLayersAttachType.NotJoin => true,
-                    _ => portraitLayerInfo.Visible
-                };
+                    portraitLayerInfo.Visible = true;
+                }
+                   
+                else
+                    portraitLayerInfo.Visible = portraitLayerInfo.Visible;
             }
         }
     }

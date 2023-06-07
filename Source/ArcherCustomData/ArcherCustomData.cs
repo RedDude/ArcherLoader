@@ -43,7 +43,7 @@ namespace ArcherLoaderMod
     
     public HairInfo HairInfo;
 
-    public readonly List<ParticlesInfo> ParticlesInfos = new();
+    public List<ParticlesInfo> ParticlesInfos = new();
     
     public string originalName;
     public ArcherData original;
@@ -353,10 +353,10 @@ namespace ArcherLoaderMod
       if (TFGame.Players.Length > 4)
       {
         ad.Portraits.NotJoined.Rect.Y += EightPlayersNotJoinedPortraitTopOffset;
-        ad.Portraits.NotJoined.Rect.Height = 60;
+        // ad.Portraits.NotJoined.Rect.Height = 60;
         
         ad.Portraits.Joined.Rect.Y += EightPlayersJoinedPortraitTopOffset;
-        ad.Portraits.Joined.Rect.Height = 60;
+        // ad.Portraits.Joined.Rect.Height = 60;
       }
       ad.Statue = Statue;
       ad.Statue.Image = Statue.Image;

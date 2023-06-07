@@ -13,6 +13,7 @@ namespace ArcherLoaderMod.Layer
             if (xml.HasChild("Layer"))
             {
                 var info = HandleLayer(xml["Layer"]);
+                data.LayerInfos ??= new(1);
                 data.LayerInfos.Add(info);
             }
 
@@ -20,8 +21,9 @@ namespace ArcherLoaderMod.Layer
 
             foreach (var o in xml["Layers"])
             {
-                if (o is not XmlElement {Name: "Layer"}) continue;
-                var info = HandleLayer(xml["Layer"]);
+                if (o is not XmlElement {Name: "Layer"} layerXml) continue;
+                var info = HandleLayer(layerXml);
+                data.LayerInfos ??= new();
                 data.LayerInfos.Add(info);
             }
         }

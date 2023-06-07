@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Xml;
 using ArcherLoaderMod.Layers;
 using ArcherLoaderMod.Rainbow;
+using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
 using TowerFall;
@@ -14,7 +15,7 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
         private ArcherPortrait attachedSprite;
 
         public PortraitLayerInfo layerInfo;
-        private Sprite<string> layerSprite;
+        public Sprite<string> layerSprite;
 
         public PortraitLayerSpriteComponent(PortraitLayerInfo layerInfo, bool active, bool visible) : base(active, visible)
         {
@@ -42,8 +43,26 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             // var attachedSpriteInfo = portrait;
             // var xml = TFGame.SpriteData.GetXML(attachedSpriteInfo);
 
+            // foreach (var customSpriteDataInfo in Mod.customSpriteDataCategoryDict["layer"])
+            // {
+            //     if (customSpriteDataInfo.id == layerInfo.Sprite)
+            //     {
+            //         layerSprite = customSpriteDataInfo.Element;
+            //         break;
+            //     }
+            // }
+            
+           // var layer = TFGame.SpriteData.GetXML(layerInfo.Sprite);
+
+            // var xml = TFGame.SpriteData.GetXML(attachedSpriteInfo);
+          
             layerSprite = TFGame.SpriteData.GetSpriteString(layerInfo.Sprite);
             layerSprite.Color = layerInfo.Color;
+            
+            
+            // layerSprite = TFGame.SpriteData.GetSpriteString(layerInfo.Sprite);
+            
+            
             // var childText = layer.ChildText("Texture");
             // var atlas = TFGame.Atlas[childText];
 
@@ -53,7 +72,7 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             //
             // layerSprite.Visible = attachedSprite.Visible;
             // DynamicData.For(layerSprite).Set("Entity", Entity);
-            // DynamicData.For(layerSprite).Set("Parent", Entity);
+            DynamicData.For(layerSprite).Set("Parent", Entity);
 
             // sprite = new Sprite<string>(atlas, xML.ChildInt("FrameWidth"), xML.ChildInt("FrameHeight"))
             // {
@@ -83,19 +102,19 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             // 
             // headSprite = DynamicData.For(player).Get<Sprite<string>>("headSprite");
             // bowSprite = DynamicData.For(player).Get<Sprite<string>>("bowSprite");
+            base.Added();
         }
 
       
 
         public override void Update()
         {
-            var player = ((Player) Parent);
             // drawSelfPropertyInfo.SetValue(player, false);
             // var childText = layer.ChildText("Texture");
             // var atlas = TFGame.Atlas[childText];
             // sprite.SwapSubtexture(atlas);
             
-            layerSprite.Visible = attachedSprite.Visible;
+            // layerSprite.Visible = attachedSprite.Visible;
             // layerSprite.Effects = attachedSprite.Effects;
             // if(layerInfo.AttachTo != LayerAttachType.Head)
                 // layerSprite.FlipX = player.Facing != Facing.Right;
@@ -119,7 +138,21 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
 
         public override void Render()
         {
-            var player = ((Player) Parent);
+            var portrait = ((ArcherPortrait) Parent);
+            
+            var portraitImage = DynamicData.For(portrait).Get<Image>("portrait");
+            var offset = DynamicData.For(portrait).Get<Vector2>("offset");
+            // var Vector2 vector2_1 = this.Entity.Position + this.offset;
+            layerSprite.Position = ((RollcallElement)portrait.Parent).Position + offset;
+            layerSprite.Scale = portraitImage.Scale;
+            // layerSprite.Origin = portraitImage.Origin;
+            // layerSprite.Rotation = portraitImage.Rotation;
+            // layerSprite.X = portraitImage.X;
+            // layerSprite.Y = portraitImage.Y;
+            
+            // = this.flash.Scale = new Vector2((float) (1.0 + (double) this.wiggler.Value * 0.0500000007450581), (float) (1.0 - (double) this.wiggler.Value * 0.0500000007450581));
+            // layerSprite.Position = this.portraitAlt.Position = this.flash.Position = this.offset + this.lastShake;
+
             layerSprite.Render();
             // layerSprite2.Render();
             base.Render();

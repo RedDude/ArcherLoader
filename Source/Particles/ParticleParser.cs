@@ -12,6 +12,7 @@ namespace ArcherLoaderMod.Particles
             if (xml.HasChild("Particle"))
             {
                 var info = HandleParticle(xml["Particle"]);
+                data.ParticlesInfos ??= new(1);
                 data.ParticlesInfos.Add(info);
             }
 
@@ -19,8 +20,9 @@ namespace ArcherLoaderMod.Particles
 
             foreach (var o in xml["Particles"])
             {
-                if (o is not XmlElement {Name: "Particle"}) continue;
-                var info = HandleParticle(xml["Particle"]);
+                if (o is not XmlElement {Name: "Particle"} particleXml) continue;
+                var info = HandleParticle(particleXml);
+                data.ParticlesInfos ??= new();
                 data.ParticlesInfos.Add(info);
             }
         }

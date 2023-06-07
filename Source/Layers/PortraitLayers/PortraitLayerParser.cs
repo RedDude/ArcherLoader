@@ -12,15 +12,18 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             if (xml.HasChild("PortraitLayer"))
             {
                 var info = ParseLayer(xml["PortraitLayer"]);
+                data.PortraitLayerInfos ??= new(1);
                 data.PortraitLayerInfos.Add(info);
             }
 
             if (!xml.HasChild("PortraitLayers")) return;
 
-            foreach (var o in xml["PortraitLayers"])
+            var portraitLayersXml = xml["PortraitLayers"];
+            foreach (var o in portraitLayersXml)
             {
-                if (o is not XmlElement {Name: "Layer"}) continue;
-                var info = ParseLayer(xml["Layer"]);
+                if (o is not XmlElement {Name: "Layer"} layerXml) continue;
+                var info = ParseLayer(layerXml);
+                data.PortraitLayerInfos ??= new();
                 data.PortraitLayerInfos.Add(info);
             }
         }
@@ -30,12 +33,13 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             if (FortEntrance.Settings.DisableLayers)
                 return null;
 
-            var attachToText = xml.ChildText("AttachTo");
+            var attachToText = xml.ChildText("AttachTo", null);
                 
             var portraitLayerInfo = new PortraitLayerInfo
             {
                
-                AttachTo = attachToText == "join" ? PortraitLayersAttachType.Join : PortraitLayersAttachType.NotJoin,
+                AttachTo = attachToText == "join" || attachToText == "Join"
+                    || attachToText == "joined" || attachToText == "Joined"? PortraitLayersAttachType.Join : PortraitLayersAttachType.NotJoin,
 
                 Sprite = xml.ChildText("Sprite"),
                 Position = xml.ChildPosition("Position", Vector2.Zero),
