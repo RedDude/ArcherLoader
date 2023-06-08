@@ -1,7 +1,4 @@
-﻿using Monocle;
-using TowerFall;
-using Sounds = On.TowerFall.Sounds;
-using SpriteData = On.Monocle.SpriteData;
+﻿using Sounds = On.TowerFall.Sounds;
 
 namespace ArcherLoaderMod.Patch
 {

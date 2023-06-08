@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using ArcherLoaderMod.Source.Layers.PortraitLayers;
 using Monocle;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
@@ -107,11 +108,20 @@ namespace ArcherLoaderMod.Skin
             if (altSelect == ArcherData.ArcherTypes.Normal)
             {
                 var portrait = DynamicData.For(archerPortrait).Get<Image>("portrait");
+                
                 // var gem = DynamicData.For(archerPortrait).Get<Image>("gem");
                 var wiggler = DynamicData.For(archerPortrait).Get<Wiggler>("wiggler");
                 var gemWiggler = DynamicData.For(archerPortrait).Get<Wiggler>("gemWiggler");
                 portrait.SwapSubtexture(skinArcherData.Portraits.NotJoined);
                 // gem.SwapSubtexture(menuAtla);
+
+                if (PortraitLayerPatch.Enabled)
+                {
+                    PortraitLayersManager.HideAllLayers(archerPortrait);
+                    PortraitLayersManager.CreateLayersComponents(archerPortrait, skinArcherData);
+                    PortraitLayersManager.ShowAllLayersFromType(PortraitLayersAttachType.NotJoin, archerPortrait, skinArcherData);
+                }
+              
                 DynamicData.For(archerPortrait).Set("ArcherData", skinArcherData);
                 Sounds.ui_move1.Play();
                 wiggler.Start();
@@ -126,6 +136,12 @@ namespace ArcherLoaderMod.Skin
             var gemWigglerAlt = DynamicData.For(archerPortrait).Get<Wiggler>("gemWiggler");
             portraitAlt.SwapSubtexture(skinArcherData.Portraits.NotJoined);
             // gemAlt.SwapSubtexture(menuAtla);
+            if (PortraitLayerPatch.Enabled)
+            {
+                PortraitLayersManager.HideAllLayers(archerPortrait);
+                PortraitLayersManager.CreateLayersComponents(archerPortrait, skinArcherData);
+                PortraitLayersManager.ShowAllLayersFromType(PortraitLayersAttachType.NotJoin, archerPortrait, skinArcherData);
+            }
             DynamicData.For(archerPortrait).Set("ArcherData", skinArcherData);
             Sounds.ui_move1.Play();
             wigglerAlt.Start();
@@ -167,6 +183,7 @@ namespace ArcherLoaderMod.Skin
             var skinIndex = archerSkinsIndex[playerIndex][data];
             return skinIndex == -1 ? data : SkinArcherCustomToArcher[skins[skinIndex]];
         }
+
         public static void LoadSkins(List<ArcherCustomData> allCustomArchers)
         {
             var skinsArchers = allCustomArchers.FindAll(a => a.ArcherType == (ArcherData.ArcherTypes) 3);
@@ -178,11 +195,11 @@ namespace ArcherLoaderMod.Skin
 
             foreach (var skinCustomData in skinsArchers)
             {
-                LoadAltArcher(skinCustomData);
+                LoadSkinArcher(skinCustomData);
             }
         }
         
-        private static void LoadAltArcher(ArcherCustomData skinCustomData)
+        private static void LoadSkinArcher(ArcherCustomData skinCustomData)
         {
                 if (skinCustomData.parsed)
                 {
@@ -192,10 +209,20 @@ namespace ArcherLoaderMod.Skin
                 var originalName = skinCustomData.originalName;
                 if (!Mod.BaseArcherByNameDict.TryGetValue(skinCustomData.originalName.ToLower(), out var data))
                 {
+                    foreach (var archerCustomData in Mod.ArcherCustomDataDict)
+                    {
+                        if (archerCustomData.Value.ID != skinCustomData.originalName) continue;
+                        data = archerCustomData.Key;
+                        break;
+                    }
+                }
+
+                if (data == null)
+                {
                     Console.WriteLine($"Skin Archer '{skinCustomData.ID}' skipped: {originalName} not found");
                     return;
                 }
-
+                
                 if (!archerSkins.ContainsKey(data))
                 {
                     archerSkins.Add(data, new List<ArcherCustomData>());

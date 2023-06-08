@@ -134,9 +134,6 @@ namespace ArcherLoaderMod
         {
             var allCustomArchers = new List<ArcherCustomData>();
 
-            #if DEBUG
-            Debugger.Launch();
-            #endif
             allCustomArchers.AddRange(LoadContentAtPath($"{Calc.LOADPATH}{_contentCustomArchersPath}", ContentAccess.Content));
             var contentPath = Content.GetContentPath("");
             allCustomArchers.AddRange(LoadContentAtPath(contentPath+$"/{_customArchersPath}", ContentAccess.ModContent));
@@ -298,12 +295,13 @@ namespace ArcherLoaderMod
             }
         }
 
-        private static List<ArcherCustomData> LoadContentAtPath(string path, ContentAccess contentAccess)
+        private static List<ArcherCustomData> LoadContentAtPath(string path, ContentAccess contentAccess, bool warnNotFound = true)
         {
             var allCustomArchers = new List<ArcherCustomData>();
             if (!Directory.Exists(path))
             {
-                Console.WriteLine($"\nNo Archer Found in \"{path}\" Folder");
+                if(warnNotFound)
+                    Console.WriteLine($"\nNo Archer Found in \"{path}\" Folder");
                 return allCustomArchers;
             }
                
@@ -311,10 +309,21 @@ namespace ArcherLoaderMod
             
             foreach (var directory in customArchersFound)
             {
-                allCustomArchers.AddRange(LoadArchersContent(Content, directory, contentAccess, contentAccess == ContentAccess.Content));
+                if(directory.EndsWith("Content"))
+                    continue;
+                
+                allCustomArchers.AddRange(LoadContent(Content, directory, contentAccess, contentAccess == ContentAccess.Content));
             }
 
-            Console.WriteLine($"\n{allCustomArchers.Count} New Archer(s) Found in \"{path}\" Folder");
+            if (warnNotFound && allCustomArchers.Count == 0)
+            {
+                Console.WriteLine($"\nNo New Archers Found in \"{path}\" Folder");
+            }
+            if (allCustomArchers.Count > 0)
+            {
+                Console.WriteLine($"\n{allCustomArchers.Count} New Archer(s) Found in \"{path}\" Folder");
+            }
+               
             if (allCustomArchers.Count == 0)
             {
                 return allCustomArchers;
@@ -329,22 +338,29 @@ namespace ArcherLoaderMod
             return allCustomArchers;
         }
 
-        private static List<ArcherCustomData> LoadArchersContent(FortContent content, string directory, ContentAccess contentAccess, bool addContentPrefix = false)
+        private static List<ArcherCustomData> LoadContent(FortContent content, string directory, ContentAccess contentAccess, bool addContentPrefix = false)
         {
+            var newArchers = new List<ArcherCustomData>();
+            newArchers.AddRange(LoadContentAtPath(directory, contentAccess, false));
+
             var archerName = directory.Split(Convert.ToChar(_separator)).Last();
             var path = $"{directory}{_separator}".Replace($"Content{_separator}", $"");
-            var atlasArcher = content.CreateAtlas($"{path}atlas.xml", $"{path}atlas.png", true, contentAccess);
 
             var pathWithContentPrefix = addContentPrefix ? Calc.LOADPATH + path : path;
-            // var atlasArcher = new Atlas($"{path}atlas.xml", $"{path}atlas.png", load: true);
-            customAtlasList.Add(atlasArcher);
-
-            if (!File.Exists($"{pathWithContentPrefix}spriteData.xml"))
+            
+            Atlas atlas = null;
+            if (File.Exists($"{pathWithContentPrefix}atlas.xml") && File.Exists($"{pathWithContentPrefix}atlas.png"))
             {
-                return new List<ArcherCustomData>(0);
+                atlas = content.CreateAtlas($"{path}atlas.xml", $"{path}atlas.png", true, contentAccess);
+                customAtlasList.Add(atlas);
             }
-
-            var spriteData = content.CreateSpriteData($"{path}spriteData.xml", atlasArcher, contentAccess);
+            
+            if (!File.Exists($"{pathWithContentPrefix}spriteData.xml") || atlas == null)
+            {
+                return newArchers;
+            }
+            
+            var spriteData = content.CreateSpriteData($"{path}spriteData.xml", atlas, contentAccess);
             var sprites = DynamicData.For(spriteData).Get<Dictionary<string, XmlElement>>("sprites");
 
             if (sprites.Count > 0)
@@ -374,7 +390,7 @@ namespace ArcherLoaderMod
                 customSpriteDataList.Add(spriteData);
             }
         
-            var atlasArcherMenu = atlasArcher;
+            var atlasArcherMenu = atlas;
             if (File.Exists($"{pathWithContentPrefix}menuAtlas.xml") &&
                 File.Exists($"{pathWithContentPrefix}menuAtlas.png"))
             {
@@ -385,8 +401,8 @@ namespace ArcherLoaderMod
             }
 
             var filePath = $"{pathWithContentPrefix}archerData.xml";
-            if (!File.Exists(filePath)) return new List<ArcherCustomData>(0);
-            var newArchersFromPack = InitializeArcherData(pathWithContentPrefix, atlasArcher, atlasArcherMenu, archerName.ToUpper());
+            if (!File.Exists(filePath)) return newArchers;
+            var newArchersFromPack = InitializeArcherData(pathWithContentPrefix, atlas, atlasArcherMenu, archerName.ToUpper());
             return newArchersFromPack;
         }
 
