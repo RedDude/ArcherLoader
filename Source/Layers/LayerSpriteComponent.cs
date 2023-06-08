@@ -87,8 +87,6 @@ namespace ArcherLoaderMod.Layers
             // bowSprite = DynamicData.For(player).Get<Sprite<string>>("bowSprite");
         }
 
-      
-
         public override void Update()
         {
             var player = ((Player) Parent);

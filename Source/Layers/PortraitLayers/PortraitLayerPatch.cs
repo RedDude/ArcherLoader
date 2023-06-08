@@ -45,10 +45,12 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             orig(self, index);
             var portrait = DynamicData.For(self).Get<TowerFall.ArcherPortrait>("portrait");
             CreateLayersComponents(portrait, portrait.CharacterIndex, portrait.AltSelect);
+            PortraitLayersManager.ShowAllLayersFromType(PortraitLayersAttachType.NotJoin, portrait);
         }
 
         private static void OnMainMenuOnDestroyRollcall(MainMenu.orig_DestroyRollcall orig, TowerFall.MainMenu self)
         {
+            orig(self);
             PortraitLayersManager.Clear();
         }
         
@@ -75,6 +77,7 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             PortraitLayersManager.HideAllLayers(self);
             origSetCharacter(self, characterIndex, altSelect, moveDir);
             CreateLayersComponents(self, characterIndex, altSelect);
+            PortraitLayersManager.ShowAllLayersFromType(PortraitLayersAttachType.NotJoin, self);
         }
 
         public static void CreateLayersComponents(TowerFall.ArcherPortrait archerPortrait, int characterIndex, ArcherData.ArcherTypes altSelect)

@@ -51,8 +51,11 @@ namespace ArcherLoaderMod.Skin
         {
             var playerIndex = DynamicData.For(self).Get<int>("playerIndex");
             var input =  TFGame.PlayerInputs[playerIndex];
-            if(input == null)
+            if (input == null)
+            {
+                orig(self);
                 return;
+            }
             
             var archerType = DynamicData.For(self).Get<ArcherData.ArcherTypes>("archerType");
             if (input.MenuLeft || input.MenuRight || input.MenuBack || input.MenuAlt)
