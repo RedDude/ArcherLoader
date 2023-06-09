@@ -17,9 +17,12 @@ namespace ArcherLoaderMod.Skin
         public static Dictionary<int, Dictionary<ArcherData, int>> archerSkinsIndex = new();
         public static Dictionary<ArcherCustomData, ArcherData> SkinArcherCustomToArcher = new();
         private static Hook hook_ArcherData_Get;
+        private static MethodInfo initGem;
 
         public static void Load()
         {
+            initGem = typeof(ArcherPortrait).GetMethod("InitGem", BindingFlags.Instance | BindingFlags.NonPublic);
+            
             On.TowerFall.RollcallElement.Update += OnRollcallElementOnUpdate;
             On.TowerFall.ArcherData.Get_int_ArcherTypes += OnArcherDataOnGet_Int_ArcherTypes;
             enabled = true;
@@ -101,83 +104,52 @@ namespace ArcherLoaderMod.Skin
 
             archerSkinsIndex[playerIndex][data] = moveIndex;
             var skinArcherData = data;
+            ArcherCustomData skinData = null; 
             if (moveIndex != -1)
             {
-                var skinData = skins[moveIndex];
+                skinData = skins[moveIndex];
                 skinArcherData = SkinArcherCustomToArcher[skinData];
             }
 
-            // var menuAtla = TFGame.MenuAtlas[(TFGame.SpriteData.GetXML(skinArcherData.Gems.Menu).ChildText("Texture"))];
-            if (altSelect == ArcherData.ArcherTypes.Normal)
-            {
-                var portrait = DynamicData.For(archerPortrait).Get<Image>("portrait");
-                
-                // var gem = DynamicData.For(archerPortrait).Get<Image>("gem");
-                var wiggler = DynamicData.For(archerPortrait).Get<Wiggler>("wiggler");
-                var gemWiggler = DynamicData.For(archerPortrait).Get<Wiggler>("gemWiggler");
-                portrait.SwapSubtexture(skinArcherData.Portraits.NotJoined);
-                // gem.SwapSubtexture(menuAtla);
+            SetCharacterSkinPortrait(archerPortrait, skinArcherData, skinData);
+        }
 
-                if (PortraitLayerPatch.Enabled)
-                {
-                    PortraitLayersManager.HideAllLayers(archerPortrait);
-                    PortraitLayersManager.CreateLayersComponents(archerPortrait, skinArcherData);
-                    PortraitLayersManager.ShowAllLayersFromType(PortraitLayersAttachType.NotJoin, archerPortrait, skinArcherData);
-                }
-              
-                DynamicData.For(archerPortrait).Set("ArcherData", skinArcherData);
-                Sounds.ui_move1.Play();
-                wiggler.Start();
-                gemWiggler.Start();
-                return;
-            }
+        private static void SetCharacterSkinPortrait(ArcherPortrait archerPortrait, ArcherData skinArcherData,
+            ArcherCustomData archerCustomData)
+        {
+            var portrait = DynamicData.For(archerPortrait).Get<Image>("portrait");
             
-            // var portraitAlt = DynamicData.For(archerPortrait).Get<Image>("portraitAlt");
-            var portraitAlt = DynamicData.For(archerPortrait).Get<Image>("portrait");
-            var wigglerAlt = DynamicData.For(archerPortrait).Get<Wiggler>("wiggler");
-            // var gemAlt = DynamicData.For(archerPortrait).Get<Image>("gem");
-            var gemWigglerAlt = DynamicData.For(archerPortrait).Get<Wiggler>("gemWiggler");
-            portraitAlt.SwapSubtexture(skinArcherData.Portraits.NotJoined);
-            // gemAlt.SwapSubtexture(menuAtla);
+            var wiggler = DynamicData.For(archerPortrait).Get<Wiggler>("wiggler");
+            var gemWiggler = DynamicData.For(archerPortrait).Get<Wiggler>("gemWiggler");
+            portrait.SwapSubtexture(skinArcherData.Portraits.NotJoined);
+            
             if (PortraitLayerPatch.Enabled)
             {
-                PortraitLayersManager.HideAllLayers(archerPortrait);
+                PortraitLayersManager.HideAllLayersFromPortrait(archerPortrait);
                 PortraitLayersManager.CreateLayersComponents(archerPortrait, skinArcherData);
                 PortraitLayersManager.ShowAllLayersFromType(PortraitLayersAttachType.NotJoin, archerPortrait, skinArcherData);
             }
-            DynamicData.For(archerPortrait).Set("ArcherData", skinArcherData);
-            Sounds.ui_move1.Play();
-            wigglerAlt.Start();
-            gemWigglerAlt.Start();
 
-           
-            // var archerData = DynamicData.For(self).Get<ArcherData>("ArcherData");
+            DynamicData.For(archerPortrait).Set("ArcherData", skinArcherData);
+            initGem?.Invoke(archerPortrait, new object[] { });
+            var gem = DynamicData.For(archerPortrait).Get<Sprite<string>>("gem");
+            if (archerCustomData != null)
+            {
+                if (archerCustomData.IsGemColorA)
+                {
+                    gem.Color = archerCustomData.ColorA;
+                }
+                if (archerCustomData.IsGemColorB)
+                {
+                    gem.Color = archerCustomData.ColorB;
+                }
+            }
             
-            // DynamicData.For(self).Set("ArcherData", );
-            
-            // self.ArcherData = ArcherData.Get(characterIndex, altSelect);
-           
-            
-            
-                // lastMove = moveDir;
-                // if (self.ShouldFlip(altSelect))
-                // {
-                //     flipEase = 1f - flipEase;
-                // }
-                // else
-                // {
-                //     gemWiggler.Start();
-                // }
-                // var CharacterIndex = DynamicData.For(self).Get<int>("CharacterIndex");
-                // self.CharacterIndex = characterIndex;
-                // self.AltSelect = altSelect;
-                // ArcherData = ArcherData.Get(CharacterIndex, AltSelect);
-                // portrait.SwapSubtexture(ArcherData.Portraits.NotJoined);
-                // portraitAlt.SwapSubtexture(FlipSide.Portraits.NotJoined);
-                // InitGem();
-                // wiggler.Start();
+            Sounds.ui_move1.Play();
+            wiggler.Start();
+            gemWiggler.Start();
         }
-        
+
         public static ArcherData GetSkinCharacter(int playerIndex, ArcherData data)
         {
             if(!archerSkins.TryGetValue(data, out var skins))

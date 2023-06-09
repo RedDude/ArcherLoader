@@ -16,10 +16,13 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
 
         public PortraitLayerInfo layerInfo;
         public Sprite<string> layerSprite;
+        private ArcherData archerData;
 
-        public PortraitLayerSpriteComponent(PortraitLayerInfo layerInfo, bool active, bool visible) : base(active, visible)
+        public PortraitLayerSpriteComponent(PortraitLayerInfo layerInfo, ArcherData archerData, bool active,
+            bool visible) : base(active, visible)
         {
             this.layerInfo = layerInfo;
+            this.archerData = archerData;
         }
 
         public override void Added()
@@ -58,11 +61,16 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
           
             layerSprite = TFGame.SpriteData.GetSpriteString(layerInfo.Sprite);
             layerSprite.Color = layerInfo.Color;
-            
-            
+
+            if (layerInfo.IsColorA || layerInfo.IsColorB)
+            {
+                if(layerInfo.IsColorA)
+                    layerSprite.Color = archerData.ColorA;
+                if(layerInfo.IsColorB)
+                    layerSprite.Color = archerData.ColorB;
+            }
+
             // layerSprite = TFGame.SpriteData.GetSpriteString(layerInfo.Sprite);
-            
-            
             // var childText = layer.ChildText("Texture");
             // var atlas = TFGame.Atlas[childText];
 
@@ -142,8 +150,9 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             
             var portraitImage = DynamicData.For(portrait).Get<Image>("portrait");
             var offset = DynamicData.For(portrait).Get<Vector2>("offset");
+            var lastShake = DynamicData.For(portrait).Get<Vector2>("lastShake");
             // var Vector2 vector2_1 = this.Entity.Position + this.offset;
-            layerSprite.Position = ((RollcallElement)portrait.Parent).Position + offset;
+            layerSprite.Position = ((RollcallElement)portrait.Parent).Position + offset + lastShake;
             layerSprite.Scale = portraitImage.Scale;
             // layerSprite.Origin = portraitImage.Origin;
             // layerSprite.Rotation = portraitImage.Rotation;

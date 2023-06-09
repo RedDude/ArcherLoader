@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using ArcherLoaderMod.Layers;
+﻿using System;
+using ArcherLoaderMod.Rainbow;
 using Monocle;
 using MonoMod.Utils;
 using TowerFall;
@@ -56,6 +56,17 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
         
         private static void OnArcherPortraitOnUpdate(ArcherPortrait.orig_Update orig, TowerFall.ArcherPortrait self)
         {
+            if (Mod.ArcherCustomDataDict.TryGetValue(self.ArcherData, out var data))
+            {
+                if (data.IsPrismaticGem)
+                {
+                    var prismatic = RainbowManager.GetColor(Environment.TickCount, 0);
+                    self.ArcherData.ColorA = prismatic;
+                    self.ArcherData.ColorB = RainbowManager.GetColor(Environment.TickCount, 1);
+                    var gem = DynamicData.For(self).Get<Sprite<string>>("gem");
+                    gem.Color = prismatic;
+                }
+            }
             orig(self);
         }
 
@@ -74,7 +85,7 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
         
         private static void OnSetCharacter(ArcherPortrait.orig_SetCharacter origSetCharacter, TowerFall.ArcherPortrait self, int characterIndex, ArcherData.ArcherTypes altSelect, int moveDir)
         {
-            PortraitLayersManager.HideAllLayers(self);
+            PortraitLayersManager.HideAllLayersFromPortrait(self);
             origSetCharacter(self, characterIndex, altSelect, moveDir);
             CreateLayersComponents(self, characterIndex, altSelect);
             PortraitLayersManager.ShowAllLayersFromType(PortraitLayersAttachType.NotJoin, self);

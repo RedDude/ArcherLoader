@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using ArcherLoaderMod.Skin;
 using Monocle;
 using MonoMod.Utils;
 using TowerFall;
@@ -18,6 +19,28 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
         public static void HideAllLayers(ArcherPortrait self)
         {
             if (GetLayerByPortraitAndData(self, out var layers)) return;
+            if (layers == null) return;
+            foreach (var portraitLayerInfo in layers)
+            {
+                portraitLayerInfo.Visible = false;
+            }
+        }
+        
+        public static void HideAllLayersFromPortrait(ArcherPortrait self)
+        {
+            if(PortraitLayers.TryGetValue(self, out var portraits))
+            foreach (var portrait in portraits)
+            {
+                foreach (var portraitLayerInfo in portrait.Value)
+                {
+                    portraitLayerInfo.Visible = false;
+                }
+            }
+        }
+        
+        public static void HideAllLayers(ArcherPortrait self, ArcherData data)
+        {
+            if (GetLayerByPortraitAndData(self, data, out var layers)) return;
             if (layers == null) return;
             foreach (var portraitLayerInfo in layers)
             {
@@ -45,18 +68,26 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             }
         }
 
+        public static void ShowAllLayersFromType(PortraitLayersAttachType type, List<PortraitLayerSpriteComponent> layers)
+        {
+            if (layers == null) return;
+            foreach (var portraitLayerInfo in layers)
+            {
+                portraitLayerInfo.Visible = portraitLayerInfo.layerInfo.AttachTo == type;
+            }
+        }
         public static void OnPortraitLeave(ArcherPortrait self)
         {
-            if (GetLayerByPortraitAndData(self, out var layers)) return;
+            if (GetLayerByPortraitAndData(self, self.ArcherData, out var layers)) return;
             if (layers == null) return;
-            ShowAllLayersFromType(PortraitLayersAttachType.NotJoin, self);
+            ShowAllLayersFromType(PortraitLayersAttachType.NotJoin, layers);
         }
 
         public static void OnPortraitStartJoin(ArcherPortrait self)
         {
-            if (GetLayerByPortraitAndData(self, out var layers)) return;
+            GetLayerByPortraitAndData(self, self.ArcherData, out var layers);
             if (layers == null) return;
-            ShowAllLayersFromType(PortraitLayersAttachType.Join, self);
+            ShowAllLayersFromType(PortraitLayersAttachType.Joined, layers);
         }
 
         private static bool GetLayerByPortraitAndData(ArcherPortrait self, out List<PortraitLayerSpriteComponent> layers)
@@ -83,10 +114,22 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
         public static void CreateLayersComponents(ArcherPortrait archerPortrait, ArcherData data)
         {
             var exist = Mod.ArcherCustomDataDict.TryGetValue(data, out var archerCustomData);
-            if (!exist) return;
+            List<PortraitLayerInfo> layerInfos = null;
+            if (!exist)
+            {
+                var xml = Mod.FindSpriteDataXmlOnCategories("portraitLayer", data);
+                if (xml != null)
+                {
+                    layerInfos = PortraitLayerParser.Parse(xml);
+                }
+            }
+            else
+            {
+                layerInfos = archerCustomData.PortraitLayerInfos;
+            }
 
-            var layerInfos = archerCustomData.PortraitLayerInfos;
-            if (layerInfos == null) return;
+      
+            if (layerInfos == null || layerInfos.Count == 0) return;
             
             if (!PortraitLayers.ContainsKey(archerPortrait))
             {
@@ -108,7 +151,7 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             var newLayers = new List<PortraitLayerSpriteComponent>(layerInfos.Count);
             foreach (var portraitLayerInfo in layerInfos)
             {
-                var layer = new PortraitLayerSpriteComponent(portraitLayerInfo, true, false);
+                var layer = new PortraitLayerSpriteComponent(portraitLayerInfo, data, true, false);
                 archerPortrait.Add(layer);
                 newLayers.Add(layer);
                 archerPortrait.Components.Remove(layer);

@@ -39,7 +39,6 @@ namespace ArcherLoaderMod
     public ArcherData.GemInfo Gems;
     public ArcherData.BreathingInfo Breathing;
     public ArcherData.ArcherTypes ArcherType;
-
     
     public HairInfo HairInfo;
 
@@ -73,8 +72,12 @@ namespace ArcherLoaderMod
     public Sprite<string> TauntSpriteData;
     public ArcherCustomMeta Meta;
     
-    public bool PrismaticGem;
+    public bool IsPrismaticGem;
     public bool PrismaticArcher;
+
+    public bool IsGemColorA;
+    public bool IsGemColorB;
+    public Color GemColor;
 
     public ArcherCustomData(XmlElement xml, Atlas atlas, Atlas menuAtlas, ArcherData.ArcherTypes archerType,
       string archerId, string path)
@@ -190,6 +193,11 @@ namespace ArcherLoaderMod
       EightPlayersNotJoinedPortraitTopOffset = xml.ChildInt(nameof(EightPlayersNotJoinedPortraitTopOffset), 0);
       EightPlayersJoinedPortraitTopOffset = xml.ChildInt(nameof(EightPlayersJoinedPortraitTopOffset), 0);
 
+      GemColor = xml.ChildHexColor(nameof(GemColor), Color.White);
+      IsGemColorA = xml.ChildBool(nameof(IsGemColorA), false);
+      IsGemColorB = xml.ChildBool(nameof(IsGemColorB), false);
+      IsPrismaticGem = xml.ChildBool(nameof(IsPrismaticGem), false);
+      
       parsed = true;
     }
 
@@ -556,6 +564,11 @@ namespace ArcherLoaderMod
       
       EightPlayersNotJoinedPortraitTopOffset = xml.ChildInt(nameof (EightPlayersNotJoinedPortraitTopOffset), 0);
       EightPlayersJoinedPortraitTopOffset = xml.ChildInt(nameof (EightPlayersJoinedPortraitTopOffset), 0);
+      
+      GemColor = xml.ChildHexColor(nameof(GemColor), Color.White);
+      IsGemColorA = xml.ChildBool(nameof(IsGemColorA), false);
+      IsGemColorB = xml.ChildBool(nameof(IsGemColorB), false);
+      IsPrismaticGem = xml.ChildBool(nameof(IsPrismaticGem), false);
     }
     
     public void HandleSFX(XmlElement xml, ArcherData archerData = null)

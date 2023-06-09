@@ -554,9 +554,71 @@ namespace ArcherLoaderMod
 
             return forAttribute;
         }
+
+
+        public static XmlElement FindSpriteDataXmlOnCategories(string category, ArcherData archerData)
+        {
+            XmlElement spriteDataXml = null;
+            var id = FindOnCustomCategories(category, archerData);
+            if (id != null)
+            {
+                spriteDataXml = TFGame.SpriteData.GetXML(id);
+            }
+
+            return spriteDataXml;
+        }
+
+        public static Sprite<string> FindSpriteOnCategories(string category, ArcherData archerData)
+        {
+            Sprite<string> spriteDataXml = null;
+            var id = FindOnCustomCategories(category, archerData);
+            if (id != null)
+            {
+                spriteDataXml = TFGame.SpriteData.GetSpriteString(id);
+            }
+
+            return spriteDataXml;
+        }
+        
+        public static string FindOnCustomCategories(string categoryName, ArcherData archerData)
+        {
+            if (!customSpriteDataCategoryDict.TryGetValue(categoryName.ToLower(), out var category))
+            {
+                return null;
+            }
+
+            foreach (var customSpriteData in category)
+            {
+                var xmlElement = customSpriteData.Element;
+
+                var forAttribute = GetForAttribute(xmlElement);
+                if (string.IsNullOrEmpty(forAttribute)) continue;
+                BaseArcherByNameDict.TryGetValue(xmlElement.GetAttribute(forAttribute).ToLower(),
+                    out var searchArcherData);
+                if (searchArcherData == null)
+                {
+                    foreach (var customData in ArcherCustomDataDict)
+                    {
+                        if (customData.Value.ID == xmlElement.GetAttribute(forAttribute))
+                        {
+                            searchArcherData = customData.Key;
+                        }
+                    }
+                }
+
+                if (archerData != searchArcherData)
+                {
+                    continue;
+                }
+                
+                return customSpriteData.id;
+            }
+
+            return null;
+        }
     }
     
-    
+   
 
     public class CustomSpriteDataInfo
     {

@@ -2,7 +2,7 @@
 {
     public enum PortraitLayersAttachType
     {
-        Join,
+        Joined,
         NotJoin,
     }
 }
