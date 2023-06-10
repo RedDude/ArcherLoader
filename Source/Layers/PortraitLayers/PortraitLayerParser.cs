@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Xml;
-using ArcherLoaderMod.Layers;
 using Microsoft.Xna.Framework;
 using Monocle;
 
@@ -49,7 +48,7 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             {
                
                 AttachTo = attachToText == "join" || attachToText == "Join"
-                    || attachToText == "joined" || attachToText == "Joined"? PortraitLayersAttachType.Joined : PortraitLayersAttachType.NotJoin,
+                    || attachToText == "joined" || attachToText == "Joined" ? PortraitLayersAttachType.Joined : PortraitLayersAttachType.NotJoin,
 
                 Sprite = xml.ChildText("Sprite", xml.GetAttribute("id")),
                 Position = xml.ChildPosition("Position", Vector2.Zero),

@@ -13,6 +13,8 @@ namespace ArcherLoaderMod.Layers
         public bool ColorSwitchLoop;
         public bool ToScale;
         
+        public bool IsColorA;
+        public bool IsColorB;
         public bool IsRainbowColor;
           
         public bool IsOnInvisible;

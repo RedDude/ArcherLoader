@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Collections.Generic;
 using System.Xml;
 using ArcherLoaderMod.Layers;
 using Microsoft.Xna.Framework;
@@ -10,22 +10,32 @@ namespace ArcherLoaderMod.Layer
     {
         public static void Parse(ArcherCustomData data, XmlElement xml)
         {
+            var portraitLayerInfos = Parse(xml);
+            data.LayerInfos ??= new();
+            data.LayerInfos.AddRange(portraitLayerInfos);
+        }
+        
+        public static List<LayerInfo> Parse(XmlElement xml)
+        {
+            var layerInfos = new List<LayerInfo>();
             if (xml.HasChild("Layer"))
             {
                 var info = HandleLayer(xml["Layer"]);
-                data.LayerInfos ??= new(1);
-                data.LayerInfos.Add(info);
+                layerInfos.Add(info);
+                return layerInfos;
             }
 
-            if (!xml.HasChild("Layers")) return;
+            if (!xml.HasChild("Layers")) return layerInfos;
 
-            foreach (var o in xml["Layers"])
+            var portraitLayersXml = xml["Layers"];
+            foreach (var o in portraitLayersXml)
             {
                 if (o is not XmlElement {Name: "Layer"} layerXml) continue;
                 var info = HandleLayer(layerXml);
-                data.LayerInfos ??= new();
-                data.LayerInfos.Add(info);
+                layerInfos.Add(info);
             }
+
+            return layerInfos;
         }
 
         private static LayerInfo HandleLayer(XmlElement xml)
@@ -40,15 +50,19 @@ namespace ArcherLoaderMod.Layer
                
                 AttachTo = attachToText == "head" || attachToText == "Head" ? LayerAttachType.Head
                     : attachToText == "body" || attachToText == "Body" ? LayerAttachType.Body
-                    : attachToText == "bow" || attachToText == "Bow" ? LayerAttachType.Bow : LayerAttachType.Body,
+                    : attachToText == "bow" || attachToText == "Bow" ? LayerAttachType.Bow
+                    : attachToText == "corpse" || attachToText == "Corpse" ? LayerAttachType.Corpse : LayerAttachType.Body,
 
                 Sprite = xml.ChildText("Sprite"),
                 Position = xml.ChildPosition("Position", Vector2.Zero),
                 Color = Calc.HexToColor(xml.ChildText("Color", "FFFFFF")),
                 ColorSwitch = xml.ChildInt("ColorSwitch", 0),
                 ColorSwitchLoop = xml.ChildBool("ColorSwitchLoop", false),
-                IsRainbowColor = xml.ChildBool("IsRainbowColor", false),
                 ToScale = xml.ChildBool("ToScale", true),
+                
+                IsColorA = xml.ChildBool("IsColorA", false),
+                IsColorB = xml.ChildBool("IsColorB", false),
+                IsRainbowColor = xml.ChildBool("IsRainbowColor", false),
 
                 IsOnInvisible = xml.ChildBool("IsOnInvisible", false),
 

@@ -6,6 +6,7 @@ namespace ArcherLoaderMod.Layers
     {
         Head,
         Body,
-        Bow
+        Bow,
+        Corpse
     }
 }

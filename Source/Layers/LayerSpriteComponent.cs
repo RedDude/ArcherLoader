@@ -11,117 +11,164 @@ namespace ArcherLoaderMod.Layers
     public class LayerSpriteComponent : Component
     {
         private Sprite<string> attachedSprite;
+        private readonly ArcherCustomData data;
 
         public LayerInfo layerInfo;
         private Sprite<string> layerSprite;
         private XmlElement layer;
         private PropertyInfo drawSelfPropertyInfo;
+        private XmlElement xml;
 
-        public LayerSpriteComponent(LayerInfo layerInfo, Sprite<string> attachedSprite, bool active, bool visible) : base(active, visible)
+        public LayerSpriteComponent(LayerInfo layerInfo, Sprite<string> attachedSprite, ArcherCustomData data,
+            bool active, bool visible) : base(active, visible)
         {
             this.layerInfo = layerInfo;
             drawSelfPropertyInfo = typeof(Player).GetProperty("DrawSelf", BindingFlags.Public | BindingFlags.Instance);
             this.attachedSprite = attachedSprite;
-
+            this.data = data;
         }
 
         public override void Added()
         {
-            var player = ((Player) Parent);
-            // if(player.Allegiance == Allegiance.Neutral)
-            // {
-            // Visible = false;
-            // Parent.Remove(this);
-            // return;
-            // }
-            //
-            // bodySprite = DynamicData.For(player).Get<Sprite<string>>("bodySprite");
-            // headSprite = DynamicData.For(player).Get<Sprite<string>>("headSprite");
+            string attachedSpriteInfo;
+            if (Parent is Player player)
+            {
+                attachedSpriteInfo = layerInfo.AttachTo == LayerAttachType.Body ? player.ArcherData.Sprites.Body :
+                    layerInfo.AttachTo == LayerAttachType.Head ? player.ArcherData.Sprites.HeadNormal :
+                    player.ArcherData.Sprites.Bow;
+                
+                xml = TFGame.SpriteData.GetXML(attachedSpriteInfo);
+                layerSprite = TFGame.SpriteData.GetSpriteString(attachedSpriteInfo);
+            }
+            else if (Parent is PlayerCorpse)
+            {
+                attachedSpriteInfo = data.Corpse;
+                xml = TFGame.CorpseSpriteData.GetXML(attachedSpriteInfo);
+                layerSprite = TFGame.CorpseSpriteData.GetSpriteString(attachedSpriteInfo);
+            }
 
-            layer = TFGame.SpriteData.GetXML(layerInfo.Sprite);
+            var atlas = TFGame.Atlas[layerInfo.Sprite];
+            if (atlas != null)
+            {
+                layerSprite.SwapSubtexture(atlas);
+            }
 
-            var attachedSpriteInfo = layerInfo.AttachTo == LayerAttachType.Body ? player.ArcherData.Sprites.Body :
-                                        layerInfo.AttachTo == LayerAttachType.Head ? player.ArcherData.Sprites.HeadNormal : player.ArcherData.Sprites.Bow;
-            
-            // var xml = TFGame.SpriteData.GetXML(attachedSpriteInfo);
-
-            layerSprite = TFGame.SpriteData.GetSpriteString(attachedSpriteInfo);
-            var childText = layer.ChildText("Texture");
-            var atlas = TFGame.Atlas[childText];
-
-            layerSprite.SwapSubtexture(atlas);
             layerSprite.Color = layerInfo.Color;
-            layerSprite.Visible = true;
-
             layerSprite.Visible = attachedSprite.Visible;
+
+            if (layerInfo.IsColorA || layerInfo.IsColorB)
+            {
+                if (layerInfo.IsColorA)
+                    layerSprite.Color = data.ColorA;
+                if (layerInfo.IsColorB)
+                    layerSprite.Color = data.ColorB;
+            }
+
             DynamicData.For(layerSprite).Set("Entity", Entity);
             DynamicData.For(layerSprite).Set("Parent", Entity);
-
-            // sprite = new Sprite<string>(atlas, xML.ChildInt("FrameWidth"), xML.ChildInt("FrameHeight"))
-            // {
-            //     Origin = new Vector2(xML.ChildFloat("OriginX", 0.0f), xML.ChildFloat("OriginY", 0.0f)),
-            //     Position = new Vector2(xML.ChildFloat("X", 0.0f), xML.ChildFloat("Y", 0.0f)),
-            //     Color = xML.ChildHexColor("Color", Color.White)
-            // };
-            // XmlElement xmlElement = xML["Animations"];
-            // if (xmlElement != null)
-            // {
-            //     foreach (XmlElement xml in xmlElement.GetElementsByTagName("Anim"))
-            //         sprite.Add(xml.Attr("id"), xml.AttrFloat("delay", 0.0f), xml.AttrBool("loop", true), Calc.ReadCSVInt(xml.Attr("frames")));
-            // }
-
-            // var spriteDataBody = TFGame.SpriteData.GetXML(player.ArcherData.Sprites.Body);
-            // var spriteDataBow = TFGame.SpriteData.GetXML(player.ArcherData.Sprites.Bow);
-            // var spriteDataHeadNoHat = TFGame.SpriteData.GetXML(player.ArcherData.Sprites.HeadNoHat);
-            // var spriteDataHeadCrown = TFGame.SpriteData.GetXML(player.ArcherData.Sprites.HeadCrown);
-            // var spriteDataHeadNormal = TFGame.SpriteData.GetXML(player.ArcherData.Sprites.HeadNormal);
-            //
-            // CheckSprite(spriteDataBody, ref bodyOutline, ref originalBody);
-            // CheckSprite(spriteDataHeadNormal,ref headOutline, ref originalHead);
-            // CheckSprite(spriteDataHeadNoHat, ref headOutlineNotHat, ref originalNotHat);
-            // CheckSprite(spriteDataHeadCrown, ref headOutlineCrown, ref originalHeadCrown);
-            // CheckSprite(spriteDataBow, ref bowOutline, ref originalBow);
-            //
-            // 
-            // headSprite = DynamicData.For(player).Get<Sprite<string>>("headSprite");
-            // bowSprite = DynamicData.For(player).Get<Sprite<string>>("bowSprite");
         }
+
+
+        // if(player.Allegiance == Allegiance.Neutral)
+        // {
+        // Visible = false;
+        // Parent.Remove(this);
+        // return;
+        // }
+        //
+        // bodySprite = DynamicData.For(player).Get<Sprite<string>>("bodySprite");
+        // headSprite = DynamicData.For(player).Get<Sprite<string>>("headSprite");
+
+        // layer = TFGame.SpriteData.GetXML(layerInfo.Sprite);
+
+        // sprite = new Sprite<string>(atlas, xML.ChildInt("FrameWidth"), xML.ChildInt("FrameHeight"))
+        // {
+        //     Origin = new Vector2(xML.ChildFloat("OriginX", 0.0f), xML.ChildFloat("OriginY", 0.0f)),
+        //     Position = new Vector2(xML.ChildFloat("X", 0.0f), xML.ChildFloat("Y", 0.0f)),
+        //     Color = xML.ChildHexColor("Color", Color.White)
+        // };
+        // XmlElement xmlElement = xML["Animations"];
+        // if (xmlElement != null)
+        // {
+        //     foreach (XmlElement xml in xmlElement.GetElementsByTagName("Anim"))
+        //         sprite.Add(xml.Attr("id"), xml.AttrFloat("delay", 0.0f), xml.AttrBool("loop", true), Calc.ReadCSVInt(xml.Attr("frames")));
+        // }
+
+        // var spriteDataBody = TFGame.SpriteData.GetXML(player.ArcherData.Sprites.Body);
+        // var spriteDataBow = TFGame.SpriteData.GetXML(player.ArcherData.Sprites.Bow);
+        // var spriteDataHeadNoHat = TFGame.SpriteData.GetXML(player.ArcherData.Sprites.HeadNoHat);
+        // var spriteDataHeadCrown = TFGame.SpriteData.GetXML(player.ArcherData.Sprites.HeadCrown);
+        // var spriteDataHeadNormal = TFGame.SpriteData.GetXML(player.ArcherData.Sprites.HeadNormal);
+        //
+        // CheckSprite(spriteDataBody, ref bodyOutline, ref originalBody);
+        // CheckSprite(spriteDataHeadNormal,ref headOutline, ref originalHead);
+        // CheckSprite(spriteDataHeadNoHat, ref headOutlineNotHat, ref originalNotHat);
+        // CheckSprite(spriteDataHeadCrown, ref headOutlineCrown, ref originalHeadCrown);
+        // CheckSprite(spriteDataBow, ref bowOutline, ref originalBow);
+        //
+        // 
+        // headSprite = DynamicData.For(player).Get<Sprite<string>>("headSprite");
+        // bowSprite = DynamicData.For(player).Get<Sprite<string>>("bowSprite");
 
         public override void Update()
         {
-            var player = ((Player) Parent);
-            // drawSelfPropertyInfo.SetValue(player, false);
-            // var childText = layer.ChildText("Texture");
-            // var atlas = TFGame.Atlas[childText];
-            // sprite.SwapSubtexture(atlas);
-            
             layerSprite.Visible = attachedSprite.Visible;
             layerSprite.Effects = attachedSprite.Effects;
-            if(layerInfo.AttachTo != LayerAttachType.Head)
-                layerSprite.FlipX = player.Facing != Facing.Right;
             
+            if (Parent is Player player)
+            {
+                if (layerInfo.AttachTo == LayerAttachType.Body)
+                    layerSprite.FlipX = player.Facing != Facing.Right;
+                
+                switch (player.HatState)
+                {
+                    case Player.HatStates.Normal when !layerInfo.IsHat:
+                    case Player.HatStates.Crown when !layerInfo.IsCrown:
+                    case Player.HatStates.NoHat when !layerInfo.IsNotHat:
+                        layerSprite.Visible = false;
+                        return;
+                }
+                
+                if (layerInfo.AttachTo == LayerAttachType.Bow)
+                {
+                    var hideBow = DynamicData.For(player).Get<bool>("hideBow");
+                    layerSprite.Visible = !hideBow || player.Aiming;
+                }
+            }
+
             layerSprite.FlipY = attachedSprite.FlipY;
             layerSprite.Scale = attachedSprite.Scale;
             layerSprite.Position = attachedSprite.Position;
             layerSprite.Origin = attachedSprite.Origin;
             layerSprite.Rotation = attachedSprite.Rotation;
             layerSprite.Zoom = attachedSprite.Zoom;
-            
-            layerSprite.Play(attachedSprite.CurrentAnimID);
-            layerSprite.CurrentFrame = attachedSprite.CurrentFrame;
+
+            if (attachedSprite.Visible)
+            {
+                layerSprite.Play(attachedSprite.CurrentAnimID);
+                layerSprite.CurrentFrame = attachedSprite.CurrentFrame;
+            }
 
             if (layerInfo.IsRainbowColor)
             {
                 layerSprite.Color = RainbowManager.GetColor(Environment.TickCount);
             }
+         
             base.Update();
         }
 
         public override void Render()
         {
-            var player = ((Player) Parent);
-            layerSprite.Render();
-            // layerSprite2.Render();
+            // var player = ((Player) Parent);
+            // if (layerInfo.AttachTo == LayerAttachType.Bow)
+            // {
+            //     if (attachedSprite.Visible)
+            //         layerSprite.Render();
+            //     return;
+            // }
+
+            if (attachedSprite.Visible && layerSprite.Visible)
+                layerSprite.Render();
             base.Render();
 
             // bodySprite.Render();
@@ -163,7 +210,6 @@ namespace ArcherLoaderMod.Layers
             //     //     }
             //     // }
             //
-
         }
     }
 }
