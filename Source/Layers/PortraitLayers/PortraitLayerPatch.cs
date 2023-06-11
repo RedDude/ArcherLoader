@@ -44,8 +44,9 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
         {
             orig(self, index);
             var portrait = DynamicData.For(self).Get<TowerFall.ArcherPortrait>("portrait");
+            var joined = DynamicData.For(portrait).Get<bool>("joined");
             CreateLayersComponents(portrait, portrait.CharacterIndex, portrait.AltSelect);
-            PortraitLayersManager.ShowAllLayersFromType(PortraitLayersAttachType.NotJoin, portrait);
+            PortraitLayersManager.ShowAllLayersFromType(joined ? PortraitLayersAttachType.Joined : PortraitLayersAttachType.NotJoin, portrait);
         }
 
         private static void OnMainMenuOnDestroyRollcall(MainMenu.orig_DestroyRollcall orig, TowerFall.MainMenu self)

@@ -105,7 +105,7 @@ namespace ArcherLoaderMod.Taunt
                 return;
             }
             
-            if (FortEntrance.Settings.HideArrowsWhileTaunt)
+            if (!FortEntrance.Settings.HideArrowsWhileTaunt)
             {
                 orig(self);
                 return;
@@ -262,7 +262,7 @@ namespace ArcherLoaderMod.Taunt
 
                     archerCustomData.TauntSpriteData = tauntInfo.spriteData;
 
-                    var originalPath = HandleSFX(self, "Content\\" + archerCustomData.FolderPath, xmlElement, out var sound);
+                    var originalPath = HandleSFX(self, archerCustomData.FolderPath, xmlElement, out var sound);
 
                     tauntInfo.Sound = sound;
 
@@ -273,60 +273,105 @@ namespace ArcherLoaderMod.Taunt
                 }
                 else
                 {
-                    foreach (var customSpriteData in Mod.customSpriteDataCategoryDict["taunt"])
+                    if (Mod.customSpriteDataCategoryDict.ContainsKey("taunt"))
                     {
-                        var xmlElement = customSpriteData.Element;
-                        
-                        var forAttribute = Mod.GetForAttribute(xmlElement);
-                        if (string.IsNullOrEmpty(forAttribute)) continue;
-                        Mod.BaseArcherByNameDict.TryGetValue(xmlElement.GetAttribute(forAttribute).ToLower(),
-                            out var searchArcherData);
-                        if (searchArcherData == null)
+                        foreach (var customSpriteData in Mod.customSpriteDataCategoryDict["taunt"])
                         {
-                            foreach (var customData in Mod.ArcherCustomDataDict)
+                            var xmlElement = customSpriteData.Element;
+
+                            var forAttribute = Mod.GetForAttribute(xmlElement);
+                            if (string.IsNullOrEmpty(forAttribute)) continue;
+                            Mod.BaseArcherByNameDict.TryGetValue(xmlElement.GetAttribute(forAttribute).ToLower(),
+                                out var searchArcherData);
+                            if (searchArcherData == null)
                             {
-                                if (customData.Value.ID == xmlElement.GetAttribute(forAttribute))
+                                foreach (var customData in Mod.ArcherCustomDataDict)
                                 {
-                                    searchArcherData = customData.Key;
-                                };
+                                    if (customData.Value.ID == xmlElement.GetAttribute(forAttribute))
+                                    {
+                                        searchArcherData = customData.Key;
+                                    }
+                                }
                             }
+
+                            if (self.ArcherData != searchArcherData)
+                            {
+                                continue;
+                            }
+
+                            var spritedata = TFGame.SpriteData.GetSpriteString(customSpriteData.id);
+                            tauntInfo = new TauntInfo
+                            {
+                                id = customSpriteData.id,
+                                hasTauntCrown = false,
+                                spriteData = spritedata,
+                                SelfDestruction = xmlElement.ChildBool("SelfDestruction", false)
+                            };
+
+                            var originalPath = HandleSFX(self, customSpriteData, xmlElement, out var sound);
+
+                            tauntInfo.Sound = sound;
+                            HandleTexturesAndAnimations(tauntInfo, xmlElement);
+
+                            Audio.LOAD_PREFIX = originalPath;
+                            tauntInfos[self.ArcherData] = tauntInfo;
+
+                            break;
                         }
 
-                        if (self.ArcherData != searchArcherData)
+                        foreach (var customSpriteData in Mod.customSpriteDataCategoryDict["taunt"])
                         {
-                            continue;
+                            var xmlElement = customSpriteData.Element;
+
+                            var forAttribute = Mod.GetForAttribute(xmlElement);
+                            if (string.IsNullOrEmpty(forAttribute)) continue;
+                            Mod.BaseArcherByNameDict.TryGetValue(xmlElement.GetAttribute(forAttribute).ToLower(),
+                                out var searchArcherData);
+                            if (searchArcherData == null)
+                            {
+                                foreach (var customData in Mod.ArcherCustomDataDict)
+                                {
+                                    if (customData.Value.ID == xmlElement.GetAttribute(forAttribute))
+                                    {
+                                        searchArcherData = customData.Key;
+                                    }
+
+                                    ;
+                                }
+                            }
+
+                            if (self.ArcherData != searchArcherData)
+                            {
+                                continue;
+                            }
+
+                            var spritedata = TFGame.SpriteData.GetSpriteString(customSpriteData.id);
+                            tauntInfo = new TauntInfo
+                            {
+                                id = customSpriteData.id,
+                                hasTauntCrown = false,
+                                spriteData = spritedata,
+                                SelfDestruction = xmlElement.ChildBool("SelfDestruction", false)
+                            };
+
+                            var originalPath = HandleSFX(self, customSpriteData, xmlElement, out var sound);
+
+                            tauntInfo.Sound = sound;
+                            HandleTexturesAndAnimations(tauntInfo, xmlElement);
+
+                            Audio.LOAD_PREFIX = originalPath;
+                            tauntInfos[self.ArcherData] = tauntInfo;
+
+                            break;
                         }
-
-                        var spritedata = TFGame.SpriteData.GetSpriteString(customSpriteData.id);
-                        tauntInfo = new TauntInfo
-                        {
-                            id = customSpriteData.id,
-                            hasTauntCrown = false,
-                            spriteData = spritedata,
-                            SelfDestruction = xmlElement.ChildBool("SelfDestruction", false)
-                        };
-
-                        var originalPath = HandleSFX(self, customSpriteData, xmlElement, out var sound);
-
-                        tauntInfo.Sound = sound;
-                        HandleTexturesAndAnimations(tauntInfo, xmlElement);
-
-                        Audio.LOAD_PREFIX = originalPath;
-                        tauntInfos[self.ArcherData] = tauntInfo;
-
-                        break;
                     }
                 }
             }
 
-            if (tauntInfo == null)
+            tauntInfo ??= new TauntInfo
             {
-                tauntInfo = new TauntInfo
-                {
-                    Sound = self.ArcherData.SFX.Ready,
-                };
-                // tauntInfos[self.ArcherData] = tauntInfo;
-            }
+                Sound = self.ArcherData.SFX.Ready,
+            };
 
             if (!tauntStates.ContainsKey(self))
             {

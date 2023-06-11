@@ -19,6 +19,7 @@ namespace ArcherLoaderMod.Layers
         private PropertyInfo drawSelfPropertyInfo;
         private XmlElement xml;
 
+        private Player.HatStates lastHatState;
         public LayerSpriteComponent(LayerInfo layerInfo, Sprite<string> attachedSprite, ArcherCustomData data,
             bool active, bool visible) : base(active, visible)
         {
@@ -34,9 +35,13 @@ namespace ArcherLoaderMod.Layers
             if (Parent is Player player)
             {
                 attachedSpriteInfo = layerInfo.AttachTo == LayerAttachType.Body ? player.ArcherData.Sprites.Body :
-                    layerInfo.AttachTo == LayerAttachType.Head ? player.ArcherData.Sprites.HeadNormal :
-                    player.ArcherData.Sprites.Bow;
+                    layerInfo.AttachTo == LayerAttachType.Bow ? player.ArcherData.Sprites.Bow :
+                    layerInfo.AttachTo == LayerAttachType.Head ? 
+                        player.HatState == Player.HatStates.Normal ? player.ArcherData.Sprites.HeadNormal :
+                        player.HatState == Player.HatStates.Crown ? player.ArcherData.Sprites.HeadCrown :
+                        player.ArcherData.Sprites.HeadNoHat : player.ArcherData.Sprites.HeadNormal;
                 
+                lastHatState = player.HatState;
                 xml = TFGame.SpriteData.GetXML(attachedSpriteInfo);
                 layerSprite = TFGame.SpriteData.GetSpriteString(attachedSpriteInfo);
             }
@@ -114,9 +119,21 @@ namespace ArcherLoaderMod.Layers
         {
             layerSprite.Visible = attachedSprite.Visible;
             layerSprite.Effects = attachedSprite.Effects;
-            
+
             if (Parent is Player player)
             {
+                if (layerInfo.AttachTo == LayerAttachType.Head)
+                {
+                    if (lastHatState != player.HatState)
+                    {
+                        var headSprite = DynamicData.For(player).Get<Sprite<string>>("headSprite");
+                        Parent.Add(new LayerSpriteComponent(layerInfo, headSprite, data, true, true));
+                        Parent.Remove(this);
+                    }
+
+                    lastHatState = player.HatState;
+                }
+
                 if (layerInfo.AttachTo == LayerAttachType.Body)
                     layerSprite.FlipX = player.Facing != Facing.Right;
                 

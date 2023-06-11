@@ -28,37 +28,6 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
         public override void Added()
         {
             var portrait = ((ArcherPortrait) Parent);
-            // if(player.Allegiance == Allegiance.Neutral)
-            // {
-            // Visible = false;
-            // Parent.Remove(this);
-            // return;
-            // }
-            //
-            // bodySprite = DynamicData.For(player).Get<Sprite<string>>("bodySprite");
-            // headSprite = DynamicData.For(player).Get<Sprite<string>>("headSprite");
-
-            // layer = TFGame.SpriteData.GetXML(layerInfo.Sprite);
-
-            // var attachedSpriteInfo = layerInfo.AttachTo == PortraitLayersAttachType.Join
-            //     ? portrait.ArcherData.Portraits.Joined
-            //     : portrait.ArcherData.Portraits.NotJoined;
-            // var attachedSpriteInfo = portrait;
-            // var xml = TFGame.SpriteData.GetXML(attachedSpriteInfo);
-
-            // foreach (var customSpriteDataInfo in Mod.customSpriteDataCategoryDict["layer"])
-            // {
-            //     if (customSpriteDataInfo.id == layerInfo.Sprite)
-            //     {
-            //         layerSprite = customSpriteDataInfo.Element;
-            //         break;
-            //     }
-            // }
-            
-           // var layer = TFGame.SpriteData.GetXML(layerInfo.Sprite);
-
-            // var xml = TFGame.SpriteData.GetXML(attachedSpriteInfo);
-          
             layerSprite = TFGame.SpriteData.GetSpriteString(layerInfo.Sprite);
             layerSprite.Color = layerInfo.Color;
 
@@ -70,46 +39,7 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
                     layerSprite.Color = archerData.ColorB;
             }
 
-            // layerSprite = TFGame.SpriteData.GetSpriteString(layerInfo.Sprite);
-            // var childText = layer.ChildText("Texture");
-            // var atlas = TFGame.Atlas[childText];
-
-            // layerSprite.SwapSubtexture(atlas);
-            // layerSprite.Color = layerInfo.Color;
-            // layerSprite.Visible = true;
-            //
-            // layerSprite.Visible = attachedSprite.Visible;
-            // DynamicData.For(layerSprite).Set("Entity", Entity);
             DynamicData.For(layerSprite).Set("Parent", Entity);
-
-            // sprite = new Sprite<string>(atlas, xML.ChildInt("FrameWidth"), xML.ChildInt("FrameHeight"))
-            // {
-            //     Origin = new Vector2(xML.ChildFloat("OriginX", 0.0f), xML.ChildFloat("OriginY", 0.0f)),
-            //     Position = new Vector2(xML.ChildFloat("X", 0.0f), xML.ChildFloat("Y", 0.0f)),
-            //     Color = xML.ChildHexColor("Color", Color.White)
-            // };
-            // XmlElement xmlElement = xML["Animations"];
-            // if (xmlElement != null)
-            // {
-            //     foreach (XmlElement xml in xmlElement.GetElementsByTagName("Anim"))
-            //         sprite.Add(xml.Attr("id"), xml.AttrFloat("delay", 0.0f), xml.AttrBool("loop", true), Calc.ReadCSVInt(xml.Attr("frames")));
-            // }
-
-            // var spriteDataBody = TFGame.SpriteData.GetXML(player.ArcherData.Sprites.Body);
-            // var spriteDataBow = TFGame.SpriteData.GetXML(player.ArcherData.Sprites.Bow);
-            // var spriteDataHeadNoHat = TFGame.SpriteData.GetXML(player.ArcherData.Sprites.HeadNoHat);
-            // var spriteDataHeadCrown = TFGame.SpriteData.GetXML(player.ArcherData.Sprites.HeadCrown);
-            // var spriteDataHeadNormal = TFGame.SpriteData.GetXML(player.ArcherData.Sprites.HeadNormal);
-            //
-            // CheckSprite(spriteDataBody, ref bodyOutline, ref originalBody);
-            // CheckSprite(spriteDataHeadNormal,ref headOutline, ref originalHead);
-            // CheckSprite(spriteDataHeadNoHat, ref headOutlineNotHat, ref originalNotHat);
-            // CheckSprite(spriteDataHeadCrown, ref headOutlineCrown, ref originalHeadCrown);
-            // CheckSprite(spriteDataBow, ref bowOutline, ref originalBow);
-            //
-            // 
-            // headSprite = DynamicData.For(player).Get<Sprite<string>>("headSprite");
-            // bowSprite = DynamicData.For(player).Get<Sprite<string>>("bowSprite");
             base.Added();
         }
 
@@ -117,26 +47,6 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
 
         public override void Update()
         {
-            // drawSelfPropertyInfo.SetValue(player, false);
-            // var childText = layer.ChildText("Texture");
-            // var atlas = TFGame.Atlas[childText];
-            // sprite.SwapSubtexture(atlas);
-            
-            // layerSprite.Visible = attachedSprite.Visible;
-            // layerSprite.Effects = attachedSprite.Effects;
-            // if(layerInfo.AttachTo != LayerAttachType.Head)
-                // layerSprite.FlipX = player.Facing != Facing.Right;
-            
-            // layerSprite.FlipY = attachedSprite.FlipY;
-            // layerSprite.Scale = attachedSprite.Scale;
-            // layerSprite.Position = attachedSprite.Position;
-            // layerSprite.Origin = attachedSprite.Origin;
-            // layerSprite.Rotation = attachedSprite.Rotation;
-            // layerSprite.Zoom = attachedSprite.Zoom;
-            //
-            // layerSprite.Play(attachedSprite.CurrentAnimID);
-            // layerSprite.CurrentFrame = attachedSprite.CurrentFrame;
-
             if (layerInfo.IsRainbowColor)
             {
                 layerSprite.Color = RainbowManager.GetColor(Environment.TickCount);
@@ -151,61 +61,28 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             var portraitImage = DynamicData.For(portrait).Get<Image>("portrait");
             var offset = DynamicData.For(portrait).Get<Vector2>("offset");
             var lastShake = DynamicData.For(portrait).Get<Vector2>("lastShake");
-            // var Vector2 vector2_1 = this.Entity.Position + this.offset;
+
             layerSprite.Position = ((RollcallElement)portrait.Parent).Position + offset + lastShake;
             layerSprite.Scale = portraitImage.Scale;
-            // layerSprite.Origin = portraitImage.Origin;
-            // layerSprite.Rotation = portraitImage.Rotation;
-            // layerSprite.X = portraitImage.X;
-            // layerSprite.Y = portraitImage.Y;
-            
-            // = this.flash.Scale = new Vector2((float) (1.0 + (double) this.wiggler.Value * 0.0500000007450581), (float) (1.0 - (double) this.wiggler.Value * 0.0500000007450581));
-            // layerSprite.Position = this.portraitAlt.Position = this.flash.Position = this.offset + this.lastShake;
+
+            // if (!this.joined)
+            // {
+            //     if ((double) this.flipEase < 0.5)
+            //     {
+            //         this.portraitAlt.Visible = true;
+            //         this.portrait.Visible = false;
+            //         this.portraitAlt.Scale.X *= MathHelper.Lerp(1f, 0.0f, this.flipEase * 2f);
+            //     }
+            //     else
+            //     {
+            //         this.portraitAlt.Visible = false;
+            //         this.portrait.Visible = true;
+            //         this.portrait.Scale.X *= MathHelper.Lerp(0.0f, 1f, (float) (((double) this.flipEase - 0.5) * 2.0));
+            //     }
+            // }
 
             layerSprite.Render();
-            // layerSprite2.Render();
             base.Render();
-
-            // bodySprite.Render();
-            //     // if(player.Allegiance == Allegiance.Neutral)
-            //     //     return;
-            //     //
-            //     //
-            //     // foreach (var component in player.Components)
-            //     // {
-            //     //     if (component is not Sprite<string> sprite) continue;
-            //     //     if (!sprite.Visible) continue;
-            //     //     if (bodySprite == component)
-            //     //     {
-            //     //         SwapSprite(sprite, bodyOutline, originalBody);
-            //     //         continue;
-            //     //     }
-            //     //     if (headSprite == component)
-            //     //     {
-            //     //         if(player.HatState == Player.HatStates.Normal)
-            //     //         {
-            //     //             SwapSprite(sprite, headOutline, originalHead);
-            //     //             continue;
-            //     //         }
-            //     //         if(player.HatState == Player.HatStates.NoHat)
-            //     //         {
-            //     //             SwapSprite(sprite, headOutlineNotHat, originalNotHat);
-            //     //             continue;
-            //     //         }
-            //     //         if(player.HatState == Player.HatStates.Crown)
-            //     //         {
-            //     //             SwapSprite(sprite, headOutlineCrown, originalHeadCrown);
-            //     //             continue;
-            //     //         }
-            //     //     }
-            //     //     if (bowSprite == component)
-            //     //     {
-            //     //         SwapSprite(sprite, bowOutline, originalBow);
-            //     //         continue;
-            //     //     }
-            //     // }
-            //
-
         }
     }
 }

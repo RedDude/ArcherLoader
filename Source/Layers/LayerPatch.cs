@@ -102,6 +102,9 @@ namespace ArcherLoaderMod.Layers
             
             foreach (var layerInfo in layerInfos)
             {
+                if(layerInfo.AttachTo == LayerAttachType.Corpse)
+                    continue;
+                        
                 var attachedSprite = layerInfo.AttachTo == LayerAttachType.Body ? bodySprite :
                     layerInfo.AttachTo == LayerAttachType.Head ? headSprite : bowSprite;
                 
