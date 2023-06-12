@@ -79,7 +79,7 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
         {
             if (GetLayerByPortraitAndData(self, self.ArcherData, out var layers)) return;
             if (layers == null) return;
-            ShowAllLayersFromType(PortraitLayersAttachType.NotJoin, layers);
+            ShowAllLayersFromType(PortraitLayersAttachType.NotJoined, layers);
         }
 
         public static void OnPortraitStartJoin(ArcherPortrait self)
@@ -150,6 +150,9 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             var newLayers = new List<PortraitLayerSpriteComponent>(layerInfos.Count);
             foreach (var portraitLayerInfo in layerInfos)
             {
+                if(portraitLayerInfo.AttachTo != PortraitLayersAttachType.Joined && portraitLayerInfo.AttachTo != PortraitLayersAttachType.NotJoined)
+                    continue;
+                
                 var layer = new PortraitLayerSpriteComponent(portraitLayerInfo, data, true, false);
                 archerPortrait.Add(layer);
                 newLayers.Add(layer);
@@ -158,6 +161,41 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             }
 
             PortraitLayers[archerPortrait][data] = newLayers;
+        }
+        
+        
+        public static List<PortraitLayerSpriteComponent> CreateLayersComponents(Entity entity, ArcherData data)
+        {
+            var exist = Mod.ArcherCustomDataDict.TryGetValue(data, out var archerCustomData);
+            List<PortraitLayerInfo> layerInfos = null;
+            if (!exist)
+            {
+                var xml = Mod.FindSpriteDataXmlOnCategories("portraitLayer", data);
+                if (xml != null)
+                {
+                    layerInfos = PortraitLayerParser.Parse(xml);
+                }
+            }
+            else
+            {
+                layerInfos = archerCustomData.PortraitLayerInfos;
+            }
+      
+            if (layerInfos == null || layerInfos.Count == 0) return null;
+            
+            var newLayers = new List<PortraitLayerSpriteComponent>(layerInfos.Count);
+            foreach (var portraitLayerInfo in layerInfos)
+            {
+                if(portraitLayerInfo.AttachTo != PortraitLayersAttachType.Won && portraitLayerInfo.AttachTo != PortraitLayersAttachType.Lose)
+                    continue;
+
+                var layer = new PortraitLayerSpriteComponent(portraitLayerInfo, data, true, false);
+                entity.Add(layer);
+                newLayers.Add(layer);
+                entity.Components.Remove(layer);
+            }
+
+            return newLayers;
         }
     }
 }

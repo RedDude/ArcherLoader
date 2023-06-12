@@ -56,14 +56,21 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
 
         public override void Render()
         {
-            var portrait = ((ArcherPortrait) Parent);
-            
-            var portraitImage = DynamicData.For(portrait).Get<Image>("portrait");
-            var offset = DynamicData.For(portrait).Get<Vector2>("offset");
-            var lastShake = DynamicData.For(portrait).Get<Vector2>("lastShake");
+            if (Parent is ArcherPortrait portrait)
+            {   
+                var portraitImage = DynamicData.For(portrait).Get<Image>("portrait");
+                var offset = DynamicData.For(portrait).Get<Vector2>("offset");
+                var lastShake = DynamicData.For(portrait).Get<Vector2>("lastShake");
 
-            layerSprite.Position = ((RollcallElement)portrait.Parent).Position + offset + lastShake;
-            layerSprite.Scale = portraitImage.Scale;
+                layerSprite.Position = ((RollcallElement)portrait.Parent).Position + offset + lastShake;
+                layerSprite.Scale = portraitImage.Scale;
+            }
+
+            if (Parent is VersusPlayerMatchResults result)
+            {
+                var portraitImage = DynamicData.For(result).Get<Image>("portrait");
+                layerSprite.Position = portraitImage.Position;
+            }
 
             // if (!this.joined)
             // {

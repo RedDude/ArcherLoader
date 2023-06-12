@@ -48,7 +48,13 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             {
                
                 AttachTo = attachToText == "join" || attachToText == "Join"
-                    || attachToText == "joined" || attachToText == "Joined" ? PortraitLayersAttachType.Joined : PortraitLayersAttachType.NotJoin,
+                    || attachToText == "joined" || attachToText == "Joined" ? PortraitLayersAttachType.Joined : 
+                    
+                    attachToText == "notJoin" || attachToText == "NotJoin"
+                                           || attachToText == "notJoined" || attachToText == "NotJoined" ? PortraitLayersAttachType.NotJoined :
+                    
+                    attachToText == "won" || attachToText == "Won" ? PortraitLayersAttachType.Won : PortraitLayersAttachType.Lose,
+                    
 
                 Sprite = xml.ChildText("Sprite", xml.GetAttribute("id")),
                 Position = xml.ChildPosition("Position", Vector2.Zero),

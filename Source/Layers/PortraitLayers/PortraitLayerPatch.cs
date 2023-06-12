@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using ArcherLoaderMod.Rainbow;
+using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
 using TowerFall;
 using ArcherPortrait = On.TowerFall.ArcherPortrait;
 using MainMenu = On.TowerFall.MainMenu;
 using RollcallElement = On.TowerFall.RollcallElement;
+using VersusPlayerMatchResults = On.TowerFall.VersusPlayerMatchResults;
 
 namespace ArcherLoaderMod.Source.Layers.PortraitLayers
 {
@@ -23,8 +26,8 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             ArcherPortrait.Leave += OnArcherPortraitOnLeave;
             ArcherPortrait.Update += OnArcherPortraitOnUpdate;
             MainMenu.DestroyRollcall += OnMainMenuOnDestroyRollcall;
-            RollcallElement.ctor += OnRollcallElementConstructor; 
-            Enabled = true;
+            RollcallElement.ctor += OnRollcallElementConstructor;
+            On.TowerFall.VersusPlayerMatchResults.ctor += OnVersusPlayerMatchResultsOnctor;
         }
 
         public static void Unload()
@@ -37,7 +40,8 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             ArcherPortrait.Leave -= OnArcherPortraitOnLeave;
             ArcherPortrait.Update -= OnArcherPortraitOnUpdate;
             MainMenu.DestroyRollcall -= OnMainMenuOnDestroyRollcall;
-            RollcallElement.ctor -= OnRollcallElementConstructor; 
+            RollcallElement.ctor -= OnRollcallElementConstructor;
+            VersusPlayerMatchResults.ctor -= OnVersusPlayerMatchResultsOnctor;
         }
 
         private static void OnRollcallElementConstructor(RollcallElement.orig_ctor orig, TowerFall.RollcallElement self, int index)
@@ -46,7 +50,7 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             var portrait = DynamicData.For(self).Get<TowerFall.ArcherPortrait>("portrait");
             var joined = DynamicData.For(portrait).Get<bool>("joined");
             CreateLayersComponents(portrait, portrait.CharacterIndex, portrait.AltSelect);
-            PortraitLayersManager.ShowAllLayersFromType(joined ? PortraitLayersAttachType.Joined : PortraitLayersAttachType.NotJoin, portrait);
+            PortraitLayersManager.ShowAllLayersFromType(joined ? PortraitLayersAttachType.Joined : PortraitLayersAttachType.NotJoined, portrait);
         }
 
         private static void OnMainMenuOnDestroyRollcall(MainMenu.orig_DestroyRollcall orig, TowerFall.MainMenu self)
@@ -89,7 +93,7 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             PortraitLayersManager.HideAllLayersFromPortrait(self);
             origSetCharacter(self, characterIndex, altSelect, moveDir);
             CreateLayersComponents(self, characterIndex, altSelect);
-            PortraitLayersManager.ShowAllLayersFromType(PortraitLayersAttachType.NotJoin, self);
+            PortraitLayersManager.ShowAllLayersFromType(PortraitLayersAttachType.NotJoined, self);
         }
 
         public static void CreateLayersComponents(TowerFall.ArcherPortrait archerPortrait, int characterIndex, ArcherData.ArcherTypes altSelect)
@@ -97,5 +101,22 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             var data = ArcherData.Get(characterIndex, altSelect);
             PortraitLayersManager.CreateLayersComponents(archerPortrait, data);
         }
+        
+        public static List<PortraitLayerSpriteComponent> CreateLayersComponents(Entity entity, int playerIndex)
+        {
+            var data = ArcherData.Get(TFGame.Characters[playerIndex], TFGame.AltSelect[playerIndex]);
+            return PortraitLayersManager.CreateLayersComponents(entity, data);
+        }
+        
+        private static void OnVersusPlayerMatchResultsOnctor(VersusPlayerMatchResults.orig_ctor orig, TowerFall.VersusPlayerMatchResults self, Session session, VersusMatchResults results, int playerIndex, Vector2 @from, Vector2 to, List<AwardInfo> awards)
+        {
+            orig(self, session, results, playerIndex, from, to, awards);
+            // var portrait = DynamicData.For(self).Get<TowerFall.ArcherPortrait>("portrait");
+            var won = DynamicData.For(self).Get<bool>("won");
+            var layers = CreateLayersComponents(self, playerIndex);
+            if(layers != null)
+                PortraitLayersManager.ShowAllLayersFromType(won ? PortraitLayersAttachType.Won : PortraitLayersAttachType.Lose, layers);
+        }
+
     }
 }

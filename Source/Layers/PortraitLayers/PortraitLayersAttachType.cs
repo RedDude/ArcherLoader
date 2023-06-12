@@ -3,6 +3,8 @@
     public enum PortraitLayersAttachType
     {
         Joined,
-        NotJoin,
+        NotJoined,
+        Won,
+        Lose
     }
 }

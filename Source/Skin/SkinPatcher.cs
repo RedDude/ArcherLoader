@@ -127,7 +127,7 @@ namespace ArcherLoaderMod.Skin
             {
                 PortraitLayersManager.HideAllLayersFromPortrait(archerPortrait);
                 PortraitLayersManager.CreateLayersComponents(archerPortrait, skinArcherData);
-                PortraitLayersManager.ShowAllLayersFromType(PortraitLayersAttachType.NotJoin, archerPortrait, skinArcherData);
+                PortraitLayersManager.ShowAllLayersFromType(PortraitLayersAttachType.NotJoined, archerPortrait, skinArcherData);
             }
 
             DynamicData.For(archerPortrait).Set("ArcherData", skinArcherData);
