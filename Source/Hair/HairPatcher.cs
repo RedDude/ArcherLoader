@@ -189,7 +189,7 @@ namespace ArcherLoaderMod.Hair
                 var color = hairInfo.Color;
                 if (hairInfo.Prismatic || hairInfo.Rainbow)
                 {
-                    color = RainbowManager.GetColor(Environment.TickCount, 0, hairInfo.PrismaticTime);
+                    color = RainbowManager.CurrentColor; //RainbowManager.GetColor(Environment.TickCount, 0, hairInfo.PrismaticTime);
                 }
                 else if (hairInfo.EndColor.A != 0 && !hairInfo.PrismaticEnd)
                 {
@@ -206,7 +206,7 @@ namespace ArcherLoaderMod.Hair
 
                 if (hairInfo.PrismaticEnd)
                 {
-                    var prismatic = RainbowManager.GetColor(Environment.TickCount, 0, hairInfo.PrismaticTime);
+                    var prismatic = RainbowManager.CurrentColor;// RainbowManager.GetColor(Environment.TickCount, 0, hairInfo.PrismaticTime);
                     color = index == links - 1 ? prismatic : hairInfo.Color;
                     if (hairInfo.Gradient)
                     {

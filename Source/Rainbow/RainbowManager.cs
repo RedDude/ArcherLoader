@@ -4,6 +4,8 @@ namespace ArcherLoaderMod.Rainbow
 {
     public class RainbowManager
     {
+        public static Color CurrentColor;
+        
         private static readonly Color[] PrismaticColors = new Color[6]
         {
             Color.Red,

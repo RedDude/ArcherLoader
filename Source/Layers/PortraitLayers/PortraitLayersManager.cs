@@ -110,7 +110,7 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             return true;
         }
              
-        public static void CreateLayersComponents(ArcherPortrait archerPortrait, ArcherData data)
+        public static void CreateSelectionLayersComponents(ArcherPortrait archerPortrait, ArcherData data)
         {
             var exist = Mod.ArcherCustomDataDict.TryGetValue(data, out var archerCustomData);
             List<PortraitLayerInfo> layerInfos = null;
@@ -164,7 +164,7 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
         }
         
         
-        public static List<PortraitLayerSpriteComponent> CreateLayersComponents(Entity entity, ArcherData data)
+        public static List<PortraitLayerSpriteComponent> CreateWonLoseLayersComponents(Entity entity, ArcherData data)
         {
             var exist = Mod.ArcherCustomDataDict.TryGetValue(data, out var archerCustomData);
             List<PortraitLayerInfo> layerInfos = null;
@@ -192,7 +192,6 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
                 var layer = new PortraitLayerSpriteComponent(portraitLayerInfo, data, true, false);
                 entity.Add(layer);
                 newLayers.Add(layer);
-                entity.Components.Remove(layer);
             }
 
             return newLayers;

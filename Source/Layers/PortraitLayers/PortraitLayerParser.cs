@@ -46,9 +46,8 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
                 
             var portraitLayerInfo = new PortraitLayerInfo
             {
-               
                 AttachTo = attachToText == "join" || attachToText == "Join"
-                    || attachToText == "joined" || attachToText == "Joined" ? PortraitLayersAttachType.Joined : 
+                                                  || attachToText == "joined" || attachToText == "Joined" ? PortraitLayersAttachType.Joined : 
                     
                     attachToText == "notJoin" || attachToText == "NotJoin"
                                            || attachToText == "notJoined" || attachToText == "NotJoined" ? PortraitLayersAttachType.NotJoined :

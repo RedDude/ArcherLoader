@@ -126,7 +126,7 @@ namespace ArcherLoaderMod.Skin
             if (PortraitLayerPatch.Enabled)
             {
                 PortraitLayersManager.HideAllLayersFromPortrait(archerPortrait);
-                PortraitLayersManager.CreateLayersComponents(archerPortrait, skinArcherData);
+                PortraitLayersManager.CreateSelectionLayersComponents(archerPortrait, skinArcherData);
                 PortraitLayersManager.ShowAllLayersFromType(PortraitLayersAttachType.NotJoined, archerPortrait, skinArcherData);
             }
 

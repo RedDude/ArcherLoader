@@ -27,7 +27,6 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
 
         public override void Added()
         {
-            var portrait = ((ArcherPortrait) Parent);
             layerSprite = TFGame.SpriteData.GetSpriteString(layerInfo.Sprite);
             layerSprite.Color = layerInfo.Color;
 
@@ -40,6 +39,8 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             }
 
             DynamicData.For(layerSprite).Set("Parent", Entity);
+            if(layerInfo.AttachTo == PortraitLayersAttachType.Won || layerInfo.AttachTo == PortraitLayersAttachType.Lose)
+                DynamicData.For(layerSprite).Set("Entity", Entity);
             base.Added();
         }
 
@@ -49,7 +50,7 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
         {
             if (layerInfo.IsRainbowColor)
             {
-                layerSprite.Color = RainbowManager.GetColor(Environment.TickCount);
+                layerSprite.Color = RainbowManager.CurrentColor;//RainbowManager.GetColor(Environment.TickCount);
             }
             base.Update();
         }
@@ -69,6 +70,7 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             if (Parent is VersusPlayerMatchResults result)
             {
                 var portraitImage = DynamicData.For(result).Get<Image>("portrait");
+                layerSprite.Origin = portraitImage.Origin;
                 layerSprite.Position = portraitImage.Position;
             }
 
