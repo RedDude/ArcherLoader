@@ -14,6 +14,9 @@
     <Content Include="Content/Atlas/**/*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Content/TeamBanners/**/*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Content/CustomArchers/**/*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -66,9 +69,5 @@
   <ItemGroup>
     <None Remove="Content\Atlas\**" />
     <None Remove="OldBeinpexVersion\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Source" />
   </ItemGroup>
 </Project>

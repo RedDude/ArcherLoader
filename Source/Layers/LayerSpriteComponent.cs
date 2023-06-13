@@ -44,12 +44,27 @@ namespace ArcherLoaderMod.Layers
                 lastHatState = player.HatState;
                 xml = TFGame.SpriteData.GetXML(attachedSpriteInfo);
                 layerSprite = TFGame.SpriteData.GetSpriteString(attachedSpriteInfo);
+                
+                if (layerInfo.IsTeamColor && player.Level.Session.MatchSettings.TeamMode)
+                {
+                    var matchVariants = player.Level.Session.MatchSettings.Variants;
+                    if (player.Allegiance != Allegiance.Neutral &&
+                        !matchVariants.GetCustomVariant("TeamOutline")[player.PlayerIndex])
+                    {
+                        layerSprite.Color = ArcherData.GetColorA(player.PlayerIndex, player.TeamColor);
+                    }
+                }
             }
-            else if (Parent is PlayerCorpse)
+            else if (Parent is PlayerCorpse corpse)
             {
                 attachedSpriteInfo = data.Corpse;
                 xml = TFGame.CorpseSpriteData.GetXML(attachedSpriteInfo);
                 layerSprite = TFGame.CorpseSpriteData.GetSpriteString(attachedSpriteInfo);
+                
+                if (layerInfo.IsTeamColor && corpse.Level.Session.MatchSettings.TeamMode)
+                {
+                    layerSprite.Color = ArcherData.GetColorA(corpse.PlayerIndex, corpse.TeamColor);
+                }
             }
 
             var atlas = TFGame.Atlas[layerInfo.Sprite];
@@ -58,15 +73,17 @@ namespace ArcherLoaderMod.Layers
                 layerSprite.SwapSubtexture(atlas);
             }
 
-            layerSprite.Color = layerInfo.Color;
             layerSprite.Visible = attachedSprite.Visible;
-
-            if (layerInfo.IsColorA || layerInfo.IsColorB)
+            if (!layerInfo.IsTeamColor)
             {
-                if (layerInfo.IsColorA)
-                    layerSprite.Color = data.ColorA;
-                if (layerInfo.IsColorB)
-                    layerSprite.Color = data.ColorB;
+                layerSprite.Color = layerInfo.Color;
+                if (layerInfo.IsColorA || layerInfo.IsColorB)
+                {
+                    if (layerInfo.IsColorA)
+                        layerSprite.Color = data.ColorA;
+                    if (layerInfo.IsColorB)
+                        layerSprite.Color = data.ColorB;    
+                }
             }
 
             DynamicData.For(layerSprite).Set("Entity", Entity);
@@ -142,6 +159,15 @@ namespace ArcherLoaderMod.Layers
                     case Player.HatStates.Normal when !layerInfo.IsHat:
                     case Player.HatStates.Crown when !layerInfo.IsCrown:
                     case Player.HatStates.NoHat when !layerInfo.IsNotHat:
+                        layerSprite.Visible = false;
+                        return;
+                }
+                
+                switch (player.Allegiance)
+                {
+                    case Allegiance.Neutral when !layerInfo.IsNeutral:
+                    case Allegiance.Blue when !layerInfo.IsTeamBlue:
+                    case Allegiance.Red when !layerInfo.IsTeamRed:
                         layerSprite.Visible = false;
                         return;
                 }

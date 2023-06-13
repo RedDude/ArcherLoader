@@ -1,4 +1,6 @@
-﻿using ArcherLoaderMod.Skin;
+﻿using System.Collections.Generic;
+using ArcherLoaderMod.Layer;
+using ArcherLoaderMod.Skin;
 using Monocle;
 using MonoMod.Utils;
 using TowerFall;
@@ -48,8 +50,19 @@ namespace ArcherLoaderMod.Layers
             var skinData = SkinPatcher.GetSkinCharacter(self.PlayerIndex, data);
                 
             var exist = Mod.ArcherCustomDataDict.TryGetValue(skinData, out var archerCustomData);
-            if (!exist) return;
-            var layerInfos = archerCustomData.LayerInfos;
+            List<LayerInfo> layerInfos = null;
+            if (!exist)
+            {
+                var xml = Mod.FindSpriteDataXmlOnCategories("Layer", data);
+                if (xml != null)
+                {
+                    layerInfos = LayerParser.Parse(xml);
+                }
+            }
+            else
+            {
+                layerInfos = archerCustomData.LayerInfos;
+            }
             if (layerInfos == null) return;
             
             foreach (var layerInfo in layerInfos)
@@ -83,10 +96,21 @@ namespace ArcherLoaderMod.Layers
             orig(self);
             
             var exist = Mod.ArcherCustomDataDict.TryGetValue(self.ArcherData, out var archerCustomData);
-            if (!exist) return;
-            var layerInfos = archerCustomData.LayerInfos;
+            List<LayerInfo> layerInfos = null;
+            if (!exist)
+            {
+                var xml = Mod.FindSpriteDataXmlOnCategories("layer", self.ArcherData);
+                if (xml != null)
+                {
+                    layerInfos = LayerParser.Parse(xml);
+                }
+            }
+            else
+            {
+                layerInfos = archerCustomData.LayerInfos;
+            }
             if (layerInfos == null) return;
-            
+
             headSprite = DynamicData.For(self).Get<Sprite<string>>("headSprite");
             bodySprite = DynamicData.For(self).Get<Sprite<string>>("bodySprite");
             bowSprite = DynamicData.For(self).Get<Sprite<string>>("bowSprite");

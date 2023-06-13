@@ -197,7 +197,7 @@ namespace ArcherLoaderMod
       IsGemColorA = xml.ChildBool(nameof(IsGemColorA), false);
       IsGemColorB = xml.ChildBool(nameof(IsGemColorB), false);
       IsPrismaticGem = xml.ChildBool(nameof(IsPrismaticGem), false);
-      
+      PrismaticArcher = xml.ChildBool(nameof(PrismaticArcher), false);
       parsed = true;
     }
 
@@ -569,6 +569,7 @@ namespace ArcherLoaderMod
       IsGemColorA = xml.ChildBool(nameof(IsGemColorA), false);
       IsGemColorB = xml.ChildBool(nameof(IsGemColorB), false);
       IsPrismaticGem = xml.ChildBool(nameof(IsPrismaticGem), false);
+      PrismaticArcher = xml.ChildBool(nameof(PrismaticArcher), false);
     }
     
     public void HandleSFX(XmlElement xml, ArcherData archerData = null)

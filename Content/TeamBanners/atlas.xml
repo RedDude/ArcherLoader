@@ -1,0 +1,6 @@
+<TextureAtlas imagePath="output/atlas/png">
+  <SubTexture name="teamA2x_color" x="66" y="0" width="66" height="80"/>
+  <SubTexture name="teamA_color" x="33" y="80" width="33" height="40"/>
+  <SubTexture name="teamB2x_color" x="0" y="0" width="66" height="80"/>
+  <SubTexture name="teamB_color" x="0" y="80" width="33" height="40"/>
+</TextureAtlas>

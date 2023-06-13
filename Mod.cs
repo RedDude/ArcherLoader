@@ -10,9 +10,11 @@ using ArcherLoaderMod.Hair;
 using ArcherLoaderMod.Layers;
 using ArcherLoaderMod.Particles;
 using ArcherLoaderMod.Patch;
+using ArcherLoaderMod.Rainbow;
 using ArcherLoaderMod.Skin;
 using ArcherLoaderMod.Source.Layers.PortraitLayers;
 using ArcherLoaderMod.Taunt;
+using ArcherLoaderMod.Teams;
 using ArcherLoaderMod.Wings;
 using FortRise;
 using Monocle;
@@ -49,6 +51,8 @@ namespace ArcherLoaderMod
         public static void LoadContent(FortContent fortContent)
         {
             TauntVariant.LoadContent(fortContent);
+            TeamsPatcher.LoadContent(fortContent);
+
             Content = fortContent;
         }
         
@@ -76,7 +80,9 @@ namespace ArcherLoaderMod
             SkinPatcher.Load();
             LayerPatch.Load();
             PortraitLayerPatch.Load();
-
+            PrismaticPatcher.Load();
+            TeamsPatcher.Load();
+            
             HandleQuickStart();
         }
 
@@ -533,6 +539,8 @@ namespace ArcherLoaderMod
             SkinPatcher.Unload();
             LayerPatch.Unload();
             PortraitLayerPatch.Unload();
+            PrismaticPatcher.Unload();
+            TeamsPatcher.Unload();
         }
 
         public static void OnVariantsRegister(MatchVariants variants, bool noPerPlayer = false)
