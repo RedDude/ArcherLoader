@@ -207,8 +207,17 @@ namespace ArcherLoaderMod.Particles
                         // canPadParticlesField?.SetValue(player, false);
                         //
                         // if (canPadParticles && player.Level.OnInterval(1))
-                        player.Level.Particles.Emit(particles, info.Amount, positionEntity,
-                            new Vector2(info.PositionRange.X, info.PositionRange.Y));
+                        if (info.Foreground)
+                        {
+                            player.Level.ParticlesFG.Emit(particles, info.Amount, positionEntity,
+                                new Vector2(info.PositionRange.X, info.PositionRange.Y));
+                        }
+                        else
+                        {
+                            player.Level.Particles.Emit(particles, info.Amount, positionEntity,
+                                new Vector2(info.PositionRange.X, info.PositionRange.Y));
+                        }
+                   
                         // player.Level.Particles.Emit(Particles.JumpPadTrail, Calc.Random.Range(this.Position, Vector2.One * info.PositionRange.Y));
                         return;
                     }
@@ -216,8 +225,18 @@ namespace ArcherLoaderMod.Particles
                     if (info.OnJump)
                     {
                         // if (canPadParticles && player.Level.OnInterval(1))
-                        player.Level.Particles.Emit(particles, info.Amount, positionEntity,
-                            new Vector2(info.PositionRange.X, info.PositionRange.Y));
+                        if (info.Foreground)
+                        {
+                            player.Level.ParticlesFG.Emit(particles, info.Amount, positionEntity,
+                                new Vector2(info.PositionRange.X, info.PositionRange.Y));
+                        }
+                        else
+                        {
+                            player.Level.Particles.Emit(particles, info.Amount, positionEntity,
+                                new Vector2(info.PositionRange.X, info.PositionRange.Y));
+                        }
+
+                    
                         return;
                     }
                 }
@@ -227,8 +246,15 @@ namespace ArcherLoaderMod.Particles
             // {
             //     // canPadParticles = false;
             // }
+            if (info.Foreground)
+            {
+                player.Level.ParticlesFG.Emit(particles, info.Amount, positionEntity, new Vector2(info.PositionRange.X, info.PositionRange.Y)); 
+            }
+            else
+            {
+                player.Level.Particles.Emit(particles, info.Amount, positionEntity, new Vector2(info.PositionRange.X, info.PositionRange.Y)); 
+            }
 
-            player.Level.Particles.Emit(particles, info.Amount, positionEntity, new Vector2(info.PositionRange.X, info.PositionRange.Y)); 
             base.Update();
         }
 

@@ -27,7 +27,9 @@ namespace ArcherLoaderMod.Particles
         public Vector2 PositionRange;
         public int Interval;
         public int StartDelay;
-          
+        
+        public bool Foreground;
+        
         public bool IsOnInvisible;
         
         public bool IsOnGround;

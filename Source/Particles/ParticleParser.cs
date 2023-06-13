@@ -58,6 +58,8 @@ namespace ArcherLoaderMod.Particles
                 Interval = xml.ChildInt("Interval", 3),
                 StartDelay = xml.ChildInt("StartDelay", 0),
 
+                Foreground = xml.ChildBool("Foreground", false),
+
                 IsOnInvisible = xml.ChildBool("IsOnInvisible", false),
 
                 IsAiming = xml.ChildBool("IsAiming", true),
