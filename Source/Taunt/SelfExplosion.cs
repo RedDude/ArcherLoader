@@ -8,35 +8,21 @@ namespace ArcherLoaderMod.Taunt
 {
   public class SelfExplosion : Explosion
   {
-    public const float PUSH_SPEED = 5f;
-    private const int RADIUS = 45;
-    public const int RADIUS_SQ = 2025;
-    private const int SIZE = 90;
-    private const int HIT_RADIUS_SQ = 1225;
-    private const int CORE_RADIUS_SQ = 100;
-    private const int SPRITES_ACROSS = 9;
-    private const int SPRITES_CENTER = 4;
-    private const float SPRITES_SEP = 9.333f;
-    private const int SUPER_RADIUS = 75;
-    private const int SUPER_RADIUS_SQ = 5625;
-    private const int SUPER_SIZE = 150;
-    private const int SUPER_WIDTH = 30;
-    private const int SUPER_HIT_RADIUS_SQ = 3025;
-    private const int SUPER_CORE_RADIUS_SQ = 100;
-    private const int SUPER_SPRITES_ACROSS = 15;
-    private const int SUPER_SPRITES_CENTER = 7;
+    // Removed all of constants in here because they're unnecessary and is not used anyway.
+    // Revert it back if it's causing an issue.
     private List<Counter> counters;
     private List<Sprite<int>> sprites;
     private Alarm alarm;
     private MoonGlassBlock inMoonglass;
     private bool super;
-    public int PlayerIndex;
-    public uint Kills;
-
     public bool killOthers = false;
     public bool SelfProtection = false;
 
-    public static bool Spawn(
+    /* NEW */
+    public new int PlayerIndex;
+    public new uint Kills;
+
+    public static new bool Spawn(
       Level level,
       Vector2 at,
       int playerIndex,
@@ -62,7 +48,7 @@ namespace ArcherLoaderMod.Taunt
       return true;
     }
 
-    public static Explosion SpawnGet(
+    public static new Explosion SpawnGet(
       Level level,
       Vector2 at,
       int playerIndex,
@@ -90,7 +76,7 @@ namespace ArcherLoaderMod.Taunt
       return explosion;
     }
 
-    public static bool SpawnSuper(Level level, Vector2 at, int playerIndex, bool plusOneKill)
+    public static new bool SpawnSuper(Level level, Vector2 at, int playerIndex, bool plusOneKill)
     {
       if (level == null)
         return false;
