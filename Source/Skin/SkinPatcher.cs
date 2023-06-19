@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using ArcherLoaderMod.Source.Layers.PortraitLayers;
+using FortRise;
 using Monocle;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
@@ -121,7 +122,14 @@ namespace ArcherLoaderMod.Skin
             
             var wiggler = DynamicData.For(archerPortrait).Get<Wiggler>("wiggler");
             var gemWiggler = DynamicData.For(archerPortrait).Get<Wiggler>("gemWiggler");
-            portrait.SwapSubtexture(skinArcherData.Portraits.NotJoined);
+            
+            Microsoft.Xna.Framework.Rectangle? rect = 
+                EightPlayerImport.LaunchedEightPlayer != null ? EightPlayerImport.LaunchedEightPlayer() 
+                ? skinArcherData.Portraits.NotJoined.GetAbsoluteClipRect(new Microsoft.Xna.Framework.Rectangle(0, 10, 60, 60))
+                : null 
+                : null;
+            
+            portrait.SwapSubtexture(skinArcherData.Portraits.NotJoined, rect);
             
             if (PortraitLayerPatch.Enabled)
             {
