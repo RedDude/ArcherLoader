@@ -359,7 +359,7 @@ namespace ArcherLoaderMod
             Atlas atlas = null;
             if (File.Exists($"{pathWithContentPrefix}atlas.xml") && File.Exists($"{pathWithContentPrefix}atlas.png"))
             {
-                atlas = content.CreateAtlas($"{path}atlas.xml", $"{path}atlas.png", contentAccess);
+                atlas = content.CreateAtlas($"{path}atlas.xml", $"{path}atlas.png", true, contentAccess);
                 customAtlasList.Add(atlas);
             }
             
@@ -402,7 +402,7 @@ namespace ArcherLoaderMod
             if (File.Exists($"{pathWithContentPrefix}menuAtlas.xml") &&
                 File.Exists($"{pathWithContentPrefix}menuAtlas.png"))
             {
-                atlasArcherMenu = content.CreateAtlas($"{path}menuAtlas.xml", $"{path}menuAtlas.png", contentAccess);
+                atlasArcherMenu = content.CreateAtlas($"{path}menuAtlas.xml", $"{path}menuAtlas.png", true, contentAccess);
                 customAtlasList.Add(atlasArcherMenu);
                 var spriteDataMenu = content.CreateSpriteData($"{path}menuSpriteData.xml", atlasArcherMenu, contentAccess);
                 customSpriteDataList.Add(spriteDataMenu);
