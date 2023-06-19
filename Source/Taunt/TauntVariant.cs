@@ -41,10 +41,7 @@ namespace ArcherLoaderMod.Taunt
                 Description = "HUMILIATE YOUR FOES (DUCK + RIGHT STICK DOWN or V key)"
                 // , Header = "RULES"
             };
-            var passThroughTeam = variants.AddVariant(
-                "Taunt", info, VariantFlags.PerPlayer, noPerPlayer);
-
-            variants.CreateCustomLinks(passThroughTeam); //, variants.TeamRevive);
+            variants.AddVariant("Taunt", info, VariantFlags.PerPlayer, noPerPlayer);
         }
 
         public static void LoadContent(FortContent fortContent)
