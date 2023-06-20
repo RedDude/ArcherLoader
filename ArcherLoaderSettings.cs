@@ -16,25 +16,25 @@ namespace ArcherLoaderMod
         [SettingsName("Quick Start")]
         public bool QuickStart;
         
-        [SettingsName("Quick Start Player 1 Character index (careful)"), SettingsNumber(-1)]
+        [SettingsName("P1 Quick index"), SettingsNumber(-1)]
         public int Player1CharacterIndex;
         
-        [SettingsName("Quick Start Player 2 Character index (careful)"), SettingsNumber(-1)]
+        [SettingsName("P2 Quick index"), SettingsNumber(-1)]
         public int Player2CharacterIndex = -1;
         
-        [SettingsName("Quick Start Player 3 Character index (careful)"), SettingsNumber(-1)]
+        [SettingsName("P3 Quick index"), SettingsNumber(-1)]
         public int Player3CharacterIndex;
 
-        [SettingsName("Taunt too much causes self-combustion")]
+        [SettingsName("Over-Taunt Combustion")]
         public bool TauntTooExplode;
 
-        [SettingsName("Right stick to the Right while Idle (Or L key)")]
+        [SettingsName("Idle R Stick + Right Drops Hat (Or L key)")]
         public bool DropHat = true;
         
-        [SettingsName("Right stick to the Left while Aim an arrow (Or K key)")]
+        [SettingsName("Aim + R Stick + Left selfkills (Or K key)")]
         public bool SelfKill = false;
 
-        [SettingsName("Hide Arrows while Taunt")]
+        [SettingsName("Taunt Hide Arrows")]
         public bool HideArrowsWhileTaunt = true;
         
         [SettingsName("Disable Particles")]
@@ -45,6 +45,9 @@ namespace ArcherLoaderMod
 
         [SettingsName("Disable Layers")]
         public bool DisableLayers = false;
+        
+        [SettingsName("Disable Team Colors")]
+        public bool DisableTeamColors = true;
         
         public bool DisableCustomGhosts = false;
         

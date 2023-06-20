@@ -59,7 +59,8 @@ namespace ArcherLoaderMod.Particles
         public Vector2 DuckingOffset;
         public Vector2 HatOffset;
         public Vector2 CrownOffset;
-    
+        public bool IsDodgeCooldown;
+
         public ParticlesInfo()
         {
         }

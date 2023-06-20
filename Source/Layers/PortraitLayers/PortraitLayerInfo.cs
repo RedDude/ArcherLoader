@@ -12,6 +12,7 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
         public Color Color;
         public bool ToScale;
         public Vector2 FloatAnimation;
+        public int FloatAnimationRate;
         public Vector2 ScaleAnimation;
         public Vector2 RotationAnimation;
         

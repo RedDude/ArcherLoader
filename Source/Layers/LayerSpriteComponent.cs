@@ -19,6 +19,7 @@ namespace ArcherLoaderMod.Layers
         private PropertyInfo drawSelfPropertyInfo;
         private XmlElement xml;
 
+        public bool teamColorSetted = false;
         private Player.HatStates lastHatState;
         public LayerSpriteComponent(LayerInfo layerInfo, Sprite<string> attachedSprite, ArcherCustomData data,
             bool active, bool visible) : base(active, visible)
@@ -52,6 +53,7 @@ namespace ArcherLoaderMod.Layers
                         !matchVariants.GetCustomVariant("TeamOutline")[player.PlayerIndex])
                     {
                         layerSprite.Color = ArcherData.GetColorA(player.PlayerIndex, player.TeamColor);
+                        teamColorSetted = true;
                     }
                 }
             }
@@ -74,7 +76,7 @@ namespace ArcherLoaderMod.Layers
             }
 
             layerSprite.Visible = attachedSprite.Visible;
-            if (!layerInfo.IsTeamColor)
+            if (!teamColorSetted)
             {
                 layerSprite.Color = layerInfo.Color;
                 if (layerInfo.IsColorA || layerInfo.IsColorB)

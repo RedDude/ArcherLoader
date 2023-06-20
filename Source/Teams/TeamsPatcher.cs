@@ -36,6 +36,9 @@ namespace ArcherLoaderMod.Teams
         
         public static void Load()
         {
+            if(FortEntrance.Settings.DisableTeamColors)
+                return;
+
             On.TowerFall.TeamBanner.ctor += OnTeamBannerOnctor;
             On.TowerFall.TeamBanner.Render += OnTeamBannerOnRender;
             On.TowerFall.TeamSelector.Update += OnTeamSelectorOnUpdate;

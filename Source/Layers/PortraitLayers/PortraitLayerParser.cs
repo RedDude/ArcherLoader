@@ -63,6 +63,7 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
                 ScaleAnimation = xml.ChildPosition("ScaleAnimation", Vector2.Zero),
                 RotationAnimation = xml.ChildPosition("RotationAnimation", Vector2.Zero),
                 FloatAnimation = xml.ChildPosition("FloatAnimation", Vector2.Zero),
+                FloatAnimationRate = xml.ChildInt("FloatAnimationRate", 0),
                 
                 IsColorA = xml.ChildBool("IsColorA", false),
                 IsColorB = xml.ChildBool("IsColorB", false),

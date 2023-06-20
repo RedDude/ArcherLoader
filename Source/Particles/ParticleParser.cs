@@ -85,7 +85,10 @@ namespace ArcherLoaderMod.Particles
                 CrownOffset = xml.ChildPosition("CrownOffset", new Vector2(0f, 0f)),
 
                 OnJump = xml.ChildBool("OnJump", false),
-                ReplaceJump = xml.ChildBool("ReplaceJump", false)
+                ReplaceJump = xml.ChildBool("ReplaceJump", false),
+                
+                IsDodgeCooldown = xml.ChildBool("IsDodgeCooldown", false)
+                
             };
 
             return particlesInfo;

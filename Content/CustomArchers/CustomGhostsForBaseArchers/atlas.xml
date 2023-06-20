@@ -1,0 +1,21 @@
+<TextureAtlas imagePath="">
+  <SubTexture name="green/ghost" x="0" y="0" width="144" height="100"/>
+  <SubTexture name="greenAlt/ghost" x="144" y="0" width="144" height="100"/>
+  <SubTexture name="blue/ghost" x="0" y="100" width="144" height="100"/>
+  <SubTexture name="blueAlt/ghost" x="144" y="100" width="144" height="100"/>
+  <SubTexture name="pink/ghost" x="0" y="200" width="144" height="100"/>
+  <SubTexture name="pinkAlt/ghost" x="144" y="200" width="144" height="100"/>
+  <SubTexture name="orange/ghost" x="0" y="300" width="144" height="100"/>
+  <SubTexture name="orangeAlt/ghost" x="144" y="300" width="144" height="100"/>
+  <SubTexture name="white/ghost" x="0" y="400" width="144" height="100"/>
+  <SubTexture name="whiteAlt/ghost" x="144" y="400" width="144" height="100"/>
+  <SubTexture name="yellow/ghost" x="0" y="500" width="144" height="100"/>
+  <SubTexture name="yellowAlt/ghost" x="144" y="500" width="144" height="100"/>
+  <SubTexture name="cyan/ghost" x="0" y="600" width="144" height="100"/>
+  <SubTexture name="cyanAlt/ghost" x="144" y="600" width="144" height="100"/>
+  <SubTexture name="purple/ghost" x="0" y="700" width="144" height="100"/>
+  <SubTexture name="purpleAlt/ghost" x="144" y="700" width="144" height="100"/>
+  <SubTexture name="red/ghost" x="0" y="800" width="144" height="100"/>
+  <SubTexture name="redAlt/ghost" x="144" y="800" width="144" height="100"/>
+  <SubTexture name="kyle/ghost" x="0" y="900" width="144" height="100"/>
+</TextureAtlas>

@@ -18,6 +18,18 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
         public Sprite<string> layerSprite;
         private ArcherData archerData;
 
+        public float Rate = (float) Math.PI / 64f;
+        private float SelectionLerp = 1f;
+
+        public float Value { get; private set; }
+
+        public float ValueOverTwo { get; private set; }
+
+        public float TwoValue { get; private set; }
+
+        public float Counter { get; private set; }
+
+        
         public PortraitLayerSpriteComponent(PortraitLayerInfo layerInfo, ArcherData archerData, bool active,
             bool visible) : base(active, visible)
         {
@@ -29,6 +41,8 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
         {
             layerSprite = TFGame.SpriteData.GetSpriteString(layerInfo.Sprite);
             layerSprite.Color = layerInfo.Color;
+
+            SetFrames(layerInfo.FloatAnimationRate);
 
             if (layerInfo.IsColorA || layerInfo.IsColorB)
             {
@@ -52,9 +66,18 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             {
                 layerSprite.Color = RainbowManager.CurrentColor;//RainbowManager.GetColor(Environment.TickCount);
             }
+            
+            this.Counter = (float) (((double) this.Counter + (double) this.Rate * (double) Engine.TimeMult) % 25.1327419281006);
+            this.Value = (float) Math.Sin((double) this.Counter);
+            this.ValueOverTwo = (float) Math.Sin((double) this.Counter / 2.0);
+            this.TwoValue = (float) Math.Sin((double) this.Counter * 2.0);
+            
             base.Update();
         }
 
+        public void SetFrames(int framesPerWave) => this.Rate = 6.283185f / (float) framesPerWave;
+
+        
         public override void Render()
         {
             if (Parent is ArcherPortrait portrait)
@@ -63,7 +86,11 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
                 var offset = DynamicData.For(portrait).Get<Vector2>("offset");
                 var lastShake = DynamicData.For(portrait).Get<Vector2>("lastShake");
 
-                layerSprite.Position = ((RollcallElement)portrait.Parent).Position + offset + lastShake;
+                SelectionLerp = Math.Min(1f, SelectionLerp + 0.1f * Engine.TimeMult);
+                float AddYMult = 1;
+                var ImageY = (float)Math.Round(MathHelper.Lerp(0f,  AddYMult - Value * layerInfo.FloatAnimation.Y, SelectionLerp));
+                
+                layerSprite.Position = ((RollcallElement)portrait.Parent).Position + offset + lastShake + layerInfo.Position + new Vector2(0, ImageY );
                 layerSprite.Scale = portraitImage.Scale;
             }
 

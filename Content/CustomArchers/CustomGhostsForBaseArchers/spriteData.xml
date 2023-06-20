@@ -1,0 +1,402 @@
+<SpriteData>
+
+  <!-- Green Archer -->
+
+  <sprite_string id="greenGhost" For="GREEN" Category="ghost">
+    <Texture>green/ghost</Texture>
+    <!-- <Color>9539a8</Color>  -->
+    
+    <!-- not being used in the time been -->
+    <FrameWidth>18</FrameWidth>
+    <FrameHeight>25</FrameHeight>
+    <OriginX>13</OriginX>
+    <OriginY>12</OriginY>
+    <Animations>
+      <Anim id="spawn" loop="False" delay=".05" frames="8,9,10,11,12,13,14,15,16,17,18" />
+      <Anim id="normal" delay=".08" frames="0,1,2,3" />
+      <Anim id="happy" delay=".1" frames="4,5,6,7,4,5,6,7,4,5,6,7" />
+      <Anim id="dodge" loop="False" delay=".08" frames="27,28,29,30" />
+      <Anim id="death" loop="False" delay=".1" frames="21,22,23,24,25,26" />
+      <Anim id="despawn" loop="False" delay=".05" frames="18,17,16,15,14,13,12,11,10,9,8" />
+    </Animations>
+  </sprite_string>
+
+  <!-- Green Alt Archer -->
+
+  <sprite_string id="greenAltGhost" For="GREEN_ALT" Category="ghost">
+    <Texture>greenAlt/ghost</Texture>
+    <!-- <Color>9539a8</Color>  -->
+
+    <!-- not being used in the time been -->
+    <FrameWidth>18</FrameWidth>
+    <FrameHeight>25</FrameHeight>
+    <OriginX>13</OriginX>
+    <OriginY>12</OriginY>
+    <Animations>
+      <Anim id="spawn" loop="False" delay=".05" frames="8,9,10,11,12,13,14,15,16,17,18" />
+      <Anim id="normal" delay=".08" frames="0,1,2,3" />
+      <Anim id="happy" delay=".1" frames="4,5,6,7,4,5,6,7,4,5,6,7" />
+      <Anim id="dodge" loop="False" delay=".08" frames="27,28,29,30" />
+      <Anim id="death" loop="False" delay=".1" frames="21,22,23,24,25,26" />
+      <Anim id="despawn" loop="False" delay=".05" frames="18,17,16,15,14,13,12,11,10,9,8" />
+    </Animations>
+  </sprite_string>
+
+  <!-- Blue Archer -->
+
+  <sprite_string id="blueGhost" For="BLUE" Category="ghost">
+    <Texture>blue/ghost</Texture>
+    <!-- <Color>9539a8</Color>  -->
+
+    <!-- not being used in the time been -->
+    <FrameWidth>18</FrameWidth>
+    <FrameHeight>25</FrameHeight>
+    <OriginX>13</OriginX>
+    <OriginY>12</OriginY>
+    <Animations>
+      <Anim id="spawn" loop="False" delay=".05" frames="8,9,10,11,12,13,14,15,16,17,18" />
+      <Anim id="normal" delay=".08" frames="0,1,2,3" />
+      <Anim id="happy" delay=".1" frames="4,5,6,7,4,5,6,7,4,5,6,7" />
+      <Anim id="dodge" loop="False" delay=".08" frames="27,28,29,30" />
+      <Anim id="death" loop="False" delay=".1" frames="21,22,23,24,25,26" />
+      <Anim id="despawn" loop="False" delay=".05" frames="18,17,16,15,14,13,12,11,10,9,8" />
+    </Animations>
+  </sprite_string>
+
+  <!-- Blue Alt Archer -->
+
+  <sprite_string id="blueAltGhost" For="BLUE_ALT" Category="ghost">
+    <Texture>blueAlt/ghost</Texture>
+    <!-- <Color>9539a8</Color>  -->
+
+    <!-- not being used in the time been -->
+    <FrameWidth>18</FrameWidth>
+    <FrameHeight>25</FrameHeight>
+    <OriginX>13</OriginX>
+    <OriginY>12</OriginY>
+    <Animations>
+      <Anim id="spawn" loop="False" delay=".05" frames="8,9,10,11,12,13,14,15,16,17,18" />
+      <Anim id="normal" delay=".08" frames="0,1,2,3" />
+      <Anim id="happy" delay=".1" frames="4,5,6,7,4,5,6,7,4,5,6,7" />
+      <Anim id="dodge" loop="False" delay=".08" frames="27,28,29,30" />
+      <Anim id="death" loop="False" delay=".1" frames="21,22,23,24,25,26" />
+      <Anim id="despawn" loop="False" delay=".05" frames="18,17,16,15,14,13,12,11,10,9,8" />
+    </Animations>
+  </sprite_string>
+
+  <!-- Pink Archer -->
+
+  <sprite_string id="pinkGhost" For="PINK" Category="ghost">
+    <Texture>pink/ghost</Texture>
+    <!-- <Color>9539a8</Color>  -->
+
+    <!-- not being used in the time been -->
+    <FrameWidth>18</FrameWidth>
+    <FrameHeight>25</FrameHeight>
+    <OriginX>13</OriginX>
+    <OriginY>12</OriginY>
+    <Animations>
+      <Anim id="spawn" loop="False" delay=".05" frames="8,9,10,11,12,13,14,15,16,17,18" />
+      <Anim id="normal" delay=".08" frames="0,1,2,3" />
+      <Anim id="happy" delay=".1" frames="4,5,6,7,4,5,6,7,4,5,6,7" />
+      <Anim id="dodge" loop="False" delay=".08" frames="27,28,29,30" />
+      <Anim id="death" loop="False" delay=".1" frames="21,22,23,24,25,26" />
+      <Anim id="despawn" loop="False" delay=".05" frames="18,17,16,15,14,13,12,11,10,9,8" />
+    </Animations>
+  </sprite_string>
+
+  <!-- Pink Alt Archer -->
+
+  <sprite_string id="pinkAltGhost" For="PINK_ALT" Category="ghost">
+    <Texture>pinkAlt/ghost</Texture>
+    <!-- <Color>9539a8</Color>  -->
+
+    <!-- not being used in the time been -->
+    <FrameWidth>18</FrameWidth>
+    <FrameHeight>25</FrameHeight>
+    <OriginX>13</OriginX>
+    <OriginY>12</OriginY>
+    <Animations>
+      <Anim id="spawn" loop="False" delay=".05" frames="8,9,10,11,12,13,14,15,16,17,18" />
+      <Anim id="normal" delay=".08" frames="0,1,2,3" />
+      <Anim id="happy" delay=".1" frames="4,5,6,7,4,5,6,7,4,5,6,7" />
+      <Anim id="dodge" loop="False" delay=".08" frames="27,28,29,30" />
+      <Anim id="death" loop="False" delay=".1" frames="21,22,23,24,25,26" />
+      <Anim id="despawn" loop="False" delay=".05" frames="18,17,16,15,14,13,12,11,10,9,8" />
+    </Animations>
+  </sprite_string>
+
+  <!-- Kyle Pulver -->
+
+  <sprite_string id="kyleGhost" For="PINK_SECRET" Category="ghost">
+    <Texture>kyle/ghost</Texture>
+    <!-- <Color>9539a8</Color>  -->
+
+    <!-- not being used in the time been -->
+    <FrameWidth>18</FrameWidth>
+    <FrameHeight>25</FrameHeight>
+    <OriginX>13</OriginX>
+    <OriginY>12</OriginY>
+    <Animations>
+      <Anim id="spawn" loop="False" delay=".05" frames="8,9,10,11,12,13,14,15,16,17,18" />
+      <Anim id="normal" delay=".08" frames="0,1,2,3" />
+      <Anim id="happy" delay=".1" frames="4,5,6,7,4,5,6,7,4,5,6,7" />
+      <Anim id="dodge" loop="False" delay=".08" frames="27,28,29,30" />
+      <Anim id="death" loop="False" delay=".1" frames="21,22,23,24,25,26" />
+      <Anim id="despawn" loop="False" delay=".05" frames="18,17,16,15,14,13,12,11,10,9,8" />
+    </Animations>
+  </sprite_string>
+
+  <!-- Orange Archer -->
+
+  <sprite_string id="orangeGhost" For="ORANGE" Category="ghost">
+    <Texture>orange/ghost</Texture>
+    <!-- <Color>9539a8</Color>  -->
+
+    <!-- not being used in the time been -->
+    <FrameWidth>18</FrameWidth>
+    <FrameHeight>25</FrameHeight>
+    <OriginX>13</OriginX>
+    <OriginY>12</OriginY>
+    <Animations>
+      <Anim id="spawn" loop="False" delay=".05" frames="8,9,10,11,12,13,14,15,16,17,18" />
+      <Anim id="normal" delay=".08" frames="0,1,2,3" />
+      <Anim id="happy" delay=".1" frames="4,5,6,7,4,5,6,7,4,5,6,7" />
+      <Anim id="dodge" loop="False" delay=".08" frames="27,28,29,30" />
+      <Anim id="death" loop="False" delay=".1" frames="21,22,23,24,25,26" />
+      <Anim id="despawn" loop="False" delay=".05" frames="18,17,16,15,14,13,12,11,10,9,8" />
+    </Animations>
+  </sprite_string>
+
+  <!-- Orange Alt Archer -->
+
+  <sprite_string id="orangeAltGhost" For="ORANGE_ALT" Category="ghost">
+    <Texture>orangeAlt/ghost</Texture>
+    <!-- <Color>9539a8</Color>  -->
+
+    <!-- not being used in the time been -->
+    <FrameWidth>18</FrameWidth>
+    <FrameHeight>25</FrameHeight>
+    <OriginX>13</OriginX>
+    <OriginY>12</OriginY>
+    <Animations>
+      <Anim id="spawn" loop="False" delay=".05" frames="8,9,10,11,12,13,14,15,16,17,18" />
+      <Anim id="normal" delay=".08" frames="0,1,2,3" />
+      <Anim id="happy" delay=".1" frames="4,5,6,7,4,5,6,7,4,5,6,7" />
+      <Anim id="dodge" loop="False" delay=".08" frames="27,28,29,30" />
+      <Anim id="death" loop="False" delay=".1" frames="21,22,23,24,25,26" />
+      <Anim id="despawn" loop="False" delay=".05" frames="18,17,16,15,14,13,12,11,10,9,8" />
+    </Animations>
+  </sprite_string>
+
+  <!-- White Archer -->
+
+  <sprite_string id="whiteGhost" For="WHITE" Category="ghost">
+    <Texture>white/ghost</Texture>
+    <!-- <Color>9539a8</Color>  -->
+
+    <!-- not being used in the time been -->
+    <FrameWidth>18</FrameWidth>
+    <FrameHeight>25</FrameHeight>
+    <OriginX>13</OriginX>
+    <OriginY>12</OriginY>
+    <Animations>
+      <Anim id="spawn" loop="False" delay=".05" frames="8,9,10,11,12,13,14,15,16,17,18" />
+      <Anim id="normal" delay=".08" frames="0,1,2,3" />
+      <Anim id="happy" delay=".1" frames="4,5,6,7,4,5,6,7,4,5,6,7" />
+      <Anim id="dodge" loop="False" delay=".08" frames="27,28,29,30" />
+      <Anim id="death" loop="False" delay=".1" frames="21,22,23,24,25,26" />
+      <Anim id="despawn" loop="False" delay=".05" frames="18,17,16,15,14,13,12,11,10,9,8" />
+    </Animations>
+  </sprite_string>
+
+  <!-- White Alt Archer -->
+
+  <sprite_string id="whiteAltGhost" For="WHITE_ALT" Category="ghost">
+    <Texture>whiteAlt/ghost</Texture>
+    <!-- <Color>9539a8</Color>  -->
+
+    <!-- not being used in the time been -->
+    <FrameWidth>18</FrameWidth>
+    <FrameHeight>25</FrameHeight>
+    <OriginX>13</OriginX>
+    <OriginY>12</OriginY>
+    <Animations>
+      <Anim id="spawn" loop="False" delay=".05" frames="8,9,10,11,12,13,14,15,16,17,18" />
+      <Anim id="normal" delay=".08" frames="0,1,2,3" />
+      <Anim id="happy" delay=".1" frames="4,5,6,7,4,5,6,7,4,5,6,7" />
+      <Anim id="dodge" loop="False" delay=".08" frames="27,28,29,30" />
+      <Anim id="death" loop="False" delay=".1" frames="21,22,23,24,25,26" />
+      <Anim id="despawn" loop="False" delay=".05" frames="18,17,16,15,14,13,12,11,10,9,8" />
+    </Animations>
+  </sprite_string>
+
+  <!-- Yellow Archer -->
+
+  <sprite_string id="yellowGhost" For="YELLOW" Category="ghost">
+    <Texture>yellow/ghost</Texture>
+    <!-- <Color>9539a8</Color>  -->
+
+    <!-- not being used in the time been -->
+    <FrameWidth>18</FrameWidth>
+    <FrameHeight>25</FrameHeight>
+    <OriginX>13</OriginX>
+    <OriginY>12</OriginY>
+    <Animations>
+      <Anim id="spawn" loop="False" delay=".05" frames="8,9,10,11,12,13,14,15,16,17,18" />
+      <Anim id="normal" delay=".08" frames="0,1,2,3" />
+      <Anim id="happy" delay=".1" frames="4,5,6,7,4,5,6,7,4,5,6,7" />
+      <Anim id="dodge" loop="False" delay=".08" frames="27,28,29,30" />
+      <Anim id="death" loop="False" delay=".1" frames="21,22,23,24,25,26" />
+      <Anim id="despawn" loop="False" delay=".05" frames="18,17,16,15,14,13,12,11,10,9,8" />
+    </Animations>
+  </sprite_string>
+
+  <!-- Yellow Alt Archer -->
+
+  <sprite_string id="yellowAltGhost" For="YELLOW_ALT" Category="ghost">
+    <Texture>yellowAlt/ghost</Texture>
+    <!-- <Color>9539a8</Color>  -->
+
+    <!-- not being used in the time been -->
+    <FrameWidth>18</FrameWidth>
+    <FrameHeight>25</FrameHeight>
+    <OriginX>13</OriginX>
+    <OriginY>12</OriginY>
+    <Animations>
+      <Anim id="spawn" loop="False" delay=".05" frames="8,9,10,11,12,13,14,15,16,17,18" />
+      <Anim id="normal" delay=".08" frames="0,1,2,3" />
+      <Anim id="happy" delay=".1" frames="4,5,6,7,4,5,6,7,4,5,6,7" />
+      <Anim id="dodge" loop="False" delay=".08" frames="27,28,29,30" />
+      <Anim id="death" loop="False" delay=".1" frames="21,22,23,24,25,26" />
+      <Anim id="despawn" loop="False" delay=".05" frames="18,17,16,15,14,13,12,11,10,9,8" />
+    </Animations>
+  </sprite_string>
+
+  <!-- Cyan Archer -->
+
+  <sprite_string id="cyanGhost" For="CYAN" Category="ghost">
+    <Texture>cyan/ghost</Texture>
+    <!-- <Color>9539a8</Color>  -->
+
+    <!-- not being used in the time been -->
+    <FrameWidth>18</FrameWidth>
+    <FrameHeight>25</FrameHeight>
+    <OriginX>13</OriginX>
+    <OriginY>12</OriginY>
+    <Animations>
+      <Anim id="spawn" loop="False" delay=".05" frames="8,9,10,11,12,13,14,15,16,17,18" />
+      <Anim id="normal" delay=".08" frames="0,1,2,3" />
+      <Anim id="happy" delay=".1" frames="4,5,6,7,4,5,6,7,4,5,6,7" />
+      <Anim id="dodge" loop="False" delay=".08" frames="27,28,29,30" />
+      <Anim id="death" loop="False" delay=".1" frames="21,22,23,24,25,26" />
+      <Anim id="despawn" loop="False" delay=".05" frames="18,17,16,15,14,13,12,11,10,9,8" />
+    </Animations>
+  </sprite_string>
+
+  <!-- Cyan Alt Archer -->
+
+  <sprite_string id="cyanAltGhost" For="CYAN_ALT" Category="ghost">
+    <Texture>cyanAlt/ghost</Texture>
+    <!-- <Color>9539a8</Color>  -->
+
+    <!-- not being used in the time been -->
+    <FrameWidth>18</FrameWidth>
+    <FrameHeight>25</FrameHeight>
+    <OriginX>13</OriginX>
+    <OriginY>12</OriginY>
+    <Animations>
+      <Anim id="spawn" loop="False" delay=".05" frames="8,9,10,11,12,13,14,15,16,17,18" />
+      <Anim id="normal" delay=".08" frames="0,1,2,3" />
+      <Anim id="happy" delay=".1" frames="4,5,6,7,4,5,6,7,4,5,6,7" />
+      <Anim id="dodge" loop="False" delay=".08" frames="27,28,29,30" />
+      <Anim id="death" loop="False" delay=".1" frames="21,22,23,24,25,26" />
+      <Anim id="despawn" loop="False" delay=".05" frames="18,17,16,15,14,13,12,11,10,9,8" />
+    </Animations>
+  </sprite_string>
+
+  <!-- Purple Archer -->
+
+  <sprite_string id="purpleGhost" For="PURPLE" Category="ghost">
+    <Texture>purple/ghost</Texture>
+    <!-- <Color>9539a8</Color>  -->
+
+    <!-- not being used in the time been -->
+    <FrameWidth>18</FrameWidth>
+    <FrameHeight>25</FrameHeight>
+    <OriginX>13</OriginX>
+    <OriginY>12</OriginY>
+    <Animations>
+      <Anim id="spawn" loop="False" delay=".05" frames="8,9,10,11,12,13,14,15,16,17,18" />
+      <Anim id="normal" delay=".08" frames="0,1,2,3" />
+      <Anim id="happy" delay=".1" frames="4,5,6,7,4,5,6,7,4,5,6,7" />
+      <Anim id="dodge" loop="False" delay=".08" frames="27,28,29,30" />
+      <Anim id="death" loop="False" delay=".1" frames="21,22,23,24,25,26" />
+      <Anim id="despawn" loop="False" delay=".05" frames="18,17,16,15,14,13,12,11,10,9,8" />
+    </Animations>
+  </sprite_string>
+
+  <!-- Purple Alt Archer -->
+
+  <sprite_string id="purpleAltGhost" For="PURPLE_ALT" Category="ghost">
+    <Texture>purpleAlt/ghost</Texture>
+    <!-- <Color>9539a8</Color>  -->
+
+    <!-- not being used in the time been -->
+    <FrameWidth>18</FrameWidth>
+    <FrameHeight>25</FrameHeight>
+    <OriginX>13</OriginX>
+    <OriginY>12</OriginY>
+    <Animations>
+      <Anim id="spawn" loop="False" delay=".05" frames="8,9,10,11,12,13,14,15,16,17,18" />
+      <Anim id="normal" delay=".08" frames="0,1,2,3" />
+      <Anim id="happy" delay=".1" frames="4,5,6,7,4,5,6,7,4,5,6,7" />
+      <Anim id="dodge" loop="False" delay=".08" frames="27,28,29,30" />
+      <Anim id="death" loop="False" delay=".1" frames="21,22,23,24,25,26" />
+      <Anim id="despawn" loop="False" delay=".05" frames="18,17,16,15,14,13,12,11,10,9,8" />
+    </Animations>
+  </sprite_string>
+
+  <!-- Red Archer -->
+
+  <sprite_string id="redGhost" For="RED" Category="ghost">
+    <Texture>red/ghost</Texture>
+    <!-- <Color>9539a8</Color>  -->
+
+    <!-- not being used in the time been -->
+    <FrameWidth>18</FrameWidth>
+    <FrameHeight>25</FrameHeight>
+    <OriginX>13</OriginX>
+    <OriginY>12</OriginY>
+    <Animations>
+      <Anim id="spawn" loop="False" delay=".05" frames="8,9,10,11,12,13,14,15,16,17,18" />
+      <Anim id="normal" delay=".08" frames="0,1,2,3" />
+      <Anim id="happy" delay=".1" frames="4,5,6,7,4,5,6,7,4,5,6,7" />
+      <Anim id="dodge" loop="False" delay=".08" frames="27,28,29,30" />
+      <Anim id="death" loop="False" delay=".1" frames="21,22,23,24,25,26" />
+      <Anim id="despawn" loop="False" delay=".05" frames="18,17,16,15,14,13,12,11,10,9,8" />
+    </Animations>
+  </sprite_string>
+
+  <!-- Red Alt Archer -->
+
+  <sprite_string id="redAltGhost" For="RED_ALT" Category="ghost">
+    <Texture>redAlt/ghost</Texture>
+    <!-- <Color>9539a8</Color>  -->
+
+    <!-- not being used in the time been -->
+    <FrameWidth>18</FrameWidth>
+    <FrameHeight>25</FrameHeight>
+    <OriginX>13</OriginX>
+    <OriginY>12</OriginY>
+    <Animations>
+      <Anim id="spawn" loop="False" delay=".05" frames="8,9,10,11,12,13,14,15,16,17,18" />
+      <Anim id="normal" delay=".08" frames="0,1,2,3" />
+      <Anim id="happy" delay=".1" frames="4,5,6,7,4,5,6,7,4,5,6,7" />
+      <Anim id="dodge" loop="False" delay=".08" frames="27,28,29,30" />
+      <Anim id="death" loop="False" delay=".1" frames="21,22,23,24,25,26" />
+      <Anim id="despawn" loop="False" delay=".05" frames="18,17,16,15,14,13,12,11,10,9,8" />
+    </Animations>
+  </sprite_string>
+
+</SpriteData>

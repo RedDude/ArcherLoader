@@ -62,7 +62,10 @@ namespace ArcherLoaderMod.Rainbow
             
             foreach (var gem in gems)
             {
-                gem.Color = RainbowManager.CurrentColor;
+                if (archerCustomData.PrismaticArcher)
+                {
+                    gem.Color = RainbowManager.CurrentColor;
+                }
                 if (archerCustomData.IsGemColorA)
                 {
                     gem.Color = archerCustomData.ColorA;
