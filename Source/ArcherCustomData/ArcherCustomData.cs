@@ -358,7 +358,9 @@ namespace ArcherLoaderMod
       ad.Portraits.Win = Portraits.Win;
       ad.Portraits.Lose = Portraits.Lose;
 
-      if (TFGame.Players.Length > 4)
+      var playerAmount = EightPlayerImport.LaunchedEightPlayer != null ? EightPlayerImport.LaunchedEightPlayer() ? 8 : 4 : 4;
+
+      if (TFGame.Players.Length > playerAmount)
       {
         ad.Portraits.NotJoined.Rect.Y += EightPlayersNotJoinedPortraitTopOffset;
         // ad.Portraits.NotJoined.Rect.Height = 60;
@@ -418,7 +420,9 @@ namespace ArcherLoaderMod
       Portraits.Win = archerData.Portraits.Win;
       Portraits.Lose = archerData.Portraits.Lose;
 
-      if (TFGame.Players.Length > 4)
+      var playerAmount = EightPlayerImport.LaunchedEightPlayer != null ? EightPlayerImport.LaunchedEightPlayer() ? 8 : 4 : 4;
+
+      if (TFGame.Players.Length > playerAmount)
       {
         Portraits.NotJoined.Rect.Y += EightPlayersNotJoinedPortraitTopOffset;
         Portraits.NotJoined.Rect.Height = 60;

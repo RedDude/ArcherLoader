@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using ArcherLoaderMod.Source.Layers.PortraitLayers;
+using FortRise;
 using Monocle;
 using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
@@ -117,11 +118,20 @@ namespace ArcherLoaderMod.Skin
         private static void SetCharacterSkinPortrait(ArcherPortrait archerPortrait, ArcherData skinArcherData,
             ArcherCustomData archerCustomData)
         {
-            var portrait = DynamicData.For(archerPortrait).Get<Image>("portrait");
+            var archerPortraitDynamic = DynamicData.For(archerPortrait);
+            var offset = archerPortraitDynamic.Get<Microsoft.Xna.Framework.Vector2>("offset");
+            var portrait = archerPortraitDynamic.Get<Image>("portrait");
             
-            var wiggler = DynamicData.For(archerPortrait).Get<Wiggler>("wiggler");
-            var gemWiggler = DynamicData.For(archerPortrait).Get<Wiggler>("gemWiggler");
-            portrait.SwapSubtexture(skinArcherData.Portraits.NotJoined);
+            var wiggler = archerPortraitDynamic.Get<Wiggler>("wiggler");
+            var gemWiggler = archerPortraitDynamic.Get<Wiggler>("gemWiggler");
+            
+            Microsoft.Xna.Framework.Rectangle? rect = 
+                EightPlayerImport.LaunchedEightPlayer != null ? EightPlayerImport.LaunchedEightPlayer() 
+                ? skinArcherData.Portraits.NotJoined.GetAbsoluteClipRect(new Microsoft.Xna.Framework.Rectangle(0, 10, 60, 60))
+                : null 
+                : null;
+            
+            portrait.SwapSubtexture(skinArcherData.Portraits.NotJoined, rect);
             
             if (PortraitLayerPatch.Enabled)
             {
@@ -130,9 +140,18 @@ namespace ArcherLoaderMod.Skin
                 PortraitLayersManager.ShowAllLayersFromType(PortraitLayersAttachType.NotJoined, archerPortrait, skinArcherData);
             }
 
-            DynamicData.For(archerPortrait).Set("ArcherData", skinArcherData);
-            initGem?.Invoke(archerPortrait, new object[] { });
-            var gem = DynamicData.For(archerPortrait).Get<Sprite<string>>("gem");
+            archerPortraitDynamic.Set("ArcherData", skinArcherData);
+            var gem = archerPortraitDynamic.Get<Sprite<string>>("gem");
+            if (gem != null)
+            {
+                archerPortrait.Remove(gem);
+            }
+            gem = TFGame.MenuSpriteData.GetSpriteString(archerPortrait.ArcherData.Gems.Menu);
+            gem.Position = offset + new Microsoft.Xna.Framework.Vector2(0f, 30f);
+            gem.Visible = false;
+            archerPortrait.Add(gem);
+            archerPortraitDynamic.Set("gem", gem);
+
             if (archerCustomData != null)
             {
                 if (archerCustomData.IsGemColorA)
