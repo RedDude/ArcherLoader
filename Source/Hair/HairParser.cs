@@ -44,7 +44,7 @@ namespace ArcherLoaderMod.Hair
       {
         data.HairInfo.DuckingOffset = element.ChildPosition("DuckingOffset");
       }
-      catch (Exception e)
+      catch 
       {
         data.HairInfo.DuckingOffset = new Vector2(0, element.ChildInt("DuckingOffset", 0));
       }
