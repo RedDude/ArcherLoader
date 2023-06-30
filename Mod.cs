@@ -144,7 +144,7 @@ namespace ArcherLoaderMod
 
             allCustomArchers.AddRange(LoadContentAtPath($"{Calc.LOADPATH}{_contentCustomArchersPath}", ContentAccess.Content));
             var contentPath = Content.GetContentPath("");
-            allCustomArchers.AddRange(LoadContentAtPath($"/{_customArchersPath}", ContentAccess.ModContent));
+            allCustomArchers.AddRange(LoadContentAtPath(contentPath+$"/{_customArchersPath}", ContentAccess.ModContent));
             allCustomArchers.AddRange(LoadContentAtPath($"{_customArchersPath}", ContentAccess.Root));
             allCustomArchers.AddRange(LoadContentAtPath(contentPath.Replace("/Content", "")+$"/{_customArchersPath}", ContentAccess.Root));
             // allCustomArchers.AddRange(LoadContentAtPath(Content.GetContentPath("").Replace("/Content", ""), ContentAccess.Root));
@@ -354,7 +354,13 @@ namespace ArcherLoaderMod
             var archerName = directory.Split(Convert.ToChar(_separator)).Last();
             var path = $"{directory}{_separator}".Replace($"Content{_separator}", $"");
 
+            if (contentAccess == ContentAccess.ModContent) 
+            {
+                path = path.Replace(Content.GetContentPath(), "");
+            }
+
             var pathWithContentPrefix = addContentPrefix ? Calc.LOADPATH + path : path;
+
             
             Atlas atlas = null;
             if (File.Exists($"{pathWithContentPrefix}atlas.xml") && File.Exists($"{pathWithContentPrefix}atlas.png"))
