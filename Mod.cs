@@ -354,7 +354,13 @@ namespace ArcherLoaderMod
             var archerName = directory.Split(Convert.ToChar(_separator)).Last();
             var path = $"{directory}{_separator}".Replace($"Content{_separator}", $"");
 
+            if (contentAccess == ContentAccess.ModContent) 
+            {
+                path = path.Replace(Content.GetContentPath(), "");
+            }
+
             var pathWithContentPrefix = addContentPrefix ? Calc.LOADPATH + path : path;
+
             
             Atlas atlas = null;
             if (File.Exists($"{pathWithContentPrefix}atlas.xml") && File.Exists($"{pathWithContentPrefix}atlas.png"))
