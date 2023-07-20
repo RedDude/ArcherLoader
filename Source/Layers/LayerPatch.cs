@@ -74,7 +74,7 @@ namespace ArcherLoaderMod.Layers
                 
                 corpseSprite = DynamicData.For(self).Get<Sprite<string>>("sprite");
                 
-                var layer = new LayerSpriteComponent(layerInfo, corpseSprite, archerCustomData, true, true);
+                var layer = new LayerSpriteComponent(layerInfo, corpseSprite, archerCustomData, data, true, true);
                 self.Add(layer);
                 
                 // for (var i = 0; i < self.Components.Count; i++)
@@ -124,6 +124,8 @@ namespace ArcherLoaderMod.Layers
                 }
             }
             
+            var data = ArcherData.Get(TFGame.Characters[self.PlayerIndex], TFGame.AltSelect[self.PlayerIndex]);
+
             foreach (var layerInfo in layerInfos)
             {
                 if(layerInfo.AttachTo == LayerAttachType.Corpse)
@@ -132,7 +134,8 @@ namespace ArcherLoaderMod.Layers
                 var attachedSprite = layerInfo.AttachTo == LayerAttachType.Body ? bodySprite :
                     layerInfo.AttachTo == LayerAttachType.Head ? headSprite : bowSprite;
                 
-                var layer = new LayerSpriteComponent(layerInfo, attachedSprite, archerCustomData, true, true);
+                
+                var layer = new LayerSpriteComponent(layerInfo, attachedSprite, archerCustomData, data, true, true);
                 self.Add(layer);
                 if (layerInfo.AttachTo == LayerAttachType.Body) continue;
                 self.Components.Remove(layer);
