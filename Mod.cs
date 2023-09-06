@@ -127,8 +127,10 @@ namespace ArcherLoaderMod
                 
                 // TFGame.Characters[1] = 2;
 
-                var matchSettings = new MatchSettings(GameData.VersusTowers[0].GetLevelSystem(), Modes.LevelTest,
+                var matchSettings = new MatchSettings(GameData.VersusTowers[GameData.VersusTowers.Count-1].GetLevelSystem(), Modes.LevelTest,
                     MatchSettings.MatchLengths.Standard);
+                // matchSettings.Variants.GetCustomVariant("ReaperChalice").Value = true;
+                
                 (matchSettings.LevelSystem as VersusLevelSystem).StartOnLevel(-1);
                 new Session(matchSettings).StartGame();
 
@@ -317,8 +319,8 @@ namespace ArcherLoaderMod
             
             foreach (var directory in customArchersFound)
             {
-                if(directory.EndsWith("Content"))
-                    continue;
+                // if(directory.EndsWith("Content"))
+                //     continue;
                 
                 allCustomArchers.AddRange(LoadContent(Content, directory, contentAccess, contentAccess == ContentAccess.Content));
             }
@@ -353,10 +355,12 @@ namespace ArcherLoaderMod
 
             var archerName = directory.Split(Convert.ToChar(_separator)).Last();
             var path = $"{directory}{_separator}".Replace($"Content{_separator}", $"");
-
+            var pathModContentFolder = false;
             if (contentAccess == ContentAccess.ModContent) 
             {
                 path = path.Replace(Content.GetContentPath(), "");
+                path = Content.GetContentPath() + path;
+                contentAccess = ContentAccess.Root;
             }
 
             var pathWithContentPrefix = addContentPrefix ? Calc.LOADPATH + path : path;
@@ -405,18 +409,19 @@ namespace ArcherLoaderMod
             }
         
             var atlasArcherMenu = atlas;
+            SpriteData spriteDataMenu = spriteData;
             if (File.Exists($"{pathWithContentPrefix}menuAtlas.xml") &&
                 File.Exists($"{pathWithContentPrefix}menuAtlas.png"))
             {
                 atlasArcherMenu = content.CreateAtlas($"{path}menuAtlas.xml", $"{path}menuAtlas.png", true, contentAccess);
                 customAtlasList.Add(atlasArcherMenu);
-                var spriteDataMenu = content.CreateSpriteData($"{path}menuSpriteData.xml", atlasArcherMenu, contentAccess);
+                spriteDataMenu = content.CreateSpriteData($"{path}menuSpriteData.xml", atlasArcherMenu, contentAccess);
                 customSpriteDataList.Add(spriteDataMenu);
             }
 
             var filePath = $"{pathWithContentPrefix}archerData.xml";
             if (!File.Exists(filePath)) return newArchers;
-            var newArchersFromPack = InitializeArcherData(pathWithContentPrefix, atlas, atlasArcherMenu, archerName.ToUpper());
+            var newArchersFromPack = InitializeArcherData(pathWithContentPrefix, atlas, atlasArcherMenu, spriteData, spriteDataMenu, archerName.ToUpper());
             return newArchersFromPack;
         }
 
@@ -528,11 +533,11 @@ namespace ArcherLoaderMod
             return -1;
         }
         
-        public static List<ArcherCustomData> InitializeArcherData(string path, Atlas atlasArcher, Atlas atlasArcherMenu,
+        public static List<ArcherCustomData> InitializeArcherData(string path, Atlas atlasArcher, Atlas atlasArcherMenu, SpriteData spriteData, SpriteData spriteDataMenu,
             string archerName)
         {
             // Console.WriteLine("InitializeArcherData");
-            return ArcherCustomData.Initialize(path, atlasArcher, atlasArcherMenu, archerName);
+            return ArcherCustomManager.Initialize(path, atlasArcher, atlasArcherMenu, spriteData, spriteDataMenu, archerName, true);
         }
         
         public static void Unload()
