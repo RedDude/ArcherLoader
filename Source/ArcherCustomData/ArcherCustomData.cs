@@ -51,6 +51,10 @@ namespace ArcherLoaderMod
     public Atlas atlas;
     public Atlas menuAtlas;
 
+    public SpriteData spriteData;
+    public SpriteData menuSpriteData;
+
+    
     public int EightPlayersNotJoinedPortraitTopOffset = 0;
     public int EightPlayersJoinedPortraitTopOffset = 0;
     

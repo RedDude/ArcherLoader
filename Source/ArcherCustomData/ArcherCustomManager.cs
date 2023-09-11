@@ -8,30 +8,40 @@ namespace ArcherLoaderMod
 {
   public class ArcherCustomManager
   {
-    private static ArcherCustomDataValidator archerCustomDataValidator;
+    public static ArcherCustomDataValidator validator;
 
-    public static List<ArcherCustomData> Initialize(string path, Atlas atlas, Atlas menuAtlas, SpriteData spriteData, SpriteData spriteDataMenu, string archerId, bool validate = false)
+    public static List<ArcherCustomData> Initialize(string path, Atlas atlas, Atlas menuAtlas, SpriteData spriteData, SpriteData menuSpriteData, string archerId, bool validate = false)
     {
       var filePath = $"{path}archerData.xml";
       var xmlDocument = Calc.LoadXML(filePath);
       var archers = xmlDocument["Archers"];
       var archersArray = new List<ArcherCustomData>();
-      archerCustomDataValidator ??= new ArcherCustomDataValidator();
+      validator ??= new ArcherCustomDataValidator();
       
       if (archers == null)
       {
+        var xml = xmlDocument.DocumentElement;
         if (validate)
         {
-          var errors = archerCustomDataValidator.Validate(xmlDocument.DocumentElement, atlas, menuAtlas, spriteData, spriteDataMenu, GetArcherType(xmlDocument.DocumentElement.Name), archerId, path);
-          if (PrintErrors(archerId, errors, xmlDocument.DocumentElement.Name))
+          var errors = validator.Validate(xml, atlas, menuAtlas, spriteData, menuSpriteData, GetArcherType(xml?.Name), archerId, path);
+          if (ArcherCustomDataValidator.PrintErrors(archerId, errors, xml?.Name, xml?["Name0"]?.InnerText, xml?["Name1"]?.InnerText))
             return archersArray;
-          
-          Console.WriteLine(archerId +" is Valid");
         }
         
-        var archerCustomData = HandleArcher(path, atlas, menuAtlas, archerId, xmlDocument.DocumentElement);
+        var archerCustomData = HandleArcher(path, atlas, menuAtlas, archerId, xml);
         if (archerCustomData == null) return archersArray;
+        
         archersArray.Add(archerCustomData);
+        archerCustomData.Name0 = xml.ChildText("Name0", "");
+        archerCustomData.Name1 = xml.ChildText("Name1", "");
+        
+        // if (xml.Name == "AltArcher" || xml.Name == "SecretArcher")
+        // {
+        //   archerCustomData.originalName = archerId;
+        // }
+        archerCustomData.spriteData = spriteData;
+        archerCustomData.menuSpriteData = menuSpriteData;
+        
         return archersArray;
       }
 
@@ -39,43 +49,32 @@ namespace ArcherLoaderMod
       {
         if (!(childNode is XmlElement)) continue;
         var xml = childNode as XmlElement;
-        
-        if (validate)
+
+        if (validate && xml.Name == "Archer")
         {
-          var errors = archerCustomDataValidator.Validate(xml, atlas, menuAtlas, spriteData, spriteDataMenu, GetArcherType(xml.Name), archerId, path);
-          if (PrintErrors(archerId, errors, xml.Name))
+          var errors = validator.Validate(xml, atlas, menuAtlas, spriteData, menuSpriteData, GetArcherType(xml.Name), archerId, path);
+          if (ArcherCustomDataValidator.PrintErrors(archerId, errors, xml.Name, xml["Name0"]?.InnerText, xml["Name1"]?.InnerText))
             continue;
-          
-          Console.WriteLine(archerId +" is Valid");
         }
 
         var archerCustomData = HandleArcher(path, atlas, menuAtlas, archerId, xml, false);
         if (archerCustomData == null) continue;
 
-        if (xml.Name == "AltArcher" || xml.Name == "SecretArcher")
+        if (archerCustomData.ArcherType == ArcherData.ArcherTypes.Alt || archerCustomData.ArcherType == ArcherData.ArcherTypes.Secret)
         {
           archerCustomData.originalName = archerId;
-          archerCustomData.Name0 = xml.ChildText("Name0", "");
-          archerCustomData.Name1 = xml.ChildText("Name1", "");
         }
 
-        archersArray.Add(archerCustomData);
+        archerCustomData.Name0 = xml.ChildText("Name0", "");
+        archerCustomData.Name1 = xml.ChildText("Name1", "");
 
+        archerCustomData.spriteData = spriteData;
+        archerCustomData.menuSpriteData = menuSpriteData;
+        
+        archersArray.Add(archerCustomData);
       }
 
       return archersArray;
-    }
-
-    private static bool PrintErrors(string archerId, List<string> errors, string type)
-    {
-      if (errors.Count <= 0) return false;
-      Console.WriteLine($"{archerId} custom {type} has the following errors:");
-      foreach (var error in errors)
-      {
-        Console.WriteLine(error);
-      }
-
-      return true;
     }
 
     private static ArcherCustomData HandleArcher(string path, Atlas atlas, Atlas menuAtlas, string archerId,
@@ -96,8 +95,10 @@ namespace ArcherLoaderMod
           var forAttribute = Mod.GetForAttribute(xml);
           if (string.IsNullOrEmpty(forAttribute) && awarnFor)
           {
-            Console.WriteLine(
-              $"Alt Archers '{archerId}' skipped: need the a 'for' attribute on ArcherData.xml to know each archer this alt is for.");
+            ArcherCustomDataValidator.PrintLineWithColor(
+              $"Alt Archers '{archerId}' ({xml["Name0"]?.InnerText} {xml["Name1"]?.InnerText}) skipped: need the 'for' attribute on ArcherData.xml to know each archer this alt is for.",
+              ConsoleColor.Red);
+            
             return null;
           }
 
@@ -124,8 +125,10 @@ namespace ArcherLoaderMod
           var forAttribute = Mod.GetForAttribute(xml);
           if (string.IsNullOrEmpty(forAttribute) && awarnFor)
           {
-            Console.WriteLine(
-              $"Secret Archer '{archerId}' skipped: need the a 'for' attribute on ArcherData.xml to know each archer this secret is for.");
+            ArcherCustomDataValidator.PrintLineWithColor(
+              $"Secret Archer '{archerId}' ({xml["Name0"]?.InnerText} {xml["Name1"]?.InnerText}) skipped: need the a 'for' attribute on ArcherData.xml to know each archer this secret is for.",
+              ConsoleColor.Red);
+            
             return null;
           }
 
@@ -146,8 +149,10 @@ namespace ArcherLoaderMod
           var forAttribute = Mod.GetForAttribute(xml);
           if (string.IsNullOrEmpty(forAttribute) && awarnFor)
           {
-            Console.WriteLine(
-              $"Skin Archer '{archerId}' skipped: need the a 'for' attribute on ArcherData.xml to know each archer this skin is for.");
+            ArcherCustomDataValidator.PrintLineWithColor(
+              $"Skin Archer '{archerId}' ({xml["Name0"]?.InnerText} {xml["Name1"]?.InnerText}) skipped: need the 'for' attribute on ArcherData.xml to specify the archer this skin is for.",
+              ConsoleColor.Red);
+
             return null;
           }
 
@@ -161,9 +166,14 @@ namespace ArcherLoaderMod
       }
       catch (Exception e)
       {
-        Console.WriteLine($"{archerId} custom {xml.Name} exception:" + e.Message);
-        var errors = archerCustomDataValidator.Validate(xml, atlas, menuAtlas, null, null, GetArcherType(xml.Name), archerId, path);
-        PrintErrors(archerId, errors, xml.Name);
+        ArcherCustomDataValidator.PrintLineWithColor(
+          $"{archerId} custom {xml.Name} exception:" + e.Message,
+          ConsoleColor.Red);
+        
+        var errors = validator.Validate(xml, atlas, menuAtlas, null, null, GetArcherType(xml.Name), archerId, path);
+        ArcherCustomDataValidator.PrintErrors(archerId, errors, xml.Name, 
+          xml["Name0"]?.InnerText,
+          xml["Name1"]?.InnerText);
         return null;
       }
 

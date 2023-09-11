@@ -31,6 +31,7 @@ namespace ArcherLoaderMod
 
         public static List<SpriteData> customSpriteDataList = new ();
         public static List<SpriteData> cachedCustomSpriteDataList = new();
+        public static Dictionary<SpriteData, string> customSpriteDataPath = new();
         
         public static Dictionary<string, List<CustomSpriteDataInfo>> customSpriteDataCategoryDict = new();
         
@@ -59,7 +60,7 @@ namespace ArcherLoaderMod
         
         public static void Load()
         {
-            Console.WriteLine("Custom Archer Loader is here!");
+            // Console.WriteLine("Custom Archer Loader is here!");
             typeof(EightPlayerImport).ModInterop();
             
             _separator = Path.DirectorySeparatorChar.ToString();
@@ -234,8 +235,10 @@ namespace ArcherLoaderMod
                     var altOriginal = allCustomArchers.Find(a => a.ID == originalName);
                     if (altOriginal != null)
                     {
-                        Console.WriteLine(
-                            $"Secret Archer '{secretArcherData.ID}' skipped: {originalName} is alt and cannot have a secret");
+                        ArcherCustomDataValidator.PrintLineWithColor(
+                            $"Secret Archer '{secretArcherData.ID}' ({secretArcherData.xmlData["Name0"]?.InnerText} {secretArcherData.xmlData["Name1"]?.InnerText}) skipped: {originalName} is alt and cannot have a secret",
+                            ConsoleColor.Red);
+                        
                         // originalName = altOriginal.originalName;
                         continue;
                     }
@@ -245,10 +248,30 @@ namespace ArcherLoaderMod
 
                 if (!indexDict.ContainsKey(originalName) && baseArchersIndex == -1)
                 {
-                    Console.WriteLine($"Secret Archer '{secretArcherData.ID}' skipped: {originalName} not found");
+                    ArcherCustomDataValidator.PrintLineWithColor(
+                        $"Secret Archer '{secretArcherData.ID}' ({secretArcherData.xmlData["Name0"]?.InnerText} {secretArcherData.xmlData["Name1"]?.InnerText}) skipped: {originalName} not found",
+                        ConsoleColor.Red);
+
                     continue;
                 }
 
+                if (FortEntrance.Settings.Validate)
+                {
+                    var errors =
+                        ArcherCustomManager.validator.Validate(
+                            secretArcherData.xmlData, 
+                            secretArcherData.atlas, 
+                            secretArcherData.menuAtlas, 
+                            secretArcherData.spriteData, 
+                            secretArcherData.menuSpriteData, 
+                            ArcherCustomManager.GetArcherType(secretArcherData.xmlData.Name), 
+                            secretArcherData.ID, 
+                            secretArcherData.FolderPath);
+                    if (ArcherCustomDataValidator.PrintErrors(secretArcherData.ID, errors, secretArcherData.xmlData.Name, secretArcherData.xmlData["Name0"]?.InnerText, secretArcherData.xmlData["Name1"]?.InnerText))
+                        continue;
+
+                }
+       
                 var originalIndex = baseArchersIndex == -1 ? indexDict[originalName] : baseArchersIndex;
                 if (originalIndex != -1)
                 {
@@ -263,7 +286,10 @@ namespace ArcherLoaderMod
                 var original = newNormalCustom.Find(a => a.ID == originalName);
                 if (original == null)
                 {
-                    Console.WriteLine($"Secret Archer '{secretArcherData.ID}' skipped: {originalName} not found");
+                    ArcherCustomDataValidator.PrintLineWithColor(
+                        $"Secret Archer '{secretArcherData.ID}' ({secretArcherData.xmlData["Name0"]?.InnerText} {secretArcherData.xmlData["Name1"]?.InnerText}) skipped: {originalName} not found",
+                        ConsoleColor.Red);
+                    
                     continue;
                 }
 
@@ -287,11 +313,40 @@ namespace ArcherLoaderMod
                 }
 
                 var originalName = altArcherData.originalName;
-                var originalIndex = indexDict[originalName];
                 var original = newNormalCustom.Find(a => a.ID == originalName);
                 if (original == null)
                 {
-                    Console.WriteLine($"Alt Archer '{altArcherData.ID}' skipped: {originalName} not found");
+                    ArcherCustomDataValidator.PrintLineWithColor(
+                        $"Alt Archer '{altArcherData.ID}' ({altArcherData.xmlData["Name0"]?.InnerText} {altArcherData.xmlData["Name1"]?.InnerText}) skipped: {originalName} not found",
+                        ConsoleColor.Red);
+
+                    continue;
+                }
+
+                if (FortEntrance.Settings.Validate)
+                {
+                    var errors =
+                        ArcherCustomManager.validator.Validate(
+                            altArcherData.xmlData,
+                            altArcherData.atlas,
+                            altArcherData.menuAtlas,
+                            altArcherData.spriteData,
+                            altArcherData.menuSpriteData,
+                            ArcherCustomManager.GetArcherType(altArcherData.xmlData.Name),
+                            altArcherData.ID,
+                            altArcherData.FolderPath);
+
+                    if (ArcherCustomDataValidator.PrintErrors(altArcherData.ID, errors, altArcherData.xmlData.Name,
+                        altArcherData.xmlData["Name0"]?.InnerText, altArcherData.xmlData["Name1"]?.InnerText))
+                        continue;
+                }
+
+                if (!indexDict.TryGetValue(originalName, out var originalIndex))
+                {
+                    ArcherCustomDataValidator.PrintLineWithColor(
+                        $"Alt Archer '{altArcherData.ID}' ({altArcherData.xmlData["Name0"]?.InnerText} {altArcherData.xmlData["Name1"]?.InnerText}) skipped: {originalName} not found",
+                        ConsoleColor.Red);
+
                     continue;
                 }
 
@@ -300,6 +355,7 @@ namespace ArcherLoaderMod
                 altArcherData.Parse(originalData, original.FolderPath);
                 newAlt[originalIndex] = altArcherData.ToArcherData();
                 ArcherCustomDataDict[newAlt[originalIndex]] = altArcherData;
+
                 // if(altArcherData.CharacterSounds != null)
                 // _customSFXList.Add(altArcherData.CharacterSounds);
             }
@@ -331,7 +387,7 @@ namespace ArcherLoaderMod
             }
             if (allCustomArchers.Count > 0)
             {
-                Console.WriteLine($"\n{allCustomArchers.Count} New Archer(s) Found in \"{path}\" Folder");
+                ArcherCustomDataValidator.PrintLineWithColor($"\n{allCustomArchers.Count} New Archer(s) Found in \"{path}\" Folder", ConsoleColor.DarkGreen);
             }
                
             if (allCustomArchers.Count == 0)
@@ -341,8 +397,8 @@ namespace ArcherLoaderMod
             foreach (var archerCustomData in allCustomArchers)
             {
                 var meta = string.IsNullOrEmpty(archerCustomData?.Meta?.Author)? "" : $"By {archerCustomData.Meta.Author}";
-                Console.WriteLine(
-                    $"{archerCustomData?.ID} {archerCustomData?.ArcherType} ({archerCustomData?.Name0 + " " + archerCustomData?.Name1}) {meta}");
+                var type = archerCustomData?.ArcherType == (ArcherData.ArcherTypes) 3 ? "Skin" : archerCustomData?.ArcherType.ToString();
+                ArcherCustomDataValidator.PrintLineWithColor($"{archerCustomData?.ID} {type} ({archerCustomData?.Name0 + " " + archerCustomData?.Name1}) {meta}", ConsoleColor.Green);
             }
             
             return allCustomArchers;
@@ -406,6 +462,7 @@ namespace ArcherLoaderMod
                 }
 
                 customSpriteDataList.Add(spriteData);
+                customSpriteDataPath.Add(spriteData, $"{path}spriteData.xml");
             }
         
             var atlasArcherMenu = atlas;
@@ -417,11 +474,13 @@ namespace ArcherLoaderMod
                 customAtlasList.Add(atlasArcherMenu);
                 spriteDataMenu = content.CreateSpriteData($"{path}menuSpriteData.xml", atlasArcherMenu, contentAccess);
                 customSpriteDataList.Add(spriteDataMenu);
+                customSpriteDataPath.Add(spriteDataMenu, $"{path}menuSpriteData.xml");
             }
 
             var filePath = $"{pathWithContentPrefix}archerData.xml";
             if (!File.Exists(filePath)) return newArchers;
-            var newArchersFromPack = InitializeArcherData(pathWithContentPrefix, atlas, atlasArcherMenu, spriteData, spriteDataMenu, archerName.ToUpper());
+            var newArchersFromPack = 
+                InitializeArcherData(pathWithContentPrefix, atlas, atlasArcherMenu, spriteData, spriteDataMenu, archerName.ToUpper());
             return newArchersFromPack;
         }
 
@@ -537,7 +596,7 @@ namespace ArcherLoaderMod
             string archerName)
         {
             // Console.WriteLine("InitializeArcherData");
-            return ArcherCustomManager.Initialize(path, atlasArcher, atlasArcherMenu, spriteData, spriteDataMenu, archerName, true);
+            return ArcherCustomManager.Initialize(path, atlasArcher, atlasArcherMenu, spriteData, spriteDataMenu, archerName, FortEntrance.Settings.Validate);
         }
         
         public static void Unload()

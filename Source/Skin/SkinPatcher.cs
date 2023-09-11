@@ -146,21 +146,21 @@ namespace ArcherLoaderMod.Skin
             {
                 archerPortrait.Remove(gem);
             }
-            gem = TFGame.MenuSpriteData.GetSpriteString(archerPortrait.ArcherData.Gems.Menu);
-            gem.Position = offset + new Microsoft.Xna.Framework.Vector2(0f, 30f);
-            gem.Visible = false;
-            archerPortrait.Add(gem);
-            archerPortraitDynamic.Set("gem", gem);
+            var newGem = TFGame.MenuSpriteData.GetSpriteString(archerPortrait.ArcherData.Gems.Menu);
+            newGem.Position = offset + new Microsoft.Xna.Framework.Vector2(gem.Position.X, gem.Position.Y);
+            newGem.Visible = false;
+            archerPortrait.Add(newGem);
+            archerPortraitDynamic.Set("gem", newGem);
 
             if (archerCustomData != null)
             {
                 if (archerCustomData.IsGemColorA)
                 {
-                    gem.Color = archerCustomData.ColorA;
+                    newGem.Color = archerCustomData.ColorA;
                 }
                 if (archerCustomData.IsGemColorB)
                 {
-                    gem.Color = archerCustomData.ColorB;
+                    newGem.Color = archerCustomData.ColorB;
                 }
             }
             
@@ -213,10 +213,30 @@ namespace ArcherLoaderMod.Skin
 
                 if (data == null)
                 {
-                    Console.WriteLine($"Skin Archer '{skinCustomData.ID}' skipped: {originalName} not found");
+                    ArcherCustomDataValidator.PrintLineWithColor(
+                        $"Skin Archer '{skinCustomData.ID} ({skinCustomData.xmlData["Name0"]?.InnerText} {skinCustomData.xmlData["Name1"]?.InnerText})' skipped: {originalName} not found",
+                        ConsoleColor.Red);
+
                     return;
                 }
-                
+
+                if (FortEntrance.Settings.Validate)
+                {
+                    var errors =
+                        ArcherCustomManager.validator.Validate(
+                            skinCustomData.xmlData,
+                            skinCustomData.atlas,
+                            skinCustomData.menuAtlas,
+                            skinCustomData.spriteData,
+                            skinCustomData.menuSpriteData,
+                            ArcherCustomManager.GetArcherType(skinCustomData.xmlData.Name),
+                            skinCustomData.ID,
+                            skinCustomData.FolderPath);
+                    if (ArcherCustomDataValidator.PrintErrors(skinCustomData.ID, errors, skinCustomData.xmlData.Name,
+                        skinCustomData.xmlData["Name0"]?.InnerText, skinCustomData.xmlData["Name1"]?.InnerText))
+                        return;
+                }
+
                 if (!archerSkins.ContainsKey(data))
                 {
                     archerSkins.Add(data, new List<ArcherCustomData>());
