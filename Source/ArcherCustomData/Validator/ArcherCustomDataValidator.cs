@@ -85,7 +85,7 @@ namespace ArcherLoaderMod
       foreach (var customAtlas in Mod.customAtlasList)
       {
         if (!customAtlas.Contains(sprite)) continue;
-        error.Add(new ValidatorMessage($" - \"{sprite}\" found in another custom atlas {customAtlas.XmlPath}, this is valid but not recommended and can cause unexpected errors") { type = ValidatorMessageType.WARN});
+        error.Add(new ValidatorMessage($" - \"{sprite}\" found in another custom atlas ({customAtlas.XmlPath}), this is valid but not recommended and can cause unexpected errors") { type = ValidatorMessageType.WARN});
           
         return false;
       }
@@ -163,7 +163,7 @@ namespace ArcherLoaderMod
         "The name that appears on the top on character selection. ie <Name0>ASSASSIN</Name0>", isErrorWhenNotExist, errors);
 
       CheckMissingChild(xml, "Name1",
-        "The name that appears on the below on character selection. ie <Name0>ASSASSIN</PRINCE>", isErrorWhenNotExist, errors);
+        "The name that appears on the below on character selection. ie <Name1>PRINCE</Name1>", isErrorWhenNotExist, errors);
 
       CheckMissingChild(xml, "ColorA", "The Archer main color in HEX value. ie <ColorA>F878F8</ColorA>", isErrorWhenNotExist, errors);
 
@@ -172,14 +172,14 @@ namespace ArcherLoaderMod
       // CheckMissingChild(xml, "LightbarColor",
       //   "The Lightbar Color of the archer in HEX value. ie <LightbarColor>FF1493</LightbarColor>", errors);
 
-      if (CheckMissingChild(xml, "Aimer", "The Archer Aimer. SubTexture Id (Atlas file). ie <Aimer>aimers/pink</Aimer>",
+      if (CheckMissingChild(xml, "Aimer", $"The Archer Aimer. SubTexture Id (Atlas file). ie <Aimer>aimers/{archerId}</Aimer>",
         isErrorWhenNotExist, errors))
       {
         CheckMissingSubTexture(atlas, menuAtlas, xml["Aimer"].InnerText, $"Ensure in the atlas file that '{xml["Aimer"].InnerText}' exist", errors);
       }
 
       if (CheckMissingChild(xml, "Corpse",
-        "The Archer Corpse; SpriteData Id. ie <Corpse>Pink</Corpse> check Github wiki and the Archer Resources for examples and details",
+        $"The Archer Corpse; SpriteData Id. ie <Corpse>{archerId}</Corpse> check Github wiki and the Archer Resources for examples and details",
         isErrorWhenNotExist, errors))
       {
         var corpseId = xml["Corpse"].InnerText;
@@ -187,10 +187,10 @@ namespace ArcherLoaderMod
         {
           if (GetSpriteDataXml(spriteData, spriteDataMenu, corpseId, out var corpseData, errors))
           {
-            CheckSpriteDataSubSprite(atlas, menuAtlas, corpseData, "Corpse", "Texture", "corpses/pink/normal", errors);
-            // CheckSpriteDataSubSprite(atlas, menuAtlas, corpseData, "Corpse", "BlueTeam", "corpses/pink/blueTeam", errors);
-            // CheckSpriteDataSubSprite(atlas, menuAtlas, corpseData, "Corpse", "RedTeam", "corpses/pink/redTeam", errors);
-            // CheckSpriteDataSubSprite(atlas, menuAtlas, corpseData, "Corpse", "Flash", "corpses/pink/flash", errors);
+            CheckSpriteDataSubSprite(atlas, menuAtlas, corpseData, "Corpse", "Texture", $"corpses/{archerId}/normal", errors);
+            // CheckSpriteDataSubSprite(atlas, menuAtlas, corpseData, "Corpse", "BlueTeam", $"corpses/{archerId}/blueTeam", errors);
+            // CheckSpriteDataSubSprite(atlas, menuAtlas, corpseData, "Corpse", "RedTeam", $"corpses/{archerId}/redTeam", errors);
+            // CheckSpriteDataSubSprite(atlas, menuAtlas, corpseData, "Corpse", "Flash", $"corpses/{archerId}/flash", errors);
           }
         }
       }
@@ -204,9 +204,9 @@ namespace ArcherLoaderMod
         var bodyId = xml["Sprites"]["Body"].InnerText;
         if (GetSpriteDataXml(spriteData, spriteDataMenu, bodyId, out var bodyData, errors))
         {
-          CheckSpriteDataSubSprite(atlas, menuAtlas, bodyData, "Body", "Texture", "pink/body", errors);
-          // CheckSpriteDataSubSprite(atlas, menuAtlas, bodyData, "Body", "RedTexture", "pink/body_red", errors);
-          // CheckSpriteDataSubSprite(atlas, menuAtlas, bodyData, "Body", "BlueTexture", "pink/body_blue", errors);
+          CheckSpriteDataSubSprite(atlas, menuAtlas, bodyData, "Body", "Texture", $"{archerId}/body", errors);
+          // CheckSpriteDataSubSprite(atlas, menuAtlas, bodyData, "Body", "RedTexture", $"{archerId}/body_red", errors);
+          // CheckSpriteDataSubSprite(atlas, menuAtlas, bodyData, "Body", "BlueTexture", $"{archerId}/body_blue", errors);
         }
       }
 
@@ -217,9 +217,9 @@ namespace ArcherLoaderMod
         var headNormalId = xml["Sprites"]["HeadNormal"].InnerText;
         if (GetSpriteDataXml(spriteData, spriteDataMenu, headNormalId, out var headNormalData, errors))
         {
-          CheckSpriteDataSubSprite(atlas, menuAtlas, headNormalData, "Head Normal", "Texture", "pink/head", errors);
-          // CheckSpriteDataSubSprite(atlas, menuAtlas, headNormalData, "Head Normal", "RedTexture", "pink/head/red", errors);
-          // CheckSpriteDataSubSprite(atlas, menuAtlas, headNormalData, "Head Normal", "BlueTexture", "pink/head/blue", errors);
+          CheckSpriteDataSubSprite(atlas, menuAtlas, headNormalData, "Head Normal", "Texture", $"{archerId}/head", errors);
+          // CheckSpriteDataSubSprite(atlas, menuAtlas, headNormalData, "Head Normal", "RedTexture", $"{archerId}/head/red", errors);
+          // CheckSpriteDataSubSprite(atlas, menuAtlas, headNormalData, "Head Normal", "BlueTexture", $"{archerId}/head/blue", errors);
         }
       }
 
@@ -230,7 +230,7 @@ namespace ArcherLoaderMod
         var headNoHatId = xml["Sprites"]["HeadNoHat"].InnerText;
         if (GetSpriteDataXml(spriteData, spriteDataMenu, headNoHatId, out var headNoHatData, errors))
         {
-          CheckSpriteDataSubSprite(atlas, menuAtlas, headNoHatData, "HeadNoHat", "Texture", "pink/head/NoHat", errors);
+          CheckSpriteDataSubSprite(atlas, menuAtlas, headNoHatData, "HeadNoHat", "Texture", $"{archerId}/head/NoHat", errors);
         }
       }
 
@@ -241,7 +241,7 @@ namespace ArcherLoaderMod
         var headCrownId = xml["Sprites"]["HeadCrown"].InnerText;
         if (GetSpriteDataXml(spriteData, spriteDataMenu, headCrownId, out var headCrownData, errors))
         {
-          CheckSpriteDataSubSprite(atlas, menuAtlas, headCrownData, "HeadCrown", "Texture", "pink/head/crown", errors);
+          CheckSpriteDataSubSprite(atlas, menuAtlas, headCrownData, "HeadCrown", "Texture", $"{archerId}/head/crown", errors);
         }
       }
 
@@ -323,7 +323,7 @@ namespace ArcherLoaderMod
         var idGemMenu = xml["Gems"]["Menu"].InnerText;
         if (GetSpriteDataXml(spriteData, spriteDataMenu, idGemMenu, out var dataGemMenu, errors))
         {
-          CheckSpriteDataSubSprite(menuAtlas, atlas, dataGemMenu, "Gems/Gameplay", "Texture", "pink/GemMenu", errors);
+          CheckSpriteDataSubSprite(menuAtlas, atlas, dataGemMenu, "Gems/Gameplay", "Texture", $"{archerId}/GemMenu", errors);
         }
       }
 
@@ -334,7 +334,7 @@ namespace ArcherLoaderMod
         var idGemGameplay = xml["Gems"]["Gameplay"].InnerText;
         if (GetSpriteDataXml(spriteData, spriteDataMenu, idGemGameplay, out var dataGemGameplay, errors))
         {
-          CheckSpriteDataSubSprite(atlas, atlas, dataGemGameplay, "Gems/Gameplay", "Texture", "pickups/pink/Gem", errors);
+          CheckSpriteDataSubSprite(atlas, atlas, dataGemGameplay, "Gems/Gameplay", "Texture", $"pickups/{archerId}/Gem", errors);
         }
       }
 
@@ -389,7 +389,7 @@ namespace ArcherLoaderMod
     {
       if (messages.Count <= 0) return false;
       var hasError = false;
-      PrintLineWithColor($"{archerId} ({name0} {name1}) {type} has the following errors/warns:", ConsoleColor.Yellow);
+      PrintLineWithColor($"\n* {archerId} ({name0} {name1}) {type} has the following errors/warns:", ConsoleColor.Yellow);
       foreach (var message in messages)
       {
         if (message.type == ValidatorMessageType.ERROR)
