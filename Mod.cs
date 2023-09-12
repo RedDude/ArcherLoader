@@ -49,6 +49,7 @@ namespace ArcherLoaderMod
         
         public static FortContent Content;
         private static string _customArchersPath;
+        private static List<ArcherCustomData> allCustomArchers = new List<ArcherCustomData>();
 
         public static void LoadContent(FortContent fortContent)
         {
@@ -65,7 +66,7 @@ namespace ArcherLoaderMod
             
             _separator = Path.DirectorySeparatorChar.ToString();
             _customArchersPath = $"CustomArchers{_separator}";
-            _contentCustomArchersPath = $"Mod{_separator}"+_customArchersPath;
+            _contentCustomArchersPath = $"Mod{_separator}{_customArchersPath}";
                 
             Directory.CreateDirectory($"{Calc.LOADPATH}{_contentCustomArchersPath}");
             
@@ -140,18 +141,19 @@ namespace ArcherLoaderMod
 
             On.TowerFall.MainMenu.Update += OnMainMenuOnUpdate;
         }
-
-        public static void Start()
+                
+        public static void LoadArcherContents()
         {
-            var allCustomArchers = new List<ArcherCustomData>();
-
             allCustomArchers.AddRange(LoadContentAtPath($"{Calc.LOADPATH}{_contentCustomArchersPath}", ContentAccess.Content));
             var contentPath = Content.GetContentPath("");
             allCustomArchers.AddRange(LoadContentAtPath(contentPath+$"/{_customArchersPath}", ContentAccess.ModContent));
             allCustomArchers.AddRange(LoadContentAtPath($"{_customArchersPath}", ContentAccess.Root));
             allCustomArchers.AddRange(LoadContentAtPath(contentPath.Replace("/Content", "")+$"/{_customArchersPath}", ContentAccess.Root));
             // allCustomArchers.AddRange(LoadContentAtPath(Content.GetContentPath("").Replace("/Content", ""), ContentAccess.Root));
-
+        }
+        
+        public static void Start()
+        {
             var newNormalCustom = allCustomArchers.FindAll(a => a.ArcherType == ArcherData.ArcherTypes.Normal);
             var newAltCustom = allCustomArchers.FindAll(a => a.ArcherType == ArcherData.ArcherTypes.Alt);
             var newSecretCustom = allCustomArchers.FindAll(a => a.ArcherType == ArcherData.ArcherTypes.Secret);
