@@ -242,8 +242,12 @@ namespace ArcherLoaderMod.Skin
                     archerSkins.Add(data, new List<ArcherCustomData>());
                 }
                 skinCustomData.Parse(data, "");
+                
+                skinCustomData.original = data;
+                
                 archerSkins[data].Add(skinCustomData);
                 var skinArcherData = skinCustomData.ToArcherData();
+                
                 SkinArcherCustomToArcher[skinCustomData] = skinArcherData;
                 Mod.ArcherCustomDataDict[skinArcherData] = skinCustomData;
                 
