@@ -2,93 +2,97 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Xml;
-using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Monocle;
+using MonoMod.RuntimeDetour;
 using TowerFall;
 
 namespace ArcherLoaderMod.Patch
 {
-    [HarmonyPatch]
     public class ContentLoaderPatcherHarmony
     {
-        public void Patch()
+        private static Hook hook_AtlasGetItem;
+        public delegate Subtexture orig_get_Item(Atlas self, string name);
+
+        public static void Load()
         {
-            var instance = new Harmony("Content Loader Patcher");
+            On.Monocle.SpriteData.GetSpriteString += SpriteDataPostFix;
+            On.Monocle.SpriteData.GetSpriteInt += SpriteDataGetSpriteIntPrefix;
+            On.Monocle.SpriteData.GetXML += SpriteDataGetSpriteXMLPostfix;
+            hook_AtlasGetItem = new Hook(
+                typeof(Monocle.Atlas).GetMethod("get_Item", new Type[] { typeof(string) }),
+                patch_Atlas
+            );
         }
 
-        [HarmonyPatch(typeof(SpriteData), "GetSpriteString", typeof(string))]
-        [HarmonyFinalizer]
-        static Exception SpriteDataPostfix(Exception __exception, ref SpriteData __instance,
-            ref Sprite<string> __result, MethodBase __originalMethod, bool __state, string id)
+        public static void Unload()
         {
-            if (__result != null)
+            On.Monocle.SpriteData.GetSpriteString -= SpriteDataPostFix;
+            On.Monocle.SpriteData.GetSpriteInt -= SpriteDataGetSpriteIntPrefix;
+            On.Monocle.SpriteData.GetXML -= SpriteDataGetSpriteXMLPostfix;
+            hook_AtlasGetItem.Dispose();
+        }
+
+
+        private static Sprite<string> SpriteDataPostFix(On.Monocle.SpriteData.orig_GetSpriteString orig, SpriteData self, string id)
+        {
+            try 
             {
-                return null;
+                return orig(self, id);
             }
-
-            if (__instance.Contains(id))
+            catch (Exception) 
             {
-                if (__exception == null) return null;
-                // var spritesField = typeof(SpriteData).GetField("sprites",
-                //     BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
-                // var atlasField = typeof(SpriteData).GetField("atlas",
-                //     BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
-                // var sprites = (Dictionary<string, XmlElement>) spritesField.GetValue(__instance);
-                // var atlas = (Atlas) atlasField.GetValue(__instance);
-                __result = __instance.GetSpriteString(id);//GetSpriteString(id, sprites, atlas);
-              
-                return null;
-            }
-
-            // Console.WriteLine("not found trying other spritesData");
-            foreach (var spriteData in Mod.cachedCustomSpriteDataList)
-            {
-                if (!spriteData.Contains(id))
-                    continue;
-
-                // var spritesField = typeof(SpriteData).GetField("sprites",BindingFlags.NonPublic | BindingFlags.Instance);
-                // var atlasField = typeof(SpriteData).GetField("atlas",BindingFlags.NonPublic | BindingFlags.Instance);
-                // var sprites = (Dictionary<string, XmlElement>) spritesField.GetValue(spriteData);
-                // var atlas = (Atlas) atlasField.GetValue(spriteData);
-                // __result = GetSpriteString(id, sprites, atlas);
-                __result = spriteData.GetSpriteString(id);
-                return null;
-            }
-
-            foreach (var spriteData in Mod.customSpriteDataList)
-            {
-                if (__result != null)
+                if (self.Contains(id))
                 {
-                    return null;
+                    // var spritesField = typeof(SpriteData).GetField("sprites",
+                    //     BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
+                    // var atlasField = typeof(SpriteData).GetField("atlas",
+                    //     BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
+                    // var sprites = (Dictionary<string, XmlElement>) spritesField.GetValue(__instance);
+                    // var atlas = (Atlas) atlasField.GetValue(__instance);
+                    return self.GetSpriteString(id);//GetSpriteString(id, sprites, atlas);
                 }
 
-                if (!spriteData.Contains(id))
-                    continue;
-                if (!Mod.cachedCustomSpriteDataList.Contains(spriteData))
-                    Mod.cachedCustomSpriteDataList.Add(spriteData);
+                // Console.WriteLine("not found trying other spritesData");
+                foreach (var spriteData in Mod.cachedCustomSpriteDataList)
+                {
+                    if (!spriteData.Contains(id))
+                        continue;
 
-                __result = spriteData.GetSpriteString(id);
-                return null;
+                    // var spritesField = typeof(SpriteData).GetField("sprites",BindingFlags.NonPublic | BindingFlags.Instance);
+                    // var atlasField = typeof(SpriteData).GetField("atlas",BindingFlags.NonPublic | BindingFlags.Instance);
+                    // var sprites = (Dictionary<string, XmlElement>) spritesField.GetValue(spriteData);
+                    // var atlas = (Atlas) atlasField.GetValue(spriteData);
+                    // __result = GetSpriteString(id, sprites, atlas);
+                    return spriteData.GetSpriteString(id);
+                }
 
+                foreach (var spriteData in Mod.customSpriteDataList)
+                {
+                    if (!spriteData.Contains(id))
+                        continue;
+                    if (!Mod.cachedCustomSpriteDataList.Contains(spriteData))
+                        Mod.cachedCustomSpriteDataList.Add(spriteData);
+
+                    return spriteData.GetSpriteString(id);
+                }
             }
-
             return null;
         }
 
-        [HarmonyPatch(typeof(SpriteData), "GetSpriteInt", typeof(string))]
-        [HarmonyPrefix]
-        static bool SpriteDataGetSpriteIntPrefix(SpriteData __instance, ref Sprite<int> __result, string id)
-        {
-            if (__instance.Contains(id)) return true;
 
+        private static Sprite<int> SpriteDataGetSpriteIntPrefix(On.Monocle.SpriteData.orig_GetSpriteInt orig, SpriteData self, string id)
+        {
+            if (self.Contains(id))
+                return orig(self, id);
+            
+            
             // Console.WriteLine("GetSpriteInt: " + id + " not found trying other spritesData");
             foreach (var spriteData in Mod.cachedCustomSpriteDataList)
             {
                 if (!spriteData.Contains(id))
                     continue;
-                __result = spriteData.GetSpriteInt(id);
-                return false;
+                return spriteData.GetSpriteInt(id);
             }
 
             foreach (var spriteData in Mod.customSpriteDataList)
@@ -98,25 +102,21 @@ namespace ArcherLoaderMod.Patch
                 if (!Mod.cachedCustomSpriteDataList.Contains(spriteData))
                     Mod.cachedCustomSpriteDataList.Add(spriteData);
                 // Console.WriteLine("GetSpriteInt found!");
-                __result = spriteData.GetSpriteInt(id);
-                return false;
+                return spriteData.GetSpriteInt(id);
             }
-
-            return true;
+            return orig(self, id);
         }
 
-        [HarmonyPatch(typeof(SpriteData), "GetXML", typeof(string))]
-        [HarmonyPrefix]
-        static bool SpriteDataGetSpriteXMLPostfix(SpriteData __instance, ref XmlElement __result, string id)
+        private static XmlElement SpriteDataGetSpriteXMLPostfix(On.Monocle.SpriteData.orig_GetXML orig, SpriteData self, string id)
         {
-            if (__instance.Contains(id)) return true;
+            if (self.Contains(id))
+                return orig(self, id);
 
             foreach (var spriteData in Mod.cachedCustomSpriteDataList)
             {
                 if (!spriteData.Contains(id))
                     continue;
-                __result = spriteData.GetXML(id);
-                return false;
+                return spriteData.GetXML(id);
             }
 
             // Console.WriteLine("GetXML: not found trying other spritesData");
@@ -127,26 +127,30 @@ namespace ArcherLoaderMod.Patch
                 if (!Mod.cachedCustomSpriteDataList.Contains(spriteData))
                     Mod.cachedCustomSpriteDataList.Add(spriteData);
                 // Console.WriteLine("GetXML found!");
-                __result = spriteData.GetXML(id);
-                return false;
+                return spriteData.GetXML(id);
             }
 
-            return true;
+            return orig(self, id);
         }
 
-        [HarmonyPatch(typeof(Atlas), "get_Item", typeof(string))]
-        [HarmonyFinalizer]
-        static Exception Atlas(Exception __exception, ref Atlas __instance, ref Subtexture __result, string name)
+        private static Subtexture patch_Atlas(orig_get_Item orig, Atlas self, string name)
         {
-            if (__instance.Contains(name)) return null;
+            try 
+            {
+                return orig(self, name);
+            }
+            catch (Exception) 
+            {
+                if (self.Contains(name))
+                    return null;
+            }
 
             // Console.WriteLine("Atlas: " + name + " not found trying other spritesData");
             foreach (var atlas in Mod.cachedCustomAtlasList)
             {
                 if (!atlas.Contains(name))
                     continue;
-                __result = atlas[name];
-                return null;
+                return atlas[name];
             }
 
             foreach (var atlas in Mod.customAtlasList)
@@ -156,12 +160,12 @@ namespace ArcherLoaderMod.Patch
                 if (!Mod.cachedCustomAtlasList.Contains(atlas))
                     Mod.cachedCustomAtlasList.Add(atlas);
                 // Console.WriteLine("Atlas: " + "found!");
-                __result = atlas[name];
-                return null;
+                return atlas[name];
             }
 
             return null;
         }
+
 
         public static Sprite<string> GetSpriteString(string id, Dictionary<string, XmlElement> sprites, Atlas atlas)
         {
