@@ -39,23 +39,23 @@ namespace ArcherLoaderMod.Patch
             {
                 if (self.Contains(name))
                     return null;
-            }
 
-            foreach (var atlas in Mod.cachedCustomAtlasList)
-            {
-                if (!atlas.Contains(name))
-                    continue;
-                return atlas[name];
-            }
+                foreach (var atlas in Mod.cachedCustomAtlasList)
+                {
+                    if (!atlas.Contains(name))
+                        continue;
+                    return atlas[name];
+                }
 
-            foreach (var atlas in Mod.customAtlasList)
-            {
-                if (!atlas.Contains(name))
-                    continue;
-                if (!Mod.cachedCustomAtlasList.Contains(atlas))
-                    Mod.cachedCustomAtlasList.Add(atlas);
-                // Console.WriteLine("Atlas: " + "found!");
-                return atlas[name];
+                foreach (var atlas in Mod.customAtlasList)
+                {
+                    if (!atlas.Contains(name))
+                        continue;
+                    if (!Mod.cachedCustomAtlasList.Contains(atlas))
+                        Mod.cachedCustomAtlasList.Add(atlas);
+                    // Console.WriteLine("Atlas: " + "found!");
+                    return atlas[name];
+                }
             }
 
             return null;
