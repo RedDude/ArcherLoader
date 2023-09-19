@@ -51,6 +51,10 @@ namespace ArcherLoaderMod
     public Atlas atlas;
     public Atlas menuAtlas;
 
+    public SpriteData spriteData;
+    public SpriteData menuSpriteData;
+
+    
     public int EightPlayersNotJoinedPortraitTopOffset = 0;
     public int EightPlayersJoinedPortraitTopOffset = 0;
     
@@ -78,7 +82,7 @@ namespace ArcherLoaderMod
     public bool IsGemColorA;
     public bool IsGemColorB;
     public Color GemColor;
-
+    
     public ArcherCustomData(XmlElement xml, Atlas atlas, Atlas menuAtlas, ArcherData.ArcherTypes archerType,
       string archerId, string path)
     {
@@ -123,7 +127,7 @@ namespace ArcherLoaderMod
       Name1 = xml.ChildText(nameof(Name1));
       ColorA = xml.ChildHexColor(nameof(ColorA));
       ColorB = xml.ChildHexColor(nameof(ColorB));
-      LightbarColor = xml.ChildHexColor(nameof(LightbarColor));
+      LightbarColor = xml.ChildHexColor(nameof(LightbarColor), ColorA);
       Aimer = atlas[xml.ChildText(nameof(Aimer))];
       Hair = xml.ChildBool(nameof(Hair), false);
 
@@ -165,10 +169,15 @@ namespace ArcherLoaderMod
       Portraits.Joined = menuAtlas[xml[nameof(Portraits)].ChildText("Joined")];
       Portraits.Win = menuAtlas[xml[nameof(Portraits)].ChildText("Win")];
       Portraits.Lose = menuAtlas[xml[nameof(Portraits)].ChildText("Lose")];
-      var toUse = atlas.Contains(xml[nameof(Statue)].ChildText("Image")) ? atlas : TFGame.Atlas;
-      Statue.Image = toUse[xml[nameof(Statue)].ChildText("Image")];
-      toUse = atlas.Contains(xml[nameof(Statue)].ChildText("Glow")) ? atlas : TFGame.Atlas;
-      Statue.Glow = toUse[xml[nameof(Statue)].ChildText("Glow")];
+
+      if (xml.HasChild(nameof(Statue)))
+      {
+        var toUse = atlas.Contains(xml[nameof(Statue)].ChildText("Image")) ? atlas : TFGame.Atlas;
+        Statue.Image = toUse[xml[nameof(Statue)].ChildText("Image")];
+        toUse = atlas.Contains(xml[nameof(Statue)].ChildText("Glow")) ? atlas : TFGame.Atlas;
+        Statue.Glow = toUse[xml[nameof(Statue)].ChildText("Glow")];
+      }
+   
       Gems.Menu = xml[nameof(Gems)].ChildText("Menu");
       Gems.Gameplay = xml[nameof(Gems)].ChildText("Gameplay");
       if (xml.HasChild(nameof(Breathing)))
@@ -201,123 +210,6 @@ namespace ArcherLoaderMod
       parsed = true;
     }
 
-    public static List<ArcherCustomData> Initialize(string path, Atlas atlas, Atlas menuAtlas, string archerId)
-    {
-      var filePath = $"{path}archerData.xml";
-      var xmlDocument = Calc.LoadXML(filePath);
-      var archers = xmlDocument["Archers"];
-      var archersArray = new List<ArcherCustomData>();
-  
-      if (archers == null)
-      {
-        var archerCustomData = HandleArcher(path, atlas, menuAtlas, archerId, xmlDocument.DocumentElement);
-        if (archerCustomData == null) return archersArray;;
-        archersArray.Add(archerCustomData);
-        return archersArray;
-      }
-        
-      foreach (var childNode in xmlDocument["Archers"].ChildNodes)
-      {
-        if (!(childNode is XmlElement)) continue;
-        var xml = childNode as XmlElement;
-        var archerCustomData = HandleArcher(path, atlas, menuAtlas, archerId, xml, false);
-        if (archerCustomData == null) continue;
-        
-        if (xml.Name == "AltArcher" || xml.Name == "SecretArcher")
-        {
-          archerCustomData.originalName = archerId;
-          archerCustomData.Name0 = xml.ChildText(nameof(Name0), "");
-          archerCustomData.Name1 = xml.ChildText(nameof(Name1), "");
-        }
-        archersArray.Add(archerCustomData);
-
-      }
-
-      return archersArray;
-    }
-
-    private static ArcherCustomData HandleArcher(string path, Atlas atlas, Atlas menuAtlas, string archerId,
-      XmlElement xml, bool awarnFor = true)
-    {
-      if (xml.Name == "Archer")
-      {
-        // var xml = xmlDocument["Archer"];
-        return new ArcherCustomData(xml, atlas, menuAtlas, ArcherData.ArcherTypes.Normal, archerId, path);
-      }
-
-      // if (xmlDocument["AltArcher"] != null)
-      if (xml.Name == "AltArcher")
-      {
-        // var xml = xmlDocument["AltArcher"];
-        var forAttribute = Mod.GetForAttribute(xml);
-        if (string.IsNullOrEmpty(forAttribute) && awarnFor)
-        {
-          Console.WriteLine(
-            $"Alt Archers '{archerId}' skipped: need the a 'for' attribute on ArcherData.xml to know each archer this alt is for.");
-          return null;
-        }
-
-        var forArcher = xml.GetAttribute(forAttribute).ToUpper();
-
-        var archerCustomData =
-          new ArcherCustomData(forArcher, xml, true, atlas, menuAtlas, ArcherData.ArcherTypes.Alt, archerId, path)
-          {
-            Name0 = xml.ChildText(nameof(Name0), ""),
-            Name1 = xml.ChildText(nameof(Name1), "")
-          };
-
-        if (xml.HasAttribute("Replace"))
-        {
-          archerCustomData.replace = true;
-        }
-
-        return archerCustomData;
-      }
-
-      // if (xml["SecretArcher"] != null)
-      if (xml.Name == "SecretArcher")
-      {
-        var forAttribute = Mod.GetForAttribute(xml);
-        if (string.IsNullOrEmpty(forAttribute) && awarnFor)
-        {
-          Console.WriteLine(
-            $"Secret Archer '{archerId}' skipped: need the a 'for' attribute on ArcherData.xml to know each archer this secret is for.");
-          return null;
-        }
-
-        var forArcher = xml.GetAttribute(forAttribute).ToUpper();
-
-        var archerCustomData = new ArcherCustomData(forArcher, xml, true, atlas, menuAtlas,
-          ArcherData.ArcherTypes.Secret, archerId, path);
-        if (xml.HasAttribute("Replace"))
-        {
-          archerCustomData.replace = true;
-        }
-
-        return archerCustomData;
-      }
-      
-      if (xml.Name == "SkinArcher")
-      {
-        var forAttribute = Mod.GetForAttribute(xml);
-        if (string.IsNullOrEmpty(forAttribute) && awarnFor)
-        {
-          Console.WriteLine(
-            $"Skin Archer '{archerId}' skipped: need the a 'for' attribute on ArcherData.xml to know each archer this skin is for.");
-          return null;
-        }
-
-        var forArcher = xml.GetAttribute(forAttribute).ToUpper();
-
-        var archerCustomData = new ArcherCustomData(forArcher, xml, true, atlas, menuAtlas,
-          (ArcherData.ArcherTypes) 3, archerId, path);
-
-        return archerCustomData;
-      }
-
-
-      return null;
-    }
     public ArcherData ToArcherData()
     {
       var ad = (ArcherData)System.Runtime.Serialization.FormatterServices
@@ -368,10 +260,11 @@ namespace ArcherLoaderMod
         ad.Portraits.Joined.Rect.Y += EightPlayersJoinedPortraitTopOffset;
         // ad.Portraits.Joined.Rect.Height = 60;
       }
+      
       ad.Statue = Statue;
       ad.Statue.Image = Statue.Image;
       ad.Statue.Glow = Statue.Glow;
-      
+
       ad.Gems = Gems;
       ad.Gems.Menu = Gems.Menu;
       ad.Gems.Gameplay = Gems.Gameplay;
@@ -695,6 +588,6 @@ namespace ArcherLoaderMod
           return false;
       }
     }
-
+  
   }
 }

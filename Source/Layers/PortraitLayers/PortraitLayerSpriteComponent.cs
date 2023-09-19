@@ -42,7 +42,8 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             layerSprite = TFGame.SpriteData.GetSpriteString(layerInfo.Sprite);
             layerSprite.Color = layerInfo.Color;
 
-            SetFrames(layerInfo.FloatAnimationRate);
+            if(layerInfo.FloatAnimationRate != 0)
+                SetFrames(layerInfo.FloatAnimationRate);
 
             if (layerInfo.IsColorA || layerInfo.IsColorB)
             {
@@ -67,15 +68,15 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
                 layerSprite.Color = RainbowManager.CurrentColor;//RainbowManager.GetColor(Environment.TickCount);
             }
             
-            this.Counter = (float) (((double) this.Counter + (double) this.Rate * (double) Engine.TimeMult) % 25.1327419281006);
-            this.Value = (float) Math.Sin((double) this.Counter);
-            this.ValueOverTwo = (float) Math.Sin((double) this.Counter / 2.0);
-            this.TwoValue = (float) Math.Sin((double) this.Counter * 2.0);
+            Counter = (float) ((Counter + Rate * (double) Engine.TimeMult) % 25.1327419281006);
+            Value = (float) Math.Sin(Counter);
+            ValueOverTwo = (float) Math.Sin(Counter / 2.0);
+            TwoValue = (float) Math.Sin(Counter * 2.0);
             
             base.Update();
         }
 
-        public void SetFrames(int framesPerWave) => this.Rate = 6.283185f / (float) framesPerWave;
+        public void SetFrames(int framesPerWave) => Rate = 6.283185f / framesPerWave;
 
         
         public override void Render()

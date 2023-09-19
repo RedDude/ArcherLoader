@@ -52,6 +52,9 @@ namespace ArcherLoaderMod
         public bool DisableCustomGhosts = false;
         
         public bool DisableCustomWings = false;
+        
+        [SettingsName("Validate")]
+        public bool Validate = true;
 
         // [SettingsNumber(0, 20, 2)]
         // public int OnStepping;

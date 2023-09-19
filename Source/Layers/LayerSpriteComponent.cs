@@ -11,7 +11,7 @@ namespace ArcherLoaderMod.Layers
     public class LayerSpriteComponent : Component
     {
         private Sprite<string> attachedSprite;
-        private readonly ArcherCustomData data;
+        private readonly ArcherCustomData customData;
 
         public LayerInfo layerInfo;
         private Sprite<string> layerSprite;
@@ -21,13 +21,17 @@ namespace ArcherLoaderMod.Layers
 
         public bool teamColorSetted = false;
         private Player.HatStates lastHatState;
-        public LayerSpriteComponent(LayerInfo layerInfo, Sprite<string> attachedSprite, ArcherCustomData data,
+        private ArcherData archerData;
+
+        public LayerSpriteComponent(LayerInfo layerInfo, Sprite<string> attachedSprite, ArcherCustomData customData,
+            ArcherData archerData,
             bool active, bool visible) : base(active, visible)
         {
             this.layerInfo = layerInfo;
             drawSelfPropertyInfo = typeof(Player).GetProperty("DrawSelf", BindingFlags.Public | BindingFlags.Instance);
             this.attachedSprite = attachedSprite;
-            this.data = data;
+            this.customData = customData;
+            this.archerData = archerData;
         }
 
         public override void Added()
@@ -59,9 +63,24 @@ namespace ArcherLoaderMod.Layers
             }
             else if (Parent is PlayerCorpse corpse)
             {
-                attachedSpriteInfo = data.Corpse;
-                xml = TFGame.CorpseSpriteData.GetXML(attachedSpriteInfo);
-                layerSprite = TFGame.CorpseSpriteData.GetSpriteString(attachedSpriteInfo);
+                if (corpse.PlayerIndex == -1)
+                {
+                    RemoveSelf();
+                    return;
+                }
+                    
+                if (customData != null)
+                {
+                    attachedSpriteInfo = customData.Corpse;
+                    xml = TFGame.CorpseSpriteData.GetXML(attachedSpriteInfo);
+                    layerSprite = TFGame.CorpseSpriteData.GetSpriteString(attachedSpriteInfo);
+                }
+                else
+                {
+                    var archerDataCorpse = archerData.Corpse;
+                    xml = TFGame.CorpseSpriteData.GetXML(archerDataCorpse);
+                    layerSprite = TFGame.CorpseSpriteData.GetSpriteString(archerDataCorpse);
+                }
                 
                 if (layerInfo.IsTeamColor && corpse.Level.Session.MatchSettings.TeamMode)
                 {
@@ -82,9 +101,9 @@ namespace ArcherLoaderMod.Layers
                 if (layerInfo.IsColorA || layerInfo.IsColorB)
                 {
                     if (layerInfo.IsColorA)
-                        layerSprite.Color = data.ColorA;
+                        layerSprite.Color = customData.ColorA;
                     if (layerInfo.IsColorB)
-                        layerSprite.Color = data.ColorB;    
+                        layerSprite.Color = customData.ColorB;    
                 }
             }
 
@@ -146,7 +165,7 @@ namespace ArcherLoaderMod.Layers
                     if (lastHatState != player.HatState)
                     {
                         var headSprite = DynamicData.For(player).Get<Sprite<string>>("headSprite");
-                        Parent.Add(new LayerSpriteComponent(layerInfo, headSprite, data, true, true));
+                        Parent.Add(new LayerSpriteComponent(layerInfo, headSprite, customData, archerData,true, true));
                         Parent.Remove(this);
                     }
 

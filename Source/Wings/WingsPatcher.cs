@@ -17,6 +17,9 @@ namespace ArcherLoaderMod.Wings
         // public static Dictionary<PlayerWings, Sprite<string>> Sprites = new();
         public static void Load()
         {
+            if (FortEntrance.Settings.DisableCustomWings)
+                return;
+
             On.TowerFall.Player.Added += OnPlayerOnAdded;
             enabled = true;
             // On.TowerFall.PlayerWings.Render += OnPlayerWingsOnRender;
