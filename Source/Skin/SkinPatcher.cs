@@ -23,12 +23,26 @@ namespace ArcherLoaderMod.Skin
         public static void Load()
         {
             initGem = typeof(ArcherPortrait).GetMethod("InitGem", BindingFlags.Instance | BindingFlags.NonPublic);
-            
+
             On.TowerFall.RollcallElement.Update += OnRollcallElementOnUpdate;
             On.TowerFall.ArcherData.Get_int_ArcherTypes += OnArcherDataOnGet_Int_ArcherTypes;
+            // On.TowerFall.MainMenu.FinishTransition += (orig, self) =>
+            // {
+            //     orig(self);
+            //     if (self.State != MainMenu.MenuState.Main) return;
+            //     for (var i = 0; i < TFGame.Players.Length; i++)
+            //     {
+            //         if(!TFGame.Players[i]) continue;
+            //         // foreach (var keyValuePair in archerSkinsIndex[i])
+            //         // {
+            //         //     archerSkinsIndex[i]. = -1;
+            //         // }
+            //     }
+            // };
+            
             enabled = true;
         }
-  
+
         public static void Unload()
         {
             if(!enabled)
@@ -43,8 +57,9 @@ namespace ArcherLoaderMod.Skin
             var data = orig(characterIndex, type);
             for (var i = 0; i < TFGame.Players.Length; i++)
             {
-                if (!TFGame.Players[i]) continue;
-                // var characterIndex = TFGame.Characters[i];
+                if(!TFGame.Players[i]) continue;
+                if(TFGame.Characters[i] != characterIndex) continue;
+
                 return GetSkinCharacter(i, data);
             }
 
@@ -72,7 +87,14 @@ namespace ArcherLoaderMod.Skin
             }
 
             orig(self);
-        
+            
+            var state = DynamicData.For(self).Get<StateMachine>("state");
+            
+            if (state.State == 1)
+            {
+                return;
+            }
+
             var portrait = DynamicData.For(self).Get<ArcherPortrait>("portrait");
 
             if (input.MenuUp)
@@ -192,75 +214,76 @@ namespace ArcherLoaderMod.Skin
                 LoadSkinArcher(skinCustomData);
             }
         }
-        
+
         private static void LoadSkinArcher(ArcherCustomData skinCustomData)
         {
-                if (skinCustomData.parsed)
+            if (skinCustomData.parsed)
+            {
+                return;
+            }
+
+            var originalName = skinCustomData.originalName;
+            if (!Mod.BaseArcherByNameDict.TryGetValue(skinCustomData.originalName.ToLower(), out var data))
+            {
+                foreach (var archerCustomData in Mod.ArcherCustomDataDict)
                 {
+                    if (archerCustomData.Value.ID != skinCustomData.originalName) continue;
+                    data = archerCustomData.Key;
+                    break;
+                }
+            }
+
+            if (data == null)
+            {
+                ArcherCustomDataValidator.PrintLineWithColor(
+                    $"Skin Archer '{skinCustomData.ID} ({skinCustomData.xmlData["Name0"]?.InnerText} {skinCustomData.xmlData["Name1"]?.InnerText})' skipped: {originalName} not found",
+                    ConsoleColor.Red);
+
+                return;
+            }
+
+            if (FortEntrance.Settings.Validate)
+            {
+                var errors =
+                    ArcherCustomManager.validator.Validate(
+                        skinCustomData.xmlData,
+                        skinCustomData.atlas,
+                        skinCustomData.menuAtlas,
+                        skinCustomData.spriteData,
+                        skinCustomData.menuSpriteData,
+                        ArcherCustomManager.GetArcherType(skinCustomData.xmlData.Name),
+                        skinCustomData.ID,
+                        skinCustomData.FolderPath);
+                if (ArcherCustomDataValidator.PrintErrors(skinCustomData.ID, errors, skinCustomData.xmlData.Name,
+                    skinCustomData.xmlData["Name0"]?.InnerText, skinCustomData.xmlData["Name1"]?.InnerText))
                     return;
-                }
+            }
 
-                var originalName = skinCustomData.originalName;
-                if (!Mod.BaseArcherByNameDict.TryGetValue(skinCustomData.originalName.ToLower(), out var data))
-                {
-                    foreach (var archerCustomData in Mod.ArcherCustomDataDict)
-                    {
-                        if (archerCustomData.Value.ID != skinCustomData.originalName) continue;
-                        data = archerCustomData.Key;
-                        break;
-                    }
-                }
+            if (!archerSkins.ContainsKey(data))
+            {
+                archerSkins.Add(data, new List<ArcherCustomData>());
+            }
 
-                if (data == null)
-                {
-                    ArcherCustomDataValidator.PrintLineWithColor(
-                        $"Skin Archer '{skinCustomData.ID} ({skinCustomData.xmlData["Name0"]?.InnerText} {skinCustomData.xmlData["Name1"]?.InnerText})' skipped: {originalName} not found",
-                        ConsoleColor.Red);
+            skinCustomData.Parse(data, "");
 
-                    return;
-                }
+            skinCustomData.original = data;
 
-                if (FortEntrance.Settings.Validate)
-                {
-                    var errors =
-                        ArcherCustomManager.validator.Validate(
-                            skinCustomData.xmlData,
-                            skinCustomData.atlas,
-                            skinCustomData.menuAtlas,
-                            skinCustomData.spriteData,
-                            skinCustomData.menuSpriteData,
-                            ArcherCustomManager.GetArcherType(skinCustomData.xmlData.Name),
-                            skinCustomData.ID,
-                            skinCustomData.FolderPath);
-                    if (ArcherCustomDataValidator.PrintErrors(skinCustomData.ID, errors, skinCustomData.xmlData.Name,
-                        skinCustomData.xmlData["Name0"]?.InnerText, skinCustomData.xmlData["Name1"]?.InnerText))
-                        return;
-                }
+            archerSkins[data].Add(skinCustomData);
+            var skinArcherData = skinCustomData.ToArcherData();
 
-                if (!archerSkins.ContainsKey(data))
+            SkinArcherCustomToArcher[skinCustomData] = skinArcherData;
+            Mod.ArcherCustomDataDict[skinArcherData] = skinCustomData;
+
+            for (var i = 0; i < TFGame.Players.Length; i++)
+            {
+                if (!archerSkinsIndex[i].ContainsKey(data))
                 {
-                    archerSkins.Add(data, new List<ArcherCustomData>());
+                    archerSkinsIndex[i][data] = -1;
                 }
-                skinCustomData.Parse(data, "");
-                
-                skinCustomData.original = data;
-                
-                archerSkins[data].Add(skinCustomData);
-                var skinArcherData = skinCustomData.ToArcherData();
-                
-                SkinArcherCustomToArcher[skinCustomData] = skinArcherData;
-                Mod.ArcherCustomDataDict[skinArcherData] = skinCustomData;
-                
-                for (var i = 0; i < TFGame.Players.Length; i++)
-                {
-                    if (!archerSkinsIndex[i].ContainsKey(data))
-                    {
-                        archerSkinsIndex[i][data] = -1;
-                    }
-                }
-                
-                // if(skinArcherData.CharacterSounds != null)
-                // _customSFXList.Add(skinArcherData.CharacterSounds);
+            }
+
+            // if(skinArcherData.CharacterSounds != null)
+            // _customSFXList.Add(skinArcherData.CharacterSounds);
         }
     }
 }

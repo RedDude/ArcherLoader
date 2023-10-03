@@ -40,6 +40,9 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
         public override void Added()
         {
             layerSprite = TFGame.SpriteData.GetSpriteString(layerInfo.Sprite);
+            if(layerSprite == null)
+                return;
+            
             layerSprite.Color = layerInfo.Color;
 
             if(layerInfo.FloatAnimationRate != 0)
@@ -63,6 +66,9 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
 
         public override void Update()
         {
+            if(layerSprite == null)
+                return;
+
             if (layerInfo.IsRainbowColor)
             {
                 layerSprite.Color = RainbowManager.CurrentColor;//RainbowManager.GetColor(Environment.TickCount);
@@ -81,6 +87,9 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
         
         public override void Render()
         {
+            if(layerSprite == null)
+                return;
+            
             if (Parent is ArcherPortrait portrait)
             {   
                 var portraitImage = DynamicData.For(portrait).Get<Image>("portrait");
