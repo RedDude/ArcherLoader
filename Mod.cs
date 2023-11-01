@@ -71,7 +71,6 @@ namespace ArcherLoaderMod
             Directory.CreateDirectory($"{Calc.LOADPATH}{_contentCustomArchersPath}");
             
             ContentLoaderPatcher.Load();
-            ContentLoaderPatcherHarmony.Load();
             if (!FortEntrance.Settings.DisableHairs)
             {
                 var hairPatcher = new HairPatcher();
@@ -616,7 +615,6 @@ namespace ArcherLoaderMod
             PortraitLayerPatch.Unload();
             PrismaticPatcher.Unload();
             TeamsPatcher.Unload();
-            ContentLoaderPatcherHarmony.Unload();
         }
 
         public static void OnVariantsRegister(VariantManager variants, bool noPerPlayer = false)
