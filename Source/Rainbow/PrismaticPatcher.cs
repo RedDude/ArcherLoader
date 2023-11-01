@@ -44,7 +44,7 @@ namespace ArcherLoaderMod.Rainbow
         private static void OnTfGameOnUpdate(On.TowerFall.TFGame.orig_Update orig, TFGame self, GameTime time)
         {
             orig(self, time);
-            RainbowManager.CurrentColor = RainbowManager.GetColor(Environment.TickCount);
+            RainbowManager.CurrentColor = RainbowManager.GetColor();
         }
 
         private static void OnPlayerOnAdded(On.TowerFall.Player.orig_Added orig, Player self)

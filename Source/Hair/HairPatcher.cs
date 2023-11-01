@@ -214,7 +214,7 @@ namespace ArcherLoaderMod.Hair
                         {
                             var amount = (float) index / links;
                             color = hairInfo.Rainbow
-                                ? RainbowManager.GetColor(Environment.TickCount, index, hairInfo.PrismaticTime)
+                                ? RainbowManager.GetColor(index, hairInfo.PrismaticTime)
                                 : Color.Lerp(hairInfo.Color, prismatic, amount);
                         }
                     }

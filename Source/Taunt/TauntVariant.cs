@@ -15,9 +15,9 @@ namespace ArcherLoaderMod.Taunt
 {
     public class TauntVariant
     {
-        private static IDetour hook_UpdateHead;
-        private static IDetour hook_LeaveDucking;
-        private static IDetour hook_UpdateAnimation;
+        private static Hook hook_UpdateHead;
+        private static Hook hook_LeaveDucking;
+        private static Hook hook_UpdateAnimation;
         
         public static Atlas MyAtlas;
         
@@ -34,14 +34,14 @@ namespace ArcherLoaderMod.Taunt
         public static bool enabled = false;
 
         // private static CharacterSounds _sounds = new();
-        public static void OnVariantsRegister(MatchVariants variants, bool noPerPlayer = false)
+        public static void OnVariantsRegister(VariantManager variants, bool noPerPlayer = false)
         {
-            var info = new VariantInfo(MyAtlas)
+            var info = new CustomVariantInfo("Taunt", MyAtlas["variants/taunt"], CustomVariantFlags.PerPlayer)
             {
                 Description = "HUMILIATE YOUR FOES (DUCK + RIGHT STICK DOWN or V key)"
                 // , Header = "RULES"
             };
-            variants.AddVariant("Taunt", info, VariantFlags.PerPlayer, noPerPlayer);
+            variants.AddVariant(info, noPerPlayer);
         }
 
         public static void LoadContent(FortContent fortContent)
