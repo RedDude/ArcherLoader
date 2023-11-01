@@ -45,10 +45,9 @@ namespace ArcherLoaderMod
         {
             Mod.Unload();
         }
-
-        public override void OnVariantsRegister(MatchVariants variants, bool noPerPlayer = false)
+        public override void OnVariantsRegister(VariantManager manager, bool noPerPlayer = false)
         {
-            Mod.OnVariantsRegister(variants, noPerPlayer);
+            Mod.OnVariantsRegister(manager, noPerPlayer);
         }
     }
 
