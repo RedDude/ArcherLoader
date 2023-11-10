@@ -1,10 +1,12 @@
 ﻿using Microsoft.Xna.Framework;
+using Monocle;
 
 namespace ArcherLoaderMod.Rainbow
 {
     public class RainbowManager
     {
         public static Color CurrentColor;
+        public static float Time;
         
         private static readonly Color[] PrismaticColors = new Color[6]
         {
@@ -16,8 +18,15 @@ namespace ArcherLoaderMod.Rainbow
             Color.Violet
         };
 
-        public static Color GetColor(float time, int offset = 0, float speedMultiplier = 1f)
+        public static Color GetColor(int offset = 0, float speedMultiplier = 1f)
         {
+            RainbowManager.Time += Engine.TimeMult;
+            var time = RainbowManager.Time;
+            if (time < 0) 
+            {
+                RainbowManager.Time = 0;
+                return Color.White;
+            }
             var interval = 1500f;
             var currentIndex = ((int) (time * speedMultiplier / interval) + offset) % PrismaticColors.Length;
             var nextIndex = (currentIndex + 1) % PrismaticColors.Length;

@@ -617,7 +617,7 @@ namespace ArcherLoaderMod
             TeamsPatcher.Unload();
         }
 
-        public static void OnVariantsRegister(MatchVariants variants, bool noPerPlayer = false)
+        public static void OnVariantsRegister(VariantManager variants, bool noPerPlayer = false)
         {
             TauntVariant.OnVariantsRegister(variants, noPerPlayer);
         }
