@@ -142,6 +142,15 @@ namespace ArcherLoaderMod
         {
             allCustomArchers.AddRange(LoadContentAtPath($"{Calc.LOADPATH}{_contentCustomArchersPath}", ContentAccess.Content));
             allCustomArchers.AddRange(LoadContentAtPath($"{_customArchersPath}", ContentAccess.Root));
+            ModFs.LoopAllModsContent(x => {
+                string archerFolder = Path.Combine(x.MetadataPath, "Content", "Archers");
+
+                if (ModFs.IsDirectoryOrFileExists(archerFolder)) 
+                {
+                    List<ArcherCustomData> archerData = LoadContent(x, archerFolder, ContentAccess.ModContent, false);
+                    allCustomArchers.AddRange(archerData);
+                }
+            });
 
             // I removed two of those, because the ContentAccess.ModContent will be replaced with the new format, 
             // and I don't know what the other one does
@@ -375,7 +384,7 @@ namespace ArcherLoaderMod
                 // if(directory.EndsWith("Content"))
                 //     continue;
                 
-                allCustomArchers.AddRange(LoadContent(Content, directory, contentAccess, contentAccess == ContentAccess.Content));
+                allCustomArchers.AddRange(LoadContent(null, directory, contentAccess, contentAccess == ContentAccess.Content));
             }
 
             if (warnNotFound && allCustomArchers.Count == 0)
@@ -404,19 +413,18 @@ namespace ArcherLoaderMod
         private static List<ArcherCustomData> LoadContent(FortContent content, string directory, ContentAccess contentAccess, bool addContentPrefix = false)
         {
             var newArchers = new List<ArcherCustomData>();
-            newArchers.AddRange(LoadContentAtPath(directory, contentAccess, false));
 
             var archerName = directory.Split(Convert.ToChar(_separator)).Last();
-            var path = $"{directory}{_separator}".Replace($"Content{_separator}", $"");
+            var path = directory;
 
-            var pathWithContentPrefix = addContentPrefix ? Calc.LOADPATH + path : path;
+            var pathWithContentPrefix = path;
 
             
             Atlas atlas = null;
             if (ModFs.IsDirectoryOrFileExists($"{pathWithContentPrefix}atlas.xml") && 
                 ModFs.IsDirectoryOrFileExists($"{pathWithContentPrefix}atlas.png"))
             {
-                atlas = AtlasExt.CreateAtlas(Content, $"{path}atlas.xml", $"{path}atlas.png", contentAccess);
+                atlas = AtlasExt.CreateAtlas(content, $"{path}atlas.xml", $"{path}atlas.png", contentAccess);
                 customAtlasList.Add(atlas);
             }
             
@@ -425,7 +433,7 @@ namespace ArcherLoaderMod
                 return newArchers;
             }
             
-            var spriteData = content.CreateSpriteData($"{path}spriteData.xml", atlas, contentAccess);
+            var spriteData = SpriteDataExt.CreateSpriteData(content, $"{path}spriteData.xml", atlas, contentAccess);
             var sprites = DynamicData.For(spriteData).Get<Dictionary<string, XmlElement>>("sprites");
 
             if (sprites.Count > 0)
@@ -461,9 +469,9 @@ namespace ArcherLoaderMod
             if (ModFs.IsDirectoryOrFileExists($"{pathWithContentPrefix}menuAtlas.xml") &&
                 ModFs.IsDirectoryOrFileExists($"{pathWithContentPrefix}menuAtlas.png"))
             {
-                atlasArcherMenu = AtlasExt.CreateAtlas(Content, $"{path}menuAtlas.xml", $"{path}menuAtlas.png", contentAccess);
+                atlasArcherMenu = AtlasExt.CreateAtlas(content, $"{path}menuAtlas.xml", $"{path}menuAtlas.png", contentAccess);
                 customAtlasList.Add(atlasArcherMenu);
-                spriteDataMenu = content.CreateSpriteData($"{path}menuSpriteData.xml", atlasArcherMenu, contentAccess);
+                spriteDataMenu = SpriteDataExt.CreateSpriteData(content, $"{path}menuSpriteData.xml", atlasArcherMenu, contentAccess);
                 customSpriteDataList.Add(spriteDataMenu);
                 customSpriteDataPath.Add(spriteDataMenu, $"{path}menuSpriteData.xml");
             }
