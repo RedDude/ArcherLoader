@@ -17,6 +17,8 @@ using ArcherLoaderMod.Taunt;
 using ArcherLoaderMod.Teams;
 using ArcherLoaderMod.Wings;
 using FortRise;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Input;
 using Monocle;
 using MonoMod.ModInterop;
 using MonoMod.Utils;
@@ -51,6 +53,8 @@ namespace ArcherLoaderMod
         private static string _customArchersPath;
         private static List<ArcherCustomData> allCustomArchers = new List<ArcherCustomData>();
 
+        public static List<ArcherData> originalArchersList = new List<ArcherData>();
+        
         public static void LoadContent(FortContent fortContent)
         {
             TauntVariant.LoadContent(fortContent);
@@ -58,24 +62,25 @@ namespace ArcherLoaderMod
 
             Content = fortContent;
         }
-        
+
         public static void Load()
         {
             // Console.WriteLine("Custom Archer Loader is here!");
             typeof(EightPlayerImport).ModInterop();
-            
+
             _separator = Path.DirectorySeparatorChar.ToString();
             _customArchersPath = $"CustomArchers{_separator}";
             _contentCustomArchersPath = $"Mod{_separator}{_customArchersPath}";
-                
+
             Directory.CreateDirectory($"{Calc.LOADPATH}{_contentCustomArchersPath}");
-            
+
             ContentLoaderPatcher.Load();
             if (!FortEntrance.Settings.DisableHairs)
             {
                 var hairPatcher = new HairPatcher();
                 hairPatcher.Load();
             }
+
             TauntVariant.Load();
             ParticlePatcher.Load();
             WingsPatcher.Load();
@@ -87,7 +92,83 @@ namespace ArcherLoaderMod
             PrismaticPatcher.Load();
             TeamsPatcher.Load();
             
-            HandleQuickStart();
+            On.TowerFall.TFGame.Update += (orig, self, time) =>
+            {
+                orig(self, time);
+                
+                if (MInput.Keyboard.Pressed((Keys) Keys.R))
+                {
+                    var session = (Engine.Instance.Scene as Level)?.Session;
+                    CommandList.ReloadArcher(null);
+                    
+                    var positions = new Dictionary<int, Vector2>();
+                    foreach (var currentLevelPlayer in session.CurrentLevel.Players)
+                    {
+                        var p = (Player) currentLevelPlayer;
+                        try
+                        {
+                            // var data = ArcherData.Get(TFGame.Characters[p.PlayerIndex], TFGame.AltSelect[p.PlayerIndex]);
+                            // var exist = Mod.ArcherCustomDataDict.TryGetValue(data, out var archerCustomData);
+                            // if (!exist)
+                            // {
+                            //     var skinData = SkinPatcher.GetSkinCharacter(p.PlayerIndex, data);
+                            //     exist = Mod.ArcherCustomDataDict.TryGetValue(skinData, out archerCustomData);
+                            // }
+                            // if (!exist) continue;
+                            //
+                            // var errors = ArcherCustomManager.validator.Validate(archerCustomData.xmlData, archerCustomData.atlas,
+                            //     archerCustomData.menuAtlas, archerCustomData.spriteData, archerCustomData.menuSpriteData, archerCustomData.ArcherType,
+                            //     archerCustomData.ID, archerCustomData.FolderPath);
+                        
+                            // if (errors.Count == 0)
+                            {
+                                positions[p.PlayerIndex] = p.Position;
+                        
+                                session.CurrentLevel.Remove(p);
+                                var player = new Player(p.PlayerIndex, p.Position, p.Allegiance, p.TeamColor, session.GetPlayerInventory(p.PlayerIndex), p.HatState, frozen: false, flash: false, indicator: false);
+                                session.CurrentLevel.Add(player);
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                        }
+                    }
+
+                    if (MInput.Keyboard.Check((Keys) Keys.RightShift))
+                    {
+                        var matchSettings = new MatchSettings(GameData.VersusTowers[0].GetLevelSystem(), Modes.LevelTest,
+                            MatchSettings.MatchLengths.Standard);
+                        // matchSettings.Variants.GetCustomVariant("ReaperChalice").Value = true;
+                        (matchSettings.LevelSystem as VersusLevelSystem).StartOnLevel(0);
+                        var newSession = new Session(matchSettings);
+                        
+                        void OnSessionOnStartRound(On.TowerFall.Session.orig_OnUpdate round, Session self1)
+                        {
+                            round(self1);
+                            try
+                            {
+                                foreach (var currentLevelPlayer in newSession.CurrentLevel.Players)
+                                {
+                                    var p = (Player) currentLevelPlayer;
+                                    if(positions.ContainsKey(p.PlayerIndex))
+                                        currentLevelPlayer.Position = positions[p.PlayerIndex];
+                                }
+                                On.TowerFall.Session.OnUpdate -= OnSessionOnStartRound;
+                            }
+                            catch (Exception e)
+                            {
+                            }
+                        }
+
+                        On.TowerFall.Session.OnUpdate += OnSessionOnStartRound;
+                        newSession.StartGame();
+                       
+                    }
+                   
+                }
+            }; 
+
+        HandleQuickStart();
         }
 
        
@@ -99,10 +180,13 @@ namespace ArcherLoaderMod
             void OnMainMenuOnUpdate(On.TowerFall.MainMenu.orig_Update orig, MainMenu self)
             {
                 orig(self);
+
+                //quick portrait
                 if (self.State == MainMenu.MenuState.Loading) return;
 
                 if (once) return;
                 once = true;
+                
                 for (var i = 0; i < 4; i++)
                 {
                     TFGame.Players[i] = TFGame.PlayerInputs[i] != null;
@@ -129,12 +213,20 @@ namespace ArcherLoaderMod
                 
                 // TFGame.Characters[1] = 2;
 
-                var matchSettings = new MatchSettings(GameData.VersusTowers[GameData.VersusTowers.Count-1].GetLevelSystem(), Modes.LevelTest,
+                // self.State = MainMenu.MenuState.Rollcall;
+                // return;
+
+                var matchSettings = new MatchSettings(GameData.VersusTowers[0].GetLevelSystem(), Modes.LevelTest,
                     MatchSettings.MatchLengths.Standard);
+                (matchSettings.LevelSystem as VersusLevelSystem).StartOnLevel(0);
+                new Session(matchSettings).StartGame();
+                
+                // var matchSettings = new MatchSettings(GameData.VersusTowers[GameData.VersusTowers.Count-1].GetLevelSystem(), Modes.LevelTest,
+                //     MatchSettings.MatchLengths.Standard);
                 // matchSettings.Variants.GetCustomVariant("ReaperChalice").Value = true;
                 
-                (matchSettings.LevelSystem as VersusLevelSystem).StartOnLevel(-1);
-                new Session(matchSettings).StartGame();
+                // (matchSettings.LevelSystem as VersusLevelSystem).StartOnLevel(-1);
+                // new Session(matchSettings).StartGame();
 
                 On.TowerFall.MainMenu.Update -= OnMainMenuOnUpdate;
             }
@@ -144,6 +236,20 @@ namespace ArcherLoaderMod
                 
         public static void LoadArcherContents()
         {
+            //needed to hot reload
+            customSpriteDataList.Clear();
+            cachedCustomSpriteDataList.Clear();
+            customSpriteDataCategoryDict.Clear();
+            customAtlasList.Clear();
+            cachedCustomAtlasList.Clear();
+            AllArchersDataDict.Clear();
+            ArcherCustomDataDict.Clear();
+            BaseArcherByNameDict.Clear();
+            allCustomArchers.Clear();
+            
+            // customSFXList = new();
+            // allCustomArchers = new List<ArcherCustomData>();
+
             allCustomArchers.AddRange(LoadContentAtPath($"{Calc.LOADPATH}{_contentCustomArchersPath}", ContentAccess.Content));
             var contentPath = Content.GetContentPath("");
             allCustomArchers.AddRange(LoadContentAtPath(contentPath+$"/{_customArchersPath}", ContentAccess.ModContent));
@@ -154,12 +260,14 @@ namespace ArcherLoaderMod
         
         public static void Start()
         {
+            if(originalArchersList.Count == 0)
+                originalArchersList = new List<ArcherData>(ArcherData.Archers.ToList());
             var newNormalCustom = allCustomArchers.FindAll(a => a.ArcherType == ArcherData.ArcherTypes.Normal);
             var newAltCustom = allCustomArchers.FindAll(a => a.ArcherType == ArcherData.ArcherTypes.Alt);
             var newSecretCustom = allCustomArchers.FindAll(a => a.ArcherType == ArcherData.ArcherTypes.Secret);
             
             newNormalCustom = new List<ArcherCustomData>(newNormalCustom.OrderBy((a) => a.Order));
-            var newNormal = ArcherData.Archers.ToList();
+            var newNormal = new List<ArcherData>(originalArchersList.ToList());
 
             var indexDict = new Dictionary<string, int>();
             var newIndex = newNormal.Count;
@@ -363,7 +471,7 @@ namespace ArcherLoaderMod
             }
         }
 
-        private static List<ArcherCustomData> LoadContentAtPath(string path, ContentAccess contentAccess, bool warnNotFound = true)
+        public static List<ArcherCustomData> LoadContentAtPath(string path, ContentAccess contentAccess, bool warnNotFound = true)
         {
             var allCustomArchers = new List<ArcherCustomData>();
             if (!Directory.Exists(path))
@@ -423,11 +531,10 @@ namespace ArcherLoaderMod
 
             var pathWithContentPrefix = addContentPrefix ? Calc.LOADPATH + path : path;
 
-            
             Atlas atlas = null;
             if (File.Exists($"{pathWithContentPrefix}atlas.xml") && File.Exists($"{pathWithContentPrefix}atlas.png"))
             {
-                atlas = content.CreateAtlas($"{path}atlas.xml", $"{path}atlas.png", true, contentAccess);
+                atlas = AtlasExt.CreateAtlas(content, $"{path}atlas.xml", $"{path}atlas.png", true, contentAccess);
                 customAtlasList.Add(atlas);
             }
             
@@ -472,7 +579,7 @@ namespace ArcherLoaderMod
             if (File.Exists($"{pathWithContentPrefix}menuAtlas.xml") &&
                 File.Exists($"{pathWithContentPrefix}menuAtlas.png"))
             {
-                atlasArcherMenu = content.CreateAtlas($"{path}menuAtlas.xml", $"{path}menuAtlas.png", true, contentAccess);
+                atlasArcherMenu = AtlasExt.CreateAtlas(content, $"{path}menuAtlas.xml", $"{path}menuAtlas.png", true, contentAccess);
                 customAtlasList.Add(atlasArcherMenu);
                 spriteDataMenu = content.CreateSpriteData($"{path}menuSpriteData.xml", atlasArcherMenu, contentAccess);
                 customSpriteDataList.Add(spriteDataMenu);

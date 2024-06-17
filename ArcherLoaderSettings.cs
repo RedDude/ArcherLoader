@@ -194,6 +194,43 @@ public static class CommandList
     }
 
     
+    [Command("ReloadArcher")]
+    public static void ReloadArcher(string[] args)
+    {
+        var index = 0;
+        if (args != null && args.Length > 0)
+        {
+            index = int.Parse(args[0]);
+        }
+        
+        if(!TFGame.Players[index]) return;
+        
+        if (Engine.Instance.Scene is not Level level) return;
+        var player = (Player) level.Players[index];
+
+        var exist = Mod.ArcherCustomDataDict.TryGetValue(player.ArcherData, out var archerCustomData);
+        if (!exist) return;
+
+        Mod.LoadArcherContents();
+        Mod.Start();
+
+        
+        // foreach (var customData in Mod.LoadContentAtPath(archerCustomData.FolderPath, ContentAccess.Content))
+        // {
+        //     
+        // }
+        //     
+        // ArcherCustomManager.Initialize(archerCustomData.FolderPath, atlasArcher, atlasArcherMenu, spriteData, spriteDataMenu, archerName, FortEntrance.Settings.Validate);
+
+        // var originalName = archerCustomData.originalName;
+        // var original = Mod.AllArchersDataDict.Find(a => a.Name0 == originalName);
+        //
+        // archerCustomData.Parse(original, original.FolderPath);
+        //
+        // archerCustomData.Parse(archerCustomData.original, archerCustomData.ori);
+        // return archerCustomData.HairInfo;
+    }
+    
     // TFGame.Players[index]
     // Engine.Instance.Commands.Log("Hello");
     
