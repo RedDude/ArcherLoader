@@ -215,7 +215,7 @@ namespace ArcherLoaderMod.Layers
 
             if (layerInfo.IsRainbowColor)
             {
-                layerSprite.Color = RainbowManager.GetColor();
+                layerSprite.Color = RainbowManager.GetColor(layerInfo.RainbowOffset, layerInfo.RainbowSpeed);
             }
          
             base.Update();

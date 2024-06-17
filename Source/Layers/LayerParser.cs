@@ -63,6 +63,8 @@ namespace ArcherLoaderMod.Layer
                 IsColorA = xml.ChildBool("IsColorA", false),
                 IsColorB = xml.ChildBool("IsColorB", false),
                 IsRainbowColor = xml.ChildBool("IsRainbowColor", false),
+                RainbowOffset = xml.ChildInt("RainbowOffset", 0),
+                RainbowSpeed = xml.ChildFloat("RainbowSpeed", 1f),
                 IsTeamColor = xml.ChildBool("IsTeamColor", false),
                 
                 IsOnInvisible = xml.ChildBool("IsOnInvisible", false),

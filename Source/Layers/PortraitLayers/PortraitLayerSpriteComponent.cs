@@ -71,7 +71,7 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
 
             if (layerInfo.IsRainbowColor)
             {
-                layerSprite.Color = RainbowManager.CurrentColor;//RainbowManager.GetColor(Environment.TickCount);
+                layerSprite.Color = RainbowManager.GetColor(layerInfo.RainbowOffset, layerInfo.RainbowSpeed);//RainbowManager.GetColor(Environment.TickCount);
             }
             
             Counter = (float) ((Counter + Rate * (double) Engine.TimeMult) % 25.1327419281006);
@@ -98,9 +98,9 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
 
                 SelectionLerp = Math.Min(1f, SelectionLerp + 0.1f * Engine.TimeMult);
                 float AddYMult = 1;
-                var ImageY = (float)Math.Round(MathHelper.Lerp(0f,  AddYMult - Value * layerInfo.FloatAnimation.Y, SelectionLerp));
-                
-                layerSprite.Position = ((RollcallElement)portrait.Parent).Position + offset + lastShake + layerInfo.Position + new Vector2(0, ImageY );
+                var ImageY = (float)Math.Round(MathHelper.Lerp(0f,  AddYMult - (Value * layerInfo.FloatAnimation.Y), SelectionLerp));
+
+                layerSprite.Position = ((RollcallElement) portrait.Parent).Position + offset + lastShake + layerInfo.Position + new Vector2(0, ImageY );
                 layerSprite.Scale = portraitImage.Scale;
             }
 

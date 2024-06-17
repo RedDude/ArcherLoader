@@ -52,5 +52,7 @@ namespace ArcherLoaderMod.Layers
         {
         }
 
+        public int RainbowOffset { get; set; }
+        public float RainbowSpeed { get; set; }
     }
 }

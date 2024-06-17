@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Xml;
 using Microsoft.Xna.Framework;
 using Monocle;
+using TowerFall;
 using Sounds = On.TowerFall.Sounds;
 using SpriteData = On.Monocle.SpriteData;
 
@@ -30,7 +32,7 @@ namespace ArcherLoaderMod.Patch
         }
 
         private static void OnArcherDataOnInitialize(On.TowerFall.ArcherData.orig_Initialize orig)
-        { 
+        {
             Mod.LoadArcherContents();
             orig();
             Mod.Start();

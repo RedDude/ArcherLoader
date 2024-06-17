@@ -20,10 +20,11 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
         public bool IsColorB;
         public bool IsTeamColor;
         public bool IsRainbowColor;
+        public int RainbowOffset { get; set; }
+        public float RainbowSpeed { get; set; }
         
         public PortraitLayerInfo()
         {
         }
-
     }
 }

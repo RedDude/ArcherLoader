@@ -68,6 +68,9 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
                 IsColorA = xml.ChildBool("IsColorA", false),
                 IsColorB = xml.ChildBool("IsColorB", false),
                 IsRainbowColor = xml.ChildBool("IsRainbowColor", false),
+                RainbowOffset = xml.ChildInt("RainbowOffset", 0),
+                RainbowSpeed = xml.ChildFloat("RainbowSpeed", 1),
+
                 ToScale = xml.ChildBool("ToScale", true),
             };
 

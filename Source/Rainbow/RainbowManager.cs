@@ -27,7 +27,7 @@ namespace ArcherLoaderMod.Rainbow
                 RainbowManager.Time = 0;
                 return Color.White;
             }
-            var interval = 1500f;
+            var interval = 100f;
             var currentIndex = ((int) (time * speedMultiplier / interval) + offset) % PrismaticColors.Length;
             var nextIndex = (currentIndex + 1) % PrismaticColors.Length;
             var position = time * speedMultiplier / interval % 1f;

@@ -134,6 +134,11 @@ namespace ArcherLoaderMod.Particles
             {
                 return;
             }
+            
+            // if (!info.IsDodgeCooldown && player.dodgeCooldown)
+            // {
+                // return;
+            // }
          
             switch (player.Allegiance)
             {
