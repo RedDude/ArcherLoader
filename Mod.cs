@@ -144,7 +144,6 @@ namespace ArcherLoaderMod
             allCustomArchers.AddRange(LoadContentAtPath(null, $"{_customArchersPath}", ContentAccess.Root));
 
             string archerFolder = Path.Combine(content.MetadataPath, "Content", "Archers");
-            Logger.Log(archerFolder);
 
             if (ModIO.IsDirectoryOrFileExists(archerFolder)) 
             {
