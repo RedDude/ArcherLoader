@@ -82,7 +82,7 @@ namespace ArcherLoaderMod
             PortraitLayerPatch.Load();
             PrismaticPatcher.Load();
             TeamsPatcher.Load();
-            RiseCore.Events.OnPostLoadContent += OnPostLoadContent;
+            RiseCore.Events.OnAfterLoadContent += OnAfterLoadContent;
             
             HandleQuickStart();
         }
@@ -138,7 +138,7 @@ namespace ArcherLoaderMod
             On.TowerFall.MainMenu.Update += OnMainMenuOnUpdate;
         }
 
-        private static void OnPostLoadContent(FortContent content)
+        private static void OnAfterLoadContent(FortContent content)
         {
             allCustomArchers.AddRange(LoadContentAtPath(null, $"{Calc.LOADPATH}{_contentCustomArchersPath}", ContentAccess.Content));
             allCustomArchers.AddRange(LoadContentAtPath(null, $"{_customArchersPath}", ContentAccess.Root));
@@ -613,7 +613,7 @@ namespace ArcherLoaderMod
             PrismaticPatcher.Unload();
             TeamsPatcher.Unload();
 
-            RiseCore.Events.OnPostLoadContent -= OnPostLoadContent;
+            RiseCore.Events.OnAfterLoadContent -= OnAfterLoadContent;
         }
 
         public static void OnVariantsRegister(VariantManager variants, bool noPerPlayer = false)
