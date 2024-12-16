@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Xml;
+﻿using System.Xml;
 using ArcherLoaderMod.Hair;
 using ArcherLoaderMod.Layer;
 using ArcherLoaderMod.Layers;
@@ -14,7 +10,7 @@ using TowerFall;
 
 namespace ArcherLoaderMod
 {
-  public class ArcherCustomData
+    public class ArcherCustomData
   {
     public string ID;
     public int Order;
@@ -503,7 +499,7 @@ namespace ArcherLoaderMod
       }
    
       var originalAudiosPath = Audio.LOAD_PREFIX;
-      Audio.LOAD_PREFIX = $"{FolderPath}SFX{Path.DirectorySeparatorChar.ToString()}";
+      Audio.LOAD_PREFIX = $"{FolderPath}SFX{Path.DirectorySeparatorChar}";
       CharacterSounds = new CharacterSounds(sfxName, Sounds.Characters[SFXID]);
       Mod.customSFXList.Add(CharacterSounds);
       victory = CharacterSounds.Load("VICTORY");

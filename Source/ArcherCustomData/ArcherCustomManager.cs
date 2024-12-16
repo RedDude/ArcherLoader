@@ -12,7 +12,7 @@ namespace ArcherLoaderMod
     public static List<ArcherCustomData> Initialize(string path, Atlas atlas, Atlas menuAtlas, SpriteData spriteData, SpriteData menuSpriteData, string archerId, bool validate = false)
     {
       var filePath = $"{path}archerData.xml";
-      var xmlDocument = ModFs.LoadXml(filePath);
+      var xmlDocument = ModIO.LoadXml(filePath);
       var archers = xmlDocument["Archers"];
       var archersArray = new List<ArcherCustomData>();
       validator ??= new ArcherCustomDataValidator();
