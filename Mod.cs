@@ -82,7 +82,7 @@ namespace ArcherLoaderMod
             PortraitLayerPatch.Load();
             PrismaticPatcher.Load();
             TeamsPatcher.Load();
-            RiseCore.Events.OnAfterLoadContent += OnAfterLoadContent;
+            RiseCore.Events.OnAfterModdedLoadContent += OnAfterLoadContent;
             
             HandleQuickStart();
         }
@@ -613,7 +613,7 @@ namespace ArcherLoaderMod
             PrismaticPatcher.Unload();
             TeamsPatcher.Unload();
 
-            RiseCore.Events.OnAfterLoadContent -= OnAfterLoadContent;
+            RiseCore.Events.OnAfterModdedLoadContent -= OnAfterLoadContent;
         }
 
         public static void OnVariantsRegister(VariantManager variants, bool noPerPlayer = false)
