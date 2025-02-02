@@ -140,8 +140,6 @@ namespace ArcherLoaderMod
 
         private static void OnAfterLoadContent(FortContent content)
         {
-            allCustomArchers.AddRange(LoadContentAtPath(null, $"{Calc.LOADPATH}{_contentCustomArchersPath}", ContentAccess.Content));
-            allCustomArchers.AddRange(LoadContentAtPath(null, $"{_customArchersPath}", ContentAccess.Root));
 
             string archerFolder = Path.Combine(content.MetadataPath, "Content", "Archers");
 
@@ -154,6 +152,9 @@ namespace ArcherLoaderMod
         
         public static void Start()
         {
+            allCustomArchers.AddRange(LoadContentAtPath(null, $"{Calc.LOADPATH}{_contentCustomArchersPath}", ContentAccess.Content));
+            allCustomArchers.AddRange(LoadContentAtPath(null, $"{_customArchersPath}", ContentAccess.Root));
+
             var newNormalCustom = allCustomArchers.FindAll(a => a.ArcherType == ArcherData.ArcherTypes.Normal);
             var newAltCustom = allCustomArchers.FindAll(a => a.ArcherType == ArcherData.ArcherTypes.Alt);
             var newSecretCustom = allCustomArchers.FindAll(a => a.ArcherType == ArcherData.ArcherTypes.Secret);
@@ -427,13 +428,35 @@ namespace ArcherLoaderMod
                 atlas = AtlasExt.CreateAtlas($"{path}atlas.xml", $"{path}atlas.png");
                 customAtlasList.Add(atlas);
             }
-            
-            if (!ModIO.IsDirectoryOrFileExists($"{path}spriteData.xml") || atlas == null)
+            else 
             {
-                return newArchers;
+                // we fallback to the main atlas, incase the user uses the standard mod pathing.
+                atlas = TFGame.Atlas;
+                customAtlasList.Add(atlas);
             }
             
-            var spriteData = SpriteDataExt.CreateSpriteData($"{path}spriteData.xml", atlas);
+            // we'll need to provide a fallback for SpriteData as well, but due to how differs
+            // the spriteData is on ArcherLoader, this is not possible.
+            SpriteData spriteData;
+            if (!ModIO.IsDirectoryOrFileExists($"{path}spriteData.xml"))
+            {
+                // So, we might need to load it separately if it exists
+                var archerSpriteDataPath = Path.Combine(content.MetadataPath, "Content", "Atlas", "SpriteData", "spriteData.xml");
+                if (ModIO.IsDirectoryOrFileExists(archerSpriteDataPath))
+                {
+                    spriteData = SpriteDataExt.CreateSpriteData(archerSpriteDataPath, atlas);
+                }
+                else 
+                {
+                    // Well, everything's invalid anyway
+                    return newArchers;
+                }
+            }
+            else 
+            {
+                spriteData = SpriteDataExt.CreateSpriteData($"{path}spriteData.xml", atlas);
+            }
+            
             var sprites = DynamicData.For(spriteData).Get<Dictionary<string, XmlElement>>("sprites");
 
             if (sprites.Count > 0)
@@ -474,6 +497,16 @@ namespace ArcherLoaderMod
                 spriteDataMenu = SpriteDataExt.CreateSpriteData($"{path}menuSpriteData.xml", atlasArcherMenu);
                 customSpriteDataList.Add(spriteDataMenu);
                 customSpriteDataPath.Add(spriteDataMenu, $"{path}menuSpriteData.xml");
+            }
+            else 
+            {
+                // we fallback if atlas does not exists incase if the user uses the standard mod loading.
+                // we would likely need to fallback the spriteData correctly since this is tied to the
+                // menuAtlas.png but for now, this should work
+                atlasArcherMenu = TFGame.MenuAtlas;
+                customAtlasList.Add(atlasArcherMenu);
+                spriteDataMenu = TFGame.MenuSpriteData;
+                customSpriteDataList.Add(spriteDataMenu);
             }
 
             var filePath = $"{path}archerData.xml";
