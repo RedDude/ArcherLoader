@@ -1,7 +1,13 @@
 {
 	"name": "Archer Loader",
-	"version": "1.3.1",
+	"version": "2.0.0",
 	"author": "RedDude",
 	"description": "Load Custom Archers easily by just Drag n Drop. Create Archers with custom hair, wings, ghost, particles, layers, skins and even taunts for archers",
-	"dll": "ArcherLoaderMod.dll"
+	"dll": "ArcherLoaderMod.dll",
+	"dependencies": [
+		{
+			"name": "FortRise",
+			"version": "5.0.0"
+		}
+	]
 }
