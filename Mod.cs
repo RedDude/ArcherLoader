@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Xml;
 using ArcherLoaderMod.Ghost;
 using ArcherLoaderMod.Hair;
@@ -17,6 +12,7 @@ using ArcherLoaderMod.Taunt;
 using ArcherLoaderMod.Teams;
 using ArcherLoaderMod.Wings;
 using FortRise;
+using FortRise.IO;
 using Monocle;
 using MonoMod.ModInterop;
 using MonoMod.Utils;
@@ -86,11 +82,11 @@ namespace ArcherLoaderMod
             PortraitLayerPatch.Load();
             PrismaticPatcher.Load();
             TeamsPatcher.Load();
+            RiseCore.Events.OnAfterModdedLoadContent += OnAfterLoadContent;
             
             HandleQuickStart();
         }
 
-       
         private static void HandleQuickStart()
         {
             if (!FortEntrance.Settings.QuickStart) return;
@@ -141,19 +137,24 @@ namespace ArcherLoaderMod
 
             On.TowerFall.MainMenu.Update += OnMainMenuOnUpdate;
         }
-                
-        public static void LoadArcherContents()
+
+        private static void OnAfterLoadContent(FortContent content)
         {
-            allCustomArchers.AddRange(LoadContentAtPath($"{Calc.LOADPATH}{_contentCustomArchersPath}", ContentAccess.Content));
-            var contentPath = Content.GetContentPath("");
-            allCustomArchers.AddRange(LoadContentAtPath(contentPath+$"/{_customArchersPath}", ContentAccess.ModContent));
-            allCustomArchers.AddRange(LoadContentAtPath($"{_customArchersPath}", ContentAccess.Root));
-            allCustomArchers.AddRange(LoadContentAtPath(contentPath.Replace("/Content", "")+$"/{_customArchersPath}", ContentAccess.Root));
-            // allCustomArchers.AddRange(LoadContentAtPath(Content.GetContentPath("").Replace("/Content", ""), ContentAccess.Root));
+
+            string archerFolder = Path.Combine(content.MetadataPath, "Content", "Archers");
+
+            if (ModIO.IsDirectoryOrFileExists(archerFolder)) 
+            {
+                List<ArcherCustomData> archerData = LoadContentAtPath(content, archerFolder, ContentAccess.ModContent, true);
+                allCustomArchers.AddRange(archerData);
+            }
         }
         
         public static void Start()
         {
+            allCustomArchers.AddRange(LoadContentAtPath(null, $"{Calc.LOADPATH}{_contentCustomArchersPath}", ContentAccess.Content));
+            allCustomArchers.AddRange(LoadContentAtPath(null, $"{_customArchersPath}", ContentAccess.Root));
+
             var newNormalCustom = allCustomArchers.FindAll(a => a.ArcherType == ArcherData.ArcherTypes.Normal);
             var newAltCustom = allCustomArchers.FindAll(a => a.ArcherType == ArcherData.ArcherTypes.Alt);
             var newSecretCustom = allCustomArchers.FindAll(a => a.ArcherType == ArcherData.ArcherTypes.Secret);
@@ -363,24 +364,30 @@ namespace ArcherLoaderMod
             }
         }
 
-        private static List<ArcherCustomData> LoadContentAtPath(string path, ContentAccess contentAccess, bool warnNotFound = true)
+        private static List<ArcherCustomData> LoadContentAtPath(FortContent content, string path, ContentAccess contentAccess, bool warnNotFound = true)
         {
             var allCustomArchers = new List<ArcherCustomData>();
-            if (!Directory.Exists(path))
+            if (!ModIO.IsDirectoryOrFileExists(path))
             {
                 if(warnNotFound)
                     Console.WriteLine($"\nNo Archer Found in \"{path}\" Folder");
                 return allCustomArchers;
             }
                
-            var customArchersFound = Directory.GetDirectories(path);
+            var customArchersFound = ModIO.GetDirectories(path);
             
             foreach (var directory in customArchersFound)
             {
                 // if(directory.EndsWith("Content"))
                 //     continue;
+
+                if (contentAccess == ContentAccess.ModContent) 
+                {
+                    allCustomArchers.AddRange(LoadContent(content, directory, contentAccess, contentAccess == ContentAccess.Content));
+                    continue;
+                } 
                 
-                allCustomArchers.AddRange(LoadContent(Content, directory, contentAccess, contentAccess == ContentAccess.Content));
+                allCustomArchers.AddRange(LoadContent(null, directory, contentAccess, contentAccess == ContentAccess.Content));
             }
 
             if (warnNotFound && allCustomArchers.Count == 0)
@@ -409,34 +416,47 @@ namespace ArcherLoaderMod
         private static List<ArcherCustomData> LoadContent(FortContent content, string directory, ContentAccess contentAccess, bool addContentPrefix = false)
         {
             var newArchers = new List<ArcherCustomData>();
-            newArchers.AddRange(LoadContentAtPath(directory, contentAccess, false));
 
             var archerName = directory.Split(Convert.ToChar(_separator)).Last();
-            var path = $"{directory}{_separator}".Replace($"Content{_separator}", $"");
-            var pathModContentFolder = false;
-            if (contentAccess == ContentAccess.ModContent) 
-            {
-                path = path.Replace(Content.GetContentPath(), "");
-                path = Content.GetContentPath() + path;
-                contentAccess = ContentAccess.Root;
-            }
-
-            var pathWithContentPrefix = addContentPrefix ? Calc.LOADPATH + path : path;
+            var path = directory + "/";
 
             
             Atlas atlas = null;
-            if (File.Exists($"{pathWithContentPrefix}atlas.xml") && File.Exists($"{pathWithContentPrefix}atlas.png"))
+            if (ModIO.IsDirectoryOrFileExists($"{path}atlas.xml") && 
+                ModIO.IsDirectoryOrFileExists($"{path}atlas.png"))
             {
-                atlas = content.CreateAtlas($"{path}atlas.xml", $"{path}atlas.png", true, contentAccess);
+                atlas = AtlasExt.CreateAtlas($"{path}atlas.xml", $"{path}atlas.png");
+                customAtlasList.Add(atlas);
+            }
+            else 
+            {
+                // we fallback to the main atlas, incase the user uses the standard mod pathing.
+                atlas = TFGame.Atlas;
                 customAtlasList.Add(atlas);
             }
             
-            if (!File.Exists($"{pathWithContentPrefix}spriteData.xml") || atlas == null)
+            // we'll need to provide a fallback for SpriteData as well, but due to how differs
+            // the spriteData is on ArcherLoader, this is not possible.
+            SpriteData spriteData;
+            if (!ModIO.IsDirectoryOrFileExists($"{path}spriteData.xml"))
             {
-                return newArchers;
+                // So, we might need to load it separately if it exists
+                var archerSpriteDataPath = Path.Combine(content.MetadataPath, "Content", "Atlas", "SpriteData", "spriteData.xml");
+                if (ModIO.IsDirectoryOrFileExists(archerSpriteDataPath))
+                {
+                    spriteData = SpriteDataExt.CreateSpriteData(archerSpriteDataPath, atlas);
+                }
+                else 
+                {
+                    // Well, everything's invalid anyway
+                    return newArchers;
+                }
+            }
+            else 
+            {
+                spriteData = SpriteDataExt.CreateSpriteData($"{path}spriteData.xml", atlas);
             }
             
-            var spriteData = content.CreateSpriteData($"{path}spriteData.xml", atlas, contentAccess);
             var sprites = DynamicData.For(spriteData).Get<Dictionary<string, XmlElement>>("sprites");
 
             if (sprites.Count > 0)
@@ -469,20 +489,30 @@ namespace ArcherLoaderMod
         
             var atlasArcherMenu = atlas;
             SpriteData spriteDataMenu = spriteData;
-            if (File.Exists($"{pathWithContentPrefix}menuAtlas.xml") &&
-                File.Exists($"{pathWithContentPrefix}menuAtlas.png"))
+            if (ModIO.IsDirectoryOrFileExists($"{path}menuAtlas.xml") &&
+                ModIO.IsDirectoryOrFileExists($"{path}menuAtlas.png"))
             {
-                atlasArcherMenu = content.CreateAtlas($"{path}menuAtlas.xml", $"{path}menuAtlas.png", true, contentAccess);
+                atlasArcherMenu = AtlasExt.CreateAtlas($"{path}menuAtlas.xml", $"{path}menuAtlas.png");
                 customAtlasList.Add(atlasArcherMenu);
-                spriteDataMenu = content.CreateSpriteData($"{path}menuSpriteData.xml", atlasArcherMenu, contentAccess);
+                spriteDataMenu = SpriteDataExt.CreateSpriteData($"{path}menuSpriteData.xml", atlasArcherMenu);
                 customSpriteDataList.Add(spriteDataMenu);
                 customSpriteDataPath.Add(spriteDataMenu, $"{path}menuSpriteData.xml");
             }
+            else 
+            {
+                // we fallback if atlas does not exists incase if the user uses the standard mod loading.
+                // we would likely need to fallback the spriteData correctly since this is tied to the
+                // menuAtlas.png but for now, this should work
+                atlasArcherMenu = TFGame.MenuAtlas;
+                customAtlasList.Add(atlasArcherMenu);
+                spriteDataMenu = TFGame.MenuSpriteData;
+                customSpriteDataList.Add(spriteDataMenu);
+            }
 
-            var filePath = $"{pathWithContentPrefix}archerData.xml";
-            if (!File.Exists(filePath)) return newArchers;
+            var filePath = $"{path}archerData.xml";
+            if (!ModIO.IsDirectoryOrFileExists(filePath)) return newArchers;
             var newArchersFromPack = 
-                InitializeArcherData(pathWithContentPrefix, atlas, atlasArcherMenu, spriteData, spriteDataMenu, archerName.ToUpper());
+                InitializeArcherData(path, atlas, atlasArcherMenu, spriteData, spriteDataMenu, archerName.ToUpper());
             return newArchersFromPack;
         }
 
@@ -615,6 +645,8 @@ namespace ArcherLoaderMod
             PortraitLayerPatch.Unload();
             PrismaticPatcher.Unload();
             TeamsPatcher.Unload();
+
+            RiseCore.Events.OnAfterModdedLoadContent -= OnAfterLoadContent;
         }
 
         public static void OnVariantsRegister(VariantManager variants, bool noPerPlayer = false)

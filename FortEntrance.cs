@@ -56,24 +56,6 @@ namespace ArcherLoaderMod
         }
     }
 
-    // Harmony can be supported
-
-    //[HarmonyPatch(typeof(MainMenu), "BoolToString")]
-    //public class MyPatcher
-    //{
-    //    static void Postfix(ref string __result)
-    //    {
-    //        if (__result == "ON")
-    //        {
-    //            __result = "ENABLED";
-    //            return;
-    //        }
-
-    //        __result = "DISABLED";
-    //    }
-    //}
-
-
     /* 
     Example of interppting with libraries
     Learn more: https://github.com/MonoMod/MonoMod/blob/master/README-ModInterop.md

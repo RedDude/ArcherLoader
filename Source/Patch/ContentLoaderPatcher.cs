@@ -31,7 +31,6 @@ namespace ArcherLoaderMod.Patch
 
         private static void OnArcherDataOnInitialize(On.TowerFall.ArcherData.orig_Initialize orig)
         { 
-            Mod.LoadArcherContents();
             orig();
             Mod.Start();
         }

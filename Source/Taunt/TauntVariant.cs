@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
 using System.Xml;
 using FortRise;
+using FortRise.IO;
 using Microsoft.Xna.Framework.Input;
 using Monocle;
 using MonoMod.RuntimeDetour;
@@ -696,7 +694,7 @@ namespace ArcherLoaderMod.Taunt
 
     public static SFXLooped LoadLooped(string name) => Exists(name) ? new SFXLooped(name) : (SFXLooped) null;
 
-    private static bool Exists(string name) => File.Exists(Audio.LOAD_PREFIX +  name + ".wav");
+    private static bool Exists(string name) => ModIO.IsFileExists(Audio.LOAD_PREFIX +  name + ".wav");
 
     private static string VariedSuffix(int num)
     {

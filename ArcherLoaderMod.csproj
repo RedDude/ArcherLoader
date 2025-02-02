@@ -6,8 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <OutputPath Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">D:\Games\TowerFall-FortRise\Mods\$(AssemblyName)</OutputPath>
-    <OutputPath Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">D:\Games\TowerFall-FortRise\Mods\$(AssemblyName)-Debug</OutputPath>
+    <OutputPath Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">..\..\Mods\$(AssemblyName)</OutputPath>
+    <OutputPath Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">..\..\Mods\$(AssemblyName)-Debug</OutputPath>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,28 +30,28 @@
 
 
   <ItemGroup>
-    <Reference Include="0Harmony, Version=2.2.2.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>D:\Games\TowerFall-FortRise\0Harmony.dll</HintPath>
+    <Reference Include="0Harmony">
+      <HintPath>..\..\0Harmony.dll</HintPath>
       <Private>false</Private>
     </Reference>
-    <Reference Include="FNA, Version=20.12.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>D:\Games\TowerFall-FortRise\FNA.dll</HintPath>
+    <Reference Include="FNA">
+      <HintPath>..\..\FNA.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="MMHOOK_TowerFall">
-      <HintPath>D:\Games\TowerFall-FortRise\MMHOOK_TowerFall.dll</HintPath>
+      <HintPath>..\..\MMHOOK_TowerFall.dll</HintPath>
       <Private>false</Private>
     </Reference>
-    <Reference Include="MonoMod.RuntimeDetour, Version=22.7.31.1, Culture=neutral, PublicKeyToken=null">
-      <HintPath>D:\Games\TowerFall-FortRise\MonoMod.RuntimeDetour.dll</HintPath>
+    <Reference Include="MonoMod.RuntimeDetour">
+      <HintPath>..\..\MonoMod.RuntimeDetour.dll</HintPath>
       <Private>false</Private>
     </Reference>
-    <Reference Include="MonoMod.Utils, Version=22.7.31.1, Culture=neutral, PublicKeyToken=null">
-      <HintPath>D:\Games\TowerFall-FortRise\MonoMod.Utils.dll</HintPath>
+    <Reference Include="MonoMod.Utils">
+      <HintPath>..\..\MonoMod.Utils.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="TowerFall">
-      <HintPath>D:\Games\TowerFall-FortRise\TowerFall.exe</HintPath>
+      <HintPath>..\..\TowerFall.exe</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>

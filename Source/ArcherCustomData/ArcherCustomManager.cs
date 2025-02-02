@@ -1,19 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Xml;
+﻿using System.Xml;
+using FortRise.IO;
 using Monocle;
 using TowerFall;
 
 namespace ArcherLoaderMod
 {
-  public class ArcherCustomManager
+    public class ArcherCustomManager
   {
     public static ArcherCustomDataValidator validator;
 
     public static List<ArcherCustomData> Initialize(string path, Atlas atlas, Atlas menuAtlas, SpriteData spriteData, SpriteData menuSpriteData, string archerId, bool validate = false)
     {
       var filePath = $"{path}archerData.xml";
-      var xmlDocument = Calc.LoadXML(filePath);
+      var xmlDocument = ModIO.LoadXml(filePath);
       var archers = xmlDocument["Archers"];
       var archersArray = new List<ArcherCustomData>();
       validator ??= new ArcherCustomDataValidator();
