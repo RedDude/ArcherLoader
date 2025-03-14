@@ -438,6 +438,7 @@ namespace ArcherLoaderMod
             // we'll need to provide a fallback for SpriteData as well, but due to how differs
             // the spriteData is on ArcherLoader, this is not possible.
             SpriteData spriteData;
+            SpriteData spriteData2;
             if (!ModIO.IsDirectoryOrFileExists($"{path}spriteData.xml"))
             {
                 // So, we might need to load it separately if it exists
@@ -445,6 +446,7 @@ namespace ArcherLoaderMod
                 if (ModIO.IsDirectoryOrFileExists(archerSpriteDataPath))
                 {
                     spriteData = SpriteDataExt.CreateSpriteData(archerSpriteDataPath, atlas);
+                    spriteData2 = TFGame.SpriteData;
                 }
                 else 
                 {
@@ -455,6 +457,7 @@ namespace ArcherLoaderMod
             else 
             {
                 spriteData = SpriteDataExt.CreateSpriteData($"{path}spriteData.xml", atlas);
+                spriteData2 = spriteData;
             }
             
             var sprites = DynamicData.For(spriteData).Get<Dictionary<string, XmlElement>>("sprites");
@@ -512,7 +515,7 @@ namespace ArcherLoaderMod
             var filePath = $"{path}archerData.xml";
             if (!ModIO.IsDirectoryOrFileExists(filePath)) return newArchers;
             var newArchersFromPack = 
-                InitializeArcherData(path, atlas, atlasArcherMenu, spriteData, spriteDataMenu, archerName.ToUpper());
+                InitializeArcherData(path, atlas, atlasArcherMenu, spriteData2, spriteDataMenu, archerName.ToUpper());
             return newArchersFromPack;
         }
 

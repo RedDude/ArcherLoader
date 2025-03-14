@@ -4,6 +4,7 @@ using ArcherLoaderMod.Layer;
 using ArcherLoaderMod.Layers;
 using ArcherLoaderMod.Particles;
 using ArcherLoaderMod.Source.Layers.PortraitLayers;
+using FortRise;
 using Microsoft.Xna.Framework;
 using Monocle;
 using TowerFall;
