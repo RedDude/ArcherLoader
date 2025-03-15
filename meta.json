@@ -9,5 +9,11 @@
 			"name": "FortRise",
 			"version": "5.0.0"
 		}
-	]
+	],
+	"update": {
+		"github": {
+			"repository": "RedDude/ArcherLoader",
+			"tagRegex": "v(.*)"
+		}
+	}
 }
