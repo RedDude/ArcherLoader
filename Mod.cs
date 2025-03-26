@@ -145,10 +145,13 @@ namespace ArcherLoaderMod
         public static void LoadArcherContents()
         {
             allCustomArchers.AddRange(LoadContentAtPath($"{Calc.LOADPATH}{_contentCustomArchersPath}", ContentAccess.Content));
-            var contentPath = Content.GetContentPath("");
-            allCustomArchers.AddRange(LoadContentAtPath(contentPath+$"/{_customArchersPath}", ContentAccess.ModContent));
             allCustomArchers.AddRange(LoadContentAtPath($"{_customArchersPath}", ContentAccess.Root));
-            allCustomArchers.AddRange(LoadContentAtPath(contentPath.Replace("/Content", "")+$"/{_customArchersPath}", ContentAccess.Root));
+
+            // We need to think a better solution than loading content at random location
+
+            // var contentPath = Content.GetContentPath("");
+            // allCustomArchers.AddRange(LoadContentAtPath(contentPath+$"/{_customArchersPath}", ContentAccess.ModContent));
+            // allCustomArchers.AddRange(LoadContentAtPath(contentPath.Replace("/Content", "")+$"/{_customArchersPath}", ContentAccess.Root));
             // allCustomArchers.AddRange(LoadContentAtPath(Content.GetContentPath("").Replace("/Content", ""), ContentAccess.Root));
         }
         
@@ -413,11 +416,10 @@ namespace ArcherLoaderMod
 
             var archerName = directory.Split(Convert.ToChar(_separator)).Last();
             var path = $"{directory}{_separator}".Replace($"Content{_separator}", $"");
-            var pathModContentFolder = false;
             if (contentAccess == ContentAccess.ModContent) 
             {
-                path = path.Replace(Content.GetContentPath(), "");
-                path = Content.GetContentPath() + path;
+                // path = path.Replace(Content.GetContentPath(), "");
+                // path = Content.GetContentPath() + path;
                 contentAccess = ContentAccess.Root;
             }
 
@@ -427,7 +429,7 @@ namespace ArcherLoaderMod
             Atlas atlas = null;
             if (File.Exists($"{pathWithContentPrefix}atlas.xml") && File.Exists($"{pathWithContentPrefix}atlas.png"))
             {
-                atlas = content.CreateAtlas($"{path}atlas.xml", $"{path}atlas.png", true, contentAccess);
+                atlas = AtlasExt.CreateAtlas(content, $"{path}atlas.xml", $"{path}atlas.png", contentAccess);
                 customAtlasList.Add(atlas);
             }
             
@@ -472,7 +474,7 @@ namespace ArcherLoaderMod
             if (File.Exists($"{pathWithContentPrefix}menuAtlas.xml") &&
                 File.Exists($"{pathWithContentPrefix}menuAtlas.png"))
             {
-                atlasArcherMenu = content.CreateAtlas($"{path}menuAtlas.xml", $"{path}menuAtlas.png", true, contentAccess);
+                atlasArcherMenu = AtlasExt.CreateAtlas(content, $"{path}menuAtlas.xml", $"{path}menuAtlas.png", contentAccess);
                 customAtlasList.Add(atlasArcherMenu);
                 spriteDataMenu = content.CreateSpriteData($"{path}menuSpriteData.xml", atlasArcherMenu, contentAccess);
                 customSpriteDataList.Add(spriteDataMenu);
