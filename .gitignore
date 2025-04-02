@@ -59,3 +59,6 @@ Tools/Extrator/CreateAtlas/output/
 obj/
 .vs/
 .vscode
+obj/Debug
+obj
+obj/ArcherLoaderMod.csproj.nuget.dgspec.json
