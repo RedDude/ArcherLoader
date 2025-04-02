@@ -1,16 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Xml;
 using Microsoft.Xna.Framework;
 using Monocle;
+using MonoMod.Cil;
+using MonoMod.RuntimeDetour;
 using TowerFall;
 using Sounds = On.TowerFall.Sounds;
 using SpriteData = On.Monocle.SpriteData;
 
 namespace ArcherLoaderMod.Patch
 {
+    
     public class ContentLoaderPatcher
     {
+        private static Hook _atlasGetItemHook;
+        
         public static void Load()
         {
             On.TowerFall.ArcherData.Initialize += OnArcherDataOnInitialize;
@@ -19,6 +26,10 @@ namespace ArcherLoaderMod.Patch
             On.Monocle.SpriteData.GetSpriteString += OnSpriteDataOnGetSpriteString;
             On.Monocle.SpriteData.GetSpriteInt += OnSpriteDataOnGetSpriteInt;
             On.Monocle.SpriteData.GetXML += SpriteDataOnGetXML;
+            
+            MethodInfo targetMethod = typeof(Atlas).GetMethod("get_Item", new[] { typeof(string) });
+            MethodInfo hookMethod = typeof(ContentLoaderPatcher).GetMethod(nameof(AtlasGetItemHook), BindingFlags.Static | BindingFlags.NonPublic);
+            _atlasGetItemHook = new Hook(targetMethod, hookMethod);
         }
 
         public static void Unload()
@@ -135,5 +146,36 @@ namespace ArcherLoaderMod.Patch
             return sprite2;
         }
 
+        private static Subtexture AtlasGetItemHook(Func<Atlas, string, Subtexture> orig, Atlas self, string name)
+        {
+            try
+            {
+                // First, attempt to get the subtexture using the original method
+                return orig(self, name);
+            }
+            catch
+            {
+                // Ignore the exception and proceed to check custom atlases
+            }
+
+            // If the original method failed, check cached custom atlases
+            foreach (var atlas in Mod.cachedCustomAtlasList)
+            {
+                if (atlas.Contains(name))
+                    return atlas[name];
+            }
+
+            // Check custom atlases and cache them if found
+            foreach (var atlas in Mod.customAtlasList)
+            {
+                if (!atlas.Contains(name)) continue;
+                if (!Mod.cachedCustomAtlasList.Contains(atlas))
+                    Mod.cachedCustomAtlasList.Add(atlas);
+                return atlas[name];
+            }
+
+            // If not found, rethrow the original exception or a new exception
+            throw new KeyNotFoundException($"Subtexture '{name}' not found in any atlas.");
+        }
     }
 }
