@@ -244,10 +244,19 @@ namespace ArcherLoaderMod
           CheckSpriteDataSubSprite(atlas, menuAtlas, headCrownData, "HeadCrown", "Texture", $"{archerId}/head/crown", errors);
         }
       }
-
-      CheckMissingChild(xml, "Sprites", "Bow",
+      
+      if(CheckMissingChild(xml, "Sprites", "Bow",
         "The Archer Bow Sprites; SpriteData Id. check Github wiki and the Archer Resources for examples and details",
-        isErrorWhenNotExist, errors);
+        isErrorWhenNotExist, errors))
+      {
+        var headCrownId = xml["Sprites"]["Bow"].InnerText;
+        if (GetSpriteDataXml(spriteData, spriteDataMenu, headCrownId, out var bowData, errors))
+        {
+          CheckSpriteDataSubSprite(atlas, menuAtlas, bowData, "Bow", "Texture", $"{archerId}/bow", errors);
+        }
+      }
+
+      ;
 
       if (xml.HasChild(nameof(Hat)))
       {
