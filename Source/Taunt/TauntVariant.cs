@@ -145,8 +145,13 @@ namespace ArcherLoaderMod.Taunt
             orig(self);
             
             var matchVariants = self.Level.Session.MatchSettings.Variants;
-            variantInfo = matchVariants.GetCustomVariant("Taunt");
-            var variantEnabled = variantInfo[self.PlayerIndex] || FortEntrance.Settings.TauntAlwaysOn;
+            var variantEnabled = FortEntrance.Settings.TauntAlwaysOn;
+                        
+            if(!variantEnabled){
+                variantInfo = matchVariants.GetCustomVariant("ArcherLoader/Taunt");
+                variantEnabled = variantInfo[self.PlayerIndex];
+            }
+
             if (!variantEnabled) return;
                 
             if (self.State == Player.PlayerStates.Frozen)
@@ -452,16 +457,16 @@ namespace ArcherLoaderMod.Taunt
         private static void HandleNormal(TauntInfo tauntInfo, XmlElement xmlElement)
         {
             tauntInfo.NoHatTexture = xmlElement.ChildText("NoHatTexture", null);
-            tauntInfo.NoHatTexture ??= xmlElement["Normal"].ChildText("NoHat", null);
-            tauntInfo.NoHatTexture ??= xmlElement["NoHat"].ChildText("Normal", null);
+            tauntInfo.NoHatTexture ??= xmlElement["Normal"]?.ChildText("NoHat", null);
+            tauntInfo.NoHatTexture ??= xmlElement["NoHat"]?.ChildText("Normal", null);
 
             tauntInfo.CrownTexture = xmlElement.ChildText("CrownTexture", null);
-            tauntInfo.CrownTexture ??= xmlElement["Normal"].ChildText("Crown", null);
-            tauntInfo.CrownTexture ??= xmlElement["Crown"].ChildText("Normal", null);
+            tauntInfo.CrownTexture ??= xmlElement["Normal"]?.ChildText("Crown", null);
+            tauntInfo.CrownTexture ??= xmlElement["Crown"]?.ChildText("Normal", null);
 
             tauntInfo.TauntTexture = xmlElement.ChildText("Texture", null);
-            tauntInfo.TauntTexture ??= xmlElement["Normal"].ChildText("Hat", null);
-            tauntInfo.TauntTexture ??= xmlElement["Hat"].ChildText("Normal", null);
+            tauntInfo.TauntTexture ??= xmlElement["Normal"]?.ChildText("Hat", null);
+            tauntInfo.TauntTexture ??= xmlElement["Hat"]?.ChildText("Normal", null);
 
             tauntInfo.hasTauntNoHat = tauntInfo.spriteData.ContainsAnimation("tauntNoHat") &&
                                       !string.IsNullOrEmpty(tauntInfo.NoHatTexture);
