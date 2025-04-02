@@ -1,15 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
-    <LangVersion>10</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <OutputPath Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">D:\Games\TowerFall-FortRise\Mods\$(AssemblyName)</OutputPath>
-    <OutputPath Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">D:\Games\TowerFall-FortRise\Mods\$(AssemblyName)-Debug</OutputPath>
+    <TowerfallPath>D:\SteamLibrary\steamapps\common\FortRise</TowerfallPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(DefineConstants.Contains('ITCHIO'))">
+    <TowerfallPath>D:\Games\TowerFall-FortRise</TowerfallPath>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>latestmajor</LangVersion>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+    <OutputPath Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">$(TowerfallPath)\Mods\$(AssemblyName)</OutputPath>
+    <OutputPath Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">$(TowerfallPath)\Mods\$(AssemblyName)-Debug</OutputPath>
+  </PropertyGroup>
+  
   <ItemGroup>
     <Content Include="Content/Atlas/**/*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -30,13 +36,8 @@
 
 
   <ItemGroup>
-    <Reference Include="0Harmony, Version=2.2.2.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>D:\Games\TowerFall-FortRise\0Harmony.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="FNA, Version=20.12.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="FNA, Version=23.10.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>D:\Games\TowerFall-FortRise\FNA.dll</HintPath>
-      <Private>false</Private>
     </Reference>
     <Reference Include="MMHOOK_TowerFall">
       <HintPath>D:\Games\TowerFall-FortRise\MMHOOK_TowerFall.dll</HintPath>
@@ -50,9 +51,8 @@
       <HintPath>D:\Games\TowerFall-FortRise\MonoMod.Utils.dll</HintPath>
       <Private>false</Private>
     </Reference>
-    <Reference Include="TowerFall">
-      <HintPath>D:\Games\TowerFall-FortRise\TowerFall.exe</HintPath>
-      <Private>false</Private>
+    <Reference Include="TowerFall, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>D:\SteamLibrary\steamapps\common\FortRise\TowerFall.Patch.dll</HintPath>
     </Reference>
   </ItemGroup>
 

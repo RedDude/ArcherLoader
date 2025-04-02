@@ -1,6 +1,8 @@
-﻿using ArcherLoaderMod.Source.ModImport;
+﻿using System;
+using System.Collections.Generic;
+using ArcherLoaderMod.Source.ModImport;
 using FortRise;
-using HarmonyLib;
+// using HarmonyLib;
 using Monocle;
 using MonoMod.ModInterop;
 using TowerFall;
@@ -28,8 +30,6 @@ namespace ArcherLoaderMod
 
         public override void Load()
         {
-            var harmony = new Harmony("com.reddude.archerLoader");
-            harmony.PatchAll(typeof(FortEntrance).Assembly);
             Mod.Load();
             //Settings.FlightTest = () => { Music.Play("Flight"); };
 

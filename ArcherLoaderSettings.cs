@@ -100,7 +100,7 @@ public static class CommandList
         
         if (Engine.Instance.Scene is not Level level) return;
         
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < TFGame.PlayerInputs.Length; i++)
         {
             if (TFGame.Players[i] && TFGame.PlayerInputs[i] != null)
             {
