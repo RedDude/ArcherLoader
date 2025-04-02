@@ -24,16 +24,15 @@ public static class ArcherEditor
     private static RollcallElement rollcall;
     private static RollcallElement rollcallPreview;
     private static RollcallElement rollcallNotJoinedPreview;
+    private static MatchResultsPortraitPreview resultsPortraitWin;
+    private static MatchResultsPortraitPreview resultsPortraitLose;
 
     public static void Load()
     {
         On.TowerFall.RollcallElement.EnterJoined += OnForceStart;
-        // On.TowerFall.RollcallElement.HandleControlChange += OnHandleControlChange;
         On.TowerFall.RollcallElement.NotJoinedUpdate += OnNotJoinedUpdate;
         On.TowerFall.RollcallElement.JoinedUpdate += OnJoinedUpdate;
         On.TowerFall.RollcallElement.Render += OnRender;
-        
-        
     }
 
     private static void OnRender(On.TowerFall.RollcallElement.orig_Render orig, RollcallElement self)
@@ -44,6 +43,7 @@ public static class ArcherEditor
        if(rollcallNotJoinedPreview != null){
             DynamicData.For(rollcallNotJoinedPreview).Set("input", null);
        }
+
        orig(self);
     }
 
@@ -51,8 +51,8 @@ public static class ArcherEditor
     {
         On.TowerFall.RollcallElement.EnterJoined -= OnForceStart;
         On.TowerFall.RollcallElement.NotJoinedUpdate -= OnNotJoinedUpdate;
-         On.TowerFall.RollcallElement.JoinedUpdate -= OnJoinedUpdate;
-         On.TowerFall.RollcallElement.Render -= OnRender;
+        On.TowerFall.RollcallElement.JoinedUpdate -= OnJoinedUpdate;
+        On.TowerFall.RollcallElement.Render -= OnRender;
     }
 
     private static int OnJoinedUpdate(On.TowerFall.RollcallElement.orig_JoinedUpdate orig, RollcallElement self)
@@ -67,13 +67,11 @@ public static class ArcherEditor
 
     private static void OnForceStart(On.TowerFall.RollcallElement.orig_EnterJoined orig, RollcallElement self)
     {
-        if (MainMenu.RollcallMode < 0)
-        {
-            if(rollcall){
-                rollcall.RemoveSelf();
-                HotRefresh();
-                return;
-            }
+        if(rollcall){
+            rollcall.RemoveSelf();
+            rollcall = null;
+            HotRefresh();
+            return;
         }
 
         orig(self);
@@ -125,6 +123,9 @@ public static class ArcherEditor
 
         if (MInput.Keyboard.Pressed((Keys)Keys.T))
         {
+            if(rollcall != null){
+                return;
+            }
             var scene = (Engine.Instance.Scene as Level);
             if(!scene.Layers.ContainsKey(-1)){
                 scene.Layers.Add(-1, new Monocle.Layer());
@@ -152,6 +153,27 @@ public static class ArcherEditor
            
         if (MInput.Keyboard.Pressed((Keys)Keys.F))
         {
+            if(rollcallPreview != null){
+                rollcallPreview.RemoveSelf();
+                rollcallPreview = null;
+                if(rollcallNotJoinedPreview != null){
+                    rollcallNotJoinedPreview.RemoveSelf();
+                    rollcallNotJoinedPreview = null;
+                }
+
+                if(resultsPortraitWin != null){
+                    resultsPortraitWin.RemoveSelf();
+                    resultsPortraitWin = null;
+                }
+
+                if(resultsPortraitLose != null){
+                    resultsPortraitLose.RemoveSelf();
+                    resultsPortraitLose = null;
+                }
+
+                return;
+            }
+
             var scene = (Engine.Instance.Scene as Level);
             if(!scene.Layers.ContainsKey(-1)){
                 scene.Layers.Add(-1, new Monocle.Layer());
@@ -183,6 +205,15 @@ public static class ArcherEditor
             // DynamicData.For(rollcall).Set("MainMenu", new MainMenu(MainMenu.MenuState.Rollcall));
             session.CurrentLevel.Add(rollcallNotJoinedPreview);
             // DynamicData.For(rollcallNotJoinedPreview).Set("input", new PlayerInput());
+
+            var p = (Player)session.CurrentLevel.Players[0];
+            resultsPortraitWin = new MatchResultsPortraitPreview(p.PlayerIndex, true, new Vector2(200, 200));
+            resultsPortraitWin.LayerIndex = 3;
+            session.CurrentLevel.Add(resultsPortraitWin);
+
+            resultsPortraitLose = new MatchResultsPortraitPreview(p.PlayerIndex, false, new Vector2(100, 200));
+            resultsPortraitLose.LayerIndex = 3;
+            session.CurrentLevel.Add(resultsPortraitLose);
         }
 
         if(rollcallPreview){
@@ -197,13 +228,6 @@ public static class ArcherEditor
             if(control != null){
                 control.Visible = false;
             }
-          
-            // var altButton = DynamicData.For(rollcallNotJoinedPreview).Get<Subtexture>("altButton");
-            // if(altButton != null){
-            //     altButton.Visible = false;
-            // }
-
-            
         }
 
         if (MInput.Keyboard.Pressed((Keys)Keys.R))
@@ -251,10 +275,25 @@ public static class ArcherEditor
                 allCurrentMocks.ForEach(m => m.RemoveSelf());
                 allCurrentMocks.Clear();
 
-                if(rollcallPreview)
+                if(rollcallPreview != null){
                     rollcallPreview.RemoveSelf();
-                if(rollcallNotJoinedPreview)
+                    rollcallPreview = null;
+                }
+
+                if(rollcallNotJoinedPreview != null){
                     rollcallNotJoinedPreview.RemoveSelf();
+                    rollcallNotJoinedPreview = null;
+                }
+
+                if(resultsPortraitWin != null){
+                    resultsPortraitWin.RemoveSelf();
+                    resultsPortraitWin = null;
+                }
+
+                if(resultsPortraitLose != null){
+                    resultsPortraitLose.RemoveSelf();
+                    resultsPortraitLose = null;
+                }
 
                 CreateMocks(session, player);
             }
@@ -271,7 +310,7 @@ public static class ArcherEditor
             // matchSettings.Variants.GetCustomVariant("ReaperChalice").Value = true;
             (matchSettings.LevelSystem as VersusLevelSystem).StartOnLevel(0);
             var newSession = new Session(matchSettings);
-VersusPlayerMatchResults
+
             void OnSessionOnStartRound(On.TowerFall.Session.orig_OnUpdate round, Session self1)
             {
                 round(self1);
@@ -373,6 +412,11 @@ VersusPlayerMatchResults
             mock.fakeInput.ShootPressed = true;
             mock.UpdateInput();
         });
+
+         var mockPosition6 = p.Position;
+        mockPosition6.X = 260;
+        mockPosition6.Y = 192;
+     
     }
 
     private static void CreateMockPlayer( Player p, Vector2 mockPosition, Session session, Action<MockPlayer> callback)
@@ -449,7 +493,6 @@ VersusPlayerMatchResults
 
     public static void UpdateScene(Scene scene)
     {
-
       EditorUI editorUi1 = scene.CollideFirst(MInput.Mouse.Position, GameTags.EditorUI) as EditorUI;
       Vector2 localPosition = Vector2.Zero;
       if ((bool) (Entity) editorUi1)
