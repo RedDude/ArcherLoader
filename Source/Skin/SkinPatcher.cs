@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Reflection;
 using ArcherLoaderMod.Source.Layers.PortraitLayers;
-using FortRise;
+using HarmonyLib;
 using Monocle;
-using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
 using TowerFall;
 
@@ -12,100 +11,101 @@ namespace ArcherLoaderMod.Skin
 {
     public class SkinPatcher
     {
-        public static bool enabled = false;
-        
+        private static Harmony harmony;
+        private static MethodInfo initGem;
+        public static bool Enabled = false;
+
         public static Dictionary<ArcherData, List<ArcherCustomData>> archerSkins = new();
         public static Dictionary<int, Dictionary<ArcherData, int>> archerSkinsIndex = new();
         public static Dictionary<ArcherCustomData, ArcherData> SkinArcherCustomToArcher = new();
-        private static Hook hook_ArcherData_Get;
-        private static MethodInfo initGem;
 
         public static void Load()
         {
+            if (FortEntrance.Instance.Settings.DisableLayers) return;
+
+            harmony = new Harmony("mod.archerloader.skin");
+
+            // Patch methods
+            harmony.Patch(
+                typeof(RollcallElement).GetMethod("Update"),
+                prefix: new HarmonyMethod(typeof(SkinPatcher), nameof(RollcallElement_Update_Prefix)),
+                postfix: new HarmonyMethod(typeof(SkinPatcher), nameof(RollcallElement_Update_Postfix))
+            );
+
+            harmony.Patch(
+                typeof(ArcherData).GetMethod("Get", new[] { typeof(int), typeof(ArcherData.ArcherTypes) }),
+                prefix: new HarmonyMethod(typeof(SkinPatcher), nameof(ArcherData_Get_Prefix))
+            );
+
             initGem = typeof(ArcherPortrait).GetMethod("InitGem", BindingFlags.Instance | BindingFlags.NonPublic);
 
-            On.TowerFall.RollcallElement.Update += OnRollcallElementOnUpdate;
-            On.TowerFall.ArcherData.Get_int_ArcherTypes += OnArcherDataOnGet_Int_ArcherTypes;
-            // On.TowerFall.MainMenu.FinishTransition += (orig, self) =>
-            // {
-            //     orig(self);
-            //     if (self.State != MainMenu.MenuState.Main) return;
-            //     for (var i = 0; i < TFGame.Players.Length; i++)
-            //     {
-            //         if(!TFGame.Players[i]) continue;
-            //         // foreach (var keyValuePair in archerSkinsIndex[i])
-            //         // {
-            //         //     archerSkinsIndex[i]. = -1;
-            //         // }
-            //     }
-            // };
-            
-            enabled = true;
+            Enabled = true;
         }
 
         public static void Unload()
         {
-            if(!enabled)
-                return;
-            
-            On.TowerFall.RollcallElement.Update -= OnRollcallElementOnUpdate;
-            On.TowerFall.ArcherData.Get_int_ArcherTypes -= OnArcherDataOnGet_Int_ArcherTypes;
+            harmony?.UnpatchAll();
         }
 
-        private static ArcherData OnArcherDataOnGet_Int_ArcherTypes(On.TowerFall.ArcherData.orig_Get_int_ArcherTypes orig, int characterIndex, ArcherData.ArcherTypes type)
+        [HarmonyPrefix]
+        private static void RollcallElement_Update_Prefix(RollcallElement __instance)
         {
-            var data = orig(characterIndex, type);
-            for (var i = 0; i < TFGame.Players.Length; i++)
-            {
-                if(!TFGame.Players[i]) continue;
-                if(TFGame.Characters[i] != characterIndex) continue;
+            var playerIndex = DynamicData.For(__instance).Get<int>("playerIndex");
+            var input = TFGame.PlayerInputs[playerIndex];
+            if (input == null) return;
 
-                return GetSkinCharacter(i, data);
-            }
-
-            return data;
-        }
-        
-        private static void OnRollcallElementOnUpdate(On.TowerFall.RollcallElement.orig_Update orig, TowerFall.RollcallElement self)
-        {
-            var playerIndex = DynamicData.For(self).Get<int>("playerIndex");
-            var input =  TFGame.PlayerInputs[playerIndex];
-            if (input == null)
-            {
-                orig(self);
-                return;
-            }
-            
-            var archerType = DynamicData.For(self).Get<ArcherData.ArcherTypes>("archerType");
+            var archerType = DynamicData.For(__instance).Get<ArcherData.ArcherTypes>("archerType");
             if (input.MenuLeft || input.MenuRight || input.MenuBack || input.MenuAlt)
             {
-                var data = ArcherData.Get(self.CharacterIndex, archerType);
+                var data = ArcherData.Get(__instance.CharacterIndex, archerType);
                 if (archerSkins.ContainsKey(data))
                 {
                     archerSkinsIndex[playerIndex][data] = -1;
                 }
             }
+        }
 
-            orig(self);
-            
-            var state = DynamicData.For(self).Get<StateMachine>("state");
-            
-            if (state.State == 1)
-            {
-                return;
-            }
+        [HarmonyPostfix]
+        private static void RollcallElement_Update_Postfix(RollcallElement __instance)
+        {
+            var playerIndex = DynamicData.For(__instance).Get<int>("playerIndex");
+            var input = TFGame.PlayerInputs[playerIndex];
+            if (input == null) return;
 
-            var portrait = DynamicData.For(self).Get<ArcherPortrait>("portrait");
+            var state = DynamicData.For(__instance).Get<StateMachine>("state");
+            if (state.State == 1) return;
+
+            var portrait = DynamicData.For(__instance).Get<ArcherPortrait>("portrait");
+            var characterIndex = __instance.CharacterIndex;
+            var archerType = DynamicData.For(__instance).Get<ArcherData.ArcherTypes>("archerType");
 
             if (input.MenuUp)
             {
-                SetCharacter(portrait, playerIndex, self.CharacterIndex, archerType, 1);
+                SetCharacter(portrait, playerIndex, characterIndex, archerType, 1);
             }
-            
-            if (input.MenuDown)
+            else if (input.MenuDown)
             {
-                SetCharacter(portrait, playerIndex, self.CharacterIndex, archerType, -1);
+                SetCharacter(portrait, playerIndex, characterIndex, archerType, -1);
             }
+        }
+
+        [HarmonyPrefix]
+        private static bool ArcherData_Get_Prefix(int characterIndex, ArcherData.ArcherTypes type, ref ArcherData __result)
+        {
+            // Call original method to get base data
+            // __result = ArcherData.Archers[characterIndex].ArcherTypes[(int)type];
+
+            // Apply skin override for players
+            for (var i = 0; i < TFGame.Players.Length; i++)
+            {
+                if (!TFGame.Players[i]) continue;
+                if (TFGame.Characters[i] != characterIndex) continue;
+
+                __result = GetSkinCharacter(i, __result);
+                return false; // Skip original
+            }
+
+            return true; // Continue to original
         }
         
         public static void SetCharacter(ArcherPortrait archerPortrait, int playerIndex, int characterIndex, ArcherData.ArcherTypes altSelect, int moveDir)
@@ -223,9 +223,9 @@ namespace ArcherLoaderMod.Skin
             }
 
             var originalName = skinCustomData.originalName;
-            if (!Mod.BaseArcherByNameDict.TryGetValue(skinCustomData.originalName.ToLower(), out var data))
+            if (!ArcherLoaderMod.BaseArcherByNameDict.TryGetValue(skinCustomData.originalName.ToLower(), out var data))
             {
-                foreach (var archerCustomData in Mod.ArcherCustomDataDict)
+                foreach (var archerCustomData in ArcherLoaderMod.ArcherCustomDataDict)
                 {
                     if (archerCustomData.Value.ID != skinCustomData.originalName) continue;
                     data = archerCustomData.Key;
@@ -242,7 +242,7 @@ namespace ArcherLoaderMod.Skin
                 return;
             }
 
-            if (FortEntrance.Settings.Validate)
+            if (FortEntrance.Instance.Settings.Validate)
             {
                 var errors =
                     ArcherCustomManager.validator.Validate(
@@ -272,7 +272,7 @@ namespace ArcherLoaderMod.Skin
             var skinArcherData = skinCustomData.ToArcherData();
 
             SkinArcherCustomToArcher[skinCustomData] = skinArcherData;
-            Mod.ArcherCustomDataDict[skinArcherData] = skinCustomData;
+            ArcherLoaderMod.ArcherCustomDataDict[skinArcherData] = skinCustomData;
 
             for (var i = 0; i < TFGame.Players.Length; i++)
             {

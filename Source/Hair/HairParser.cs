@@ -17,7 +17,7 @@ namespace ArcherLoaderMod.Hair
 
       if (archerData != null)
       {
-        Mod.ArcherCustomDataDict.TryGetValue(archerData, out var customArcher);
+        ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(archerData, out var customArcher);
         if (customArcher != null)
         {
           hairInfo = customArcher.HairInfo;

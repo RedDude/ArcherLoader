@@ -1,12 +1,11 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Xml;
 using FortRise;
+using HarmonyLib;
 using Microsoft.Xna.Framework.Input;
 using Monocle;
-using MonoMod.RuntimeDetour;
 using MonoMod.Utils;
 using TowerFall;
 using ArrowHUD = TowerFall.ArrowHUD;
@@ -15,176 +14,158 @@ namespace ArcherLoaderMod.Taunt
 {
     public class TauntVariant
     {
-        private static Hook hook_UpdateHead;
-        private static Hook hook_LeaveDucking;
-        private static Hook hook_UpdateAnimation;
-        
         public static Atlas MyAtlas;
-        
-        // private static Dictionary<Player, Sprite<string>> tauntCharacters = new ();
-        private static Dictionary<Player, TauntState> tauntStates = new ();
-        
+        private static Dictionary<Player, TauntState> tauntStates = new();
         private static Variant variantInfo;
         private static Sprite<string> originalSprite;
         private static PropertyInfo drawSelfPropertyInfo;
-
         private static Dictionary<ArcherData, TauntInfo> tauntInfos = new();
         public static MethodInfo _loseHat;
-
         public static bool enabled = false;
+        private static ISubtextureEntry TauntImage;
+        private static Harmony harmony;
+        private static IVariantEntry info;
 
-        // private static CharacterSounds _sounds = new();
-        public static void OnVariantsRegister(VariantManager variants, bool noPerPlayer = false)
+
+        public static ArcherLoaderSettings settings { get; set; }
+        
+        public static void OnVariantsRegister(IModuleContext context)
         {
-            var info = new CustomVariantInfo("Taunt", MyAtlas["variants/taunt"], CustomVariantFlags.PerPlayer)
+            info = context.Registry.Variants.RegisterVariant("TauntVariantBatata", new()
             {
-                Description = "HUMILIATE YOUR FOES (DUCK + RIGHT STICK DOWN or V key)"
-                // , Header = "RULES"
-            };
-            variants.AddVariant(info, noPerPlayer);
+                Title = "Taunt",
+                Description = "PROVOKE YOUR FOES (DUCK + RIGHT STICK DOWN or V key)",
+                Icon = TauntImage,
+                Flags = CustomVariantFlags.PerPlayer
+            });
+
+            settings = FortEntrance.Instance.Settings;
         }
 
-        public static void LoadContent(FortContent fortContent)
-        {
-            drawSelfPropertyInfo = typeof(Player).GetProperty( "DrawSelf",BindingFlags.Public | BindingFlags.Instance);
 
-            MyAtlas = fortContent.LoadAtlas("Atlas/atlas.xml", "Atlas/atlas.png");
+        public static void LoadContent(IModContent content, IModuleContext context)
+        {
+            drawSelfPropertyInfo = typeof(Player).GetProperty("DrawSelf", BindingFlags.Public | BindingFlags.Instance);
+            TauntImage = context.Registry.Subtextures.RegisterTexture("Taunt", content.Root.GetRelativePath("taunt.png"));
         }
 
         public static void Load()
         {
             enabled = true;
             _loseHat = typeof(Player).GetMethod("LoseHat", BindingFlags.NonPublic | BindingFlags.Instance);
-        
-            On.TowerFall.Player.Update += OnPlayerOnUpdate;
-            On.TowerFall.Player.DoWrapRender += OnPlayerOnDoWrapRender;
+            harmony = new Harmony("mod.archerloader.taunt");
             
-            Action<orig_Player_UpdateHead, Player> updateHeadPatch = UpdateHead_patch;
-            Action<orig_Player_LeaveDucking, Player> leaveDuckingPatch = LeaveDucking_patch;
-            Action<orig_Player_UpdateAnimation, Player> updateAnimationPatch = UpdateAnimation_patch;
+            // Patch methods
+            harmony.Patch(
+                typeof(Player).GetMethod("Update"),
+                postfix: new HarmonyMethod(typeof(TauntVariant), nameof(Player_Update_Postfix))
+            );
             
-            var methodInfo = typeof(Player).GetMethod("UpdateHead", BindingFlags.NonPublic | BindingFlags.Instance);
-            hook_UpdateHead = new Hook(
-                methodInfo,
-                updateHeadPatch);
-
-            hook_LeaveDucking = new Hook(
+            harmony.Patch(
+                typeof(Player).GetMethod("DoWrapRender"),
+                prefix: new HarmonyMethod(typeof(TauntVariant), nameof(Player_DoWrapRender_Prefix))
+            );
+            
+            harmony.Patch(
                 typeof(Player).GetMethod("LeaveDucking", BindingFlags.NonPublic | BindingFlags.Instance),
-                leaveDuckingPatch);
-
-            hook_UpdateAnimation = new Hook(
+                prefix: new HarmonyMethod(typeof(TauntVariant), nameof(Player_LeaveDucking_Prefix))
+            );
+            
+            harmony.Patch(
+                typeof(Player).GetMethod("UpdateHead", BindingFlags.NonPublic | BindingFlags.Instance),
+                postfix: new HarmonyMethod(typeof(TauntVariant), nameof(Player_UpdateHead_Postfix))
+            );
+            
+            harmony.Patch(
                 typeof(Player).GetMethod("UpdateAnimation", BindingFlags.NonPublic | BindingFlags.Instance),
-                updateAnimationPatch);
+                prefix: new HarmonyMethod(typeof(TauntVariant), nameof(Player_UpdateAnimation_Prefix))
+            );
             
+            harmony.Patch(
+                typeof(ArrowHUD).GetMethod("Render"),
+                prefix: new HarmonyMethod(typeof(TauntVariant), nameof(ArrowHUD_Render_Prefix))
+            );
+
             Cache.Init<SelfExplosion>();
-            
-            On.TowerFall.ArrowHUD.Render += OnArrowHudOnRender;
         }
 
-        private static void OnPlayerOnDoWrapRender(On.TowerFall.Player.orig_DoWrapRender orig, Player self)
+ [HarmonyPrefix]
+        private static void Player_DoWrapRender_Prefix(Player __instance)
         {
-            if (tauntStates.ContainsKey(self))
+            if (tauntStates.ContainsKey(__instance))
             {
-                var tauntState = tauntStates[self];
+                var tauntState = tauntStates[__instance];
                 var tauntCharacter = tauntState?.sprite;
-                if (tauntState != null && tauntCharacter && tauntState.animation != null)
-                    tauntCharacter?.DrawOutline();
+                if (tauntState != null && tauntCharacter != null && tauntState.animation != null)
+                    tauntCharacter.DrawOutline();
             }
-            orig(self);
         }
-        
-        
-        private static void OnArrowHudOnRender(On.TowerFall.ArrowHUD.orig_Render orig, ArrowHUD self)
+
+        [HarmonyPrefix]
+        private static bool ArrowHUD_Render_Prefix(ArrowHUD __instance)
         {
-            if (!FortEntrance.Settings.TauntAlwaysOn && variantInfo == null)
-            {
-                orig(self);
-                return;
-            }
+            if (!settings.TauntAlwaysOn && variantInfo == null)
+                return true;
             
-            if (!FortEntrance.Settings.HideArrowsWhileTaunt)
-            {
-                orig(self);
-                return;
-            }
+            if (!settings.HideArrowsWhileTaunt)
+                return true;
 
-            var player = DynamicData.For(self).Get<Player>("player");
-            
-            if (tauntStates.ContainsKey(player))
-            {
-                return;
-            }
-            orig(self);
+            var player = DynamicData.For(__instance).Get<Player>("player");
+            return !tauntStates.ContainsKey(player);
         }
-
         
         private static void Explode(Player self, Tween t = null)
         {
-            // if (BombPickup.SFXNewest == this)
-            // {
-            //     Sounds.sfx_bombChestLoop.Stop();
-            // }
             Sounds.pu_bombArrowExplode.Play(self.X);
-            // self.Collidable = false;
-            if(FortEntrance.Settings.TauntTooExplode)
-            {
+            if (settings.TauntTooExplode)
                 Explosion.Spawn(self.Level, self.Position, self.PlayerIndex, plusOneKill: false, false, bombTrap: false);
-            }
             else
-            {
                 SelfExplosion.Spawn(self.Level, self.Position, self.PlayerIndex, plusOneKill: false, !tauntInfos[self.ArcherData].SelfDestruction);
-            }
-           
-            // ArrowCushion.ReleaseArrows(Speed);
+            
             TFGame.PlayerInputs[self.PlayerIndex].Rumble(1f, 30);
-            // RemoveSelf();
         }
 
-        private static void OnPlayerOnUpdate(On.TowerFall.Player.orig_Update orig, Player self)
+        [HarmonyPostfix]
+        private static void Player_Update_Postfix(Player __instance)
         {
-            orig(self);
-            
-            var matchVariants = self.Level.Session.MatchSettings.Variants;
-            var variantEnabled = FortEntrance.Settings.TauntAlwaysOn;
+            var matchVariants = __instance.Level.Session.MatchSettings.Variants;
+            var variantEnabled = settings.TauntAlwaysOn;
                         
-            if(!variantEnabled){
-                variantInfo = matchVariants.GetCustomVariant("ArcherLoader/Taunt");
-                variantEnabled = variantInfo[self.PlayerIndex];
-            }
-
-            if (!variantEnabled) return;
-                
-            if (self.State == Player.PlayerStates.Frozen)
+            if (!variantEnabled)
             {
-                return;
+                variantInfo = matchVariants.GetCustomVariant("ArcherLoader/Taunt");
+                variantEnabled = variantInfo?[__instance.PlayerIndex] ?? false;
             }
 
-            var input = DynamicData.For(self).Get<InputState>("input");
-            var playerInput = TFGame.PlayerInputs[self.PlayerIndex];
+            if (!variantEnabled || __instance.State == Player.PlayerStates.Frozen) 
+                return;
 
-            SelfKill(self, playerInput, input);
-            LoseHat(self, playerInput, input);
+            var input = DynamicData.For(__instance).Get<InputState>("input");
+            var playerInput = TFGame.PlayerInputs[__instance.PlayerIndex];
+
+            SelfKill(__instance, playerInput, input);
+            LoseHat(__instance, playerInput, input);
 
             var tauntButton = playerInput switch
             {
                 XGamepadInput xGamepadInput => xGamepadInput.XGamepad.RightStickDownPressed(0),
-                // NewGamepadInput newGamepadInput => 
-                KeyboardInput => MInput.Keyboard.Check((Keys) Keys.V),
+                KeyboardInput => MInput.Keyboard.Check(Keys.V),
                 _ => input.ArrowsPressed
             };
 
-            if (!tauntButton || self.State != Player.PlayerStates.Ducking)
-            {
+            if (!tauntButton || __instance.State != Player.PlayerStates.Ducking)
                 return;
-            }
 
+            HandleTaunt(__instance);
+        }
+
+        private static void HandleTaunt(Player self)
+        {
             if (tauntStates.TryGetValue(self, out var tauntCharacter))
             {
                 tauntInfos.TryGetValue(self.ArcherData, out var currentTauntInfo);
                 if (currentTauntInfo != null && (currentTauntInfo.hasTauntNoHat || currentTauntInfo.hasTauntCrown || currentTauntInfo.hasTaunt))
-                {
                     CheckTauntAnimation(self, tauntCharacter.sprite, currentTauntInfo);
-                }
                 return;
             }
 
@@ -195,21 +176,22 @@ namespace ArcherLoaderMod.Taunt
                 tauntStates[self].sprite = tauntInfo.spriteData;
                 CheckTauntAnimation(self, tauntStates[self].sprite, tauntInfo);
                 
-                if (FortEntrance.Settings.TauntTooExplode || tauntInfo.SelfDestruction)
+                if (settings.TauntTooExplode || tauntInfo.SelfDestruction)
                 {
                     tauntInfo.spriteData.OnAnimationComplete += sprite =>
                     {
                         Explode(self);
-                        tauntInfo.Sound.Stop();
+                        tauntInfo.Sound?.Stop();
                         Music.Stop();
                     };
                 }
             }
             
-            if(!self.Dead)
+            if (!self.Dead)
                 tauntInfo.Sound?.Play();
         }
 
+       
         private static void LoseHat(Player self, PlayerInput playerInput, InputState input)
         {
             var dropHatButton = playerInput switch
@@ -219,7 +201,7 @@ namespace ArcherLoaderMod.Taunt
                 KeyboardInput => MInput.Keyboard.Check((Keys) Keys.L),
                 _ => input.ArrowsPressed
             };
-            if (!dropHatButton || !FortEntrance.Settings.DropHat) return;
+            if (!dropHatButton || !settings.DropHat) return;
             if (self.HatState != Player.HatStates.NoHat && self.State == Player.PlayerStates.Normal)
             {
                 _loseHat.Invoke(self, new object[] {null, true});
@@ -237,7 +219,7 @@ namespace ArcherLoaderMod.Taunt
                 _ => input.ArrowsPressed
             };
 
-            if (!killHatButton || !FortEntrance.Settings.SelfKill) return;
+            if (!killHatButton || !settings.SelfKill) return;
             if (self.State != Player.PlayerStates.Dying)
             {
                 self.Die(DeathCause.Curse, self.PlayerIndex);
@@ -249,7 +231,7 @@ namespace ArcherLoaderMod.Taunt
             tauntInfos.TryGetValue(self.ArcherData, out var tauntInfo);
             if (tauntInfo == null)
             {
-                var customExist = Mod.ArcherCustomDataDict.TryGetValue(self.ArcherData, out var archerCustomData);
+                var customExist = ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(self.ArcherData, out var archerCustomData);
                 if (customExist && archerCustomData.Taunt != null)
                 {
                     var xmlElement = TFGame.SpriteData.GetXML(archerCustomData.Taunt);
@@ -275,19 +257,19 @@ namespace ArcherLoaderMod.Taunt
                 }
                 else
                 {
-                    if (Mod.customSpriteDataCategoryDict.ContainsKey("taunt"))
+                    if (ArcherLoaderMod.customSpriteDataCategoryDict.ContainsKey("taunt"))
                     {
-                        foreach (var customSpriteData in Mod.customSpriteDataCategoryDict["taunt"])
+                        foreach (var customSpriteData in ArcherLoaderMod.customSpriteDataCategoryDict["taunt"])
                         {
                             var xmlElement = customSpriteData.Element;
 
-                            var forAttribute = Mod.GetForAttribute(xmlElement);
+                            var forAttribute = ArcherLoaderMod.GetForAttribute(xmlElement);
                             if (string.IsNullOrEmpty(forAttribute)) continue;
-                            Mod.BaseArcherByNameDict.TryGetValue(xmlElement.GetAttribute(forAttribute).ToLower(),
+                            ArcherLoaderMod.BaseArcherByNameDict.TryGetValue(xmlElement.GetAttribute(forAttribute).ToLower(),
                                 out var searchArcherData);
                             if (searchArcherData == null)
                             {
-                                foreach (var customData in Mod.ArcherCustomDataDict)
+                                foreach (var customData in ArcherLoaderMod.ArcherCustomDataDict)
                                 {
                                     if (customData.Value.ID == xmlElement.GetAttribute(forAttribute))
                                     {
@@ -321,17 +303,17 @@ namespace ArcherLoaderMod.Taunt
                             break;
                         }
 
-                        foreach (var customSpriteData in Mod.customSpriteDataCategoryDict["taunt"])
+                        foreach (var customSpriteData in ArcherLoaderMod.customSpriteDataCategoryDict["taunt"])
                         {
                             var xmlElement = customSpriteData.Element;
 
-                            var forAttribute = Mod.GetForAttribute(xmlElement);
+                            var forAttribute = ArcherLoaderMod.GetForAttribute(xmlElement);
                             if (string.IsNullOrEmpty(forAttribute)) continue;
-                            Mod.BaseArcherByNameDict.TryGetValue(xmlElement.GetAttribute(forAttribute).ToLower(),
+                            ArcherLoaderMod.BaseArcherByNameDict.TryGetValue(xmlElement.GetAttribute(forAttribute).ToLower(),
                                 out var searchArcherData);
                             if (searchArcherData == null)
                             {
-                                foreach (var customData in Mod.ArcherCustomDataDict)
+                                foreach (var customData in ArcherLoaderMod.ArcherCustomDataDict)
                                 {
                                     if (customData.Value.ID == xmlElement.GetAttribute(forAttribute))
                                     {
@@ -520,63 +502,63 @@ namespace ArcherLoaderMod.Taunt
             return originalPath;
         }
 
-        public static void LeaveDucking_patch(orig_Player_LeaveDucking orig, Player self)
+     
+        [HarmonyPrefix]
+        private static bool Player_LeaveDucking_Prefix(Player __instance)
         {
-            var variantEnabled = FortEntrance.Settings.TauntAlwaysOn || variantInfo[self.PlayerIndex];
-            if (!variantEnabled)
-            {
-                orig(self);
-                return;
-            }
-            
-            if (tauntStates.ContainsKey(self))
-            {
-                var bodySprite = DynamicData.For(self).Get<Sprite<string>>("bodySprite");
-                tauntInfos.TryGetValue(self.ArcherData, out var tauntInfo);
-                var tauntState = tauntStates[self];
-                if (tauntState?.animation != null)
-                {
-                    tauntState.sprite.Visible = false;
-                    tauntState.sprite.Stop();
-                    drawSelfPropertyInfo.SetValue(self, true);
-                    bodySprite.Visible = true;
-                    self.Remove(tauntState.sprite);
-                }
-                tauntInfo?.Sound.Stop();
-                tauntStates.Remove(self);
-            }
-            orig(self);
+            // var variantEnabled = settings.TauntAlwaysOn || variantInfo?[__instance.PlayerIndex] ?? false;
+            // if (!variantEnabled)
+            //     return true;
+            //
+            // if (tauntStates.ContainsKey(__instance))
+            // {
+            //     var bodySprite = DynamicData.For(__instance).Get<Sprite<string>>("bodySprite");
+            //     tauntInfos.TryGetValue(__instance.ArcherData, out var tauntInfo);
+            //     var tauntState = tauntStates[__instance];
+            //     if (tauntState?.animation != null)
+            //     {
+            //         tauntState.sprite.Visible = false;
+            //         tauntState.sprite.Stop();
+            //         drawSelfPropertyInfo.SetValue(__instance, true);
+            //         bodySprite.Visible = true;
+            //         __instance.Remove(tauntState.sprite);
+            //     }
+            //     tauntInfo?.Sound.Stop();
+            //     tauntStates.Remove(__instance);
+            // }
+            return true;
         }
 
-        public static void UpdateHead_patch(orig_Player_UpdateHead orig, Player self)
+        [HarmonyPostfix]
+        private static void Player_UpdateHead_Postfix(Player __instance)
         {
-            orig(self);
-            var variantEnabled = FortEntrance.Settings.TauntAlwaysOn || variantInfo != null && variantInfo[self.PlayerIndex];;
-            if (!variantEnabled) return;
-
-            if (!tauntStates.TryGetValue(self, out var state)) return;
-            if (state?.animation != null)
-                state.headSprite.Visible = false;
+            // var variantEnabled = settings.TauntAlwaysOn || variantInfo?[__instance.PlayerIndex] ?? false;
+            // if (!variantEnabled || !tauntStates.TryGetValue(__instance, out var state)) 
+            //     return;
+            //
+            // if (state?.animation != null)
+            //     state.headSprite.Visible = false;
         }
 
-        public static void UpdateAnimation_patch(orig_Player_UpdateAnimation orig, Player self)
+        [HarmonyPrefix]
+        private static bool Player_UpdateAnimation_Prefix(Player __instance)
         {
-            if (!FortEntrance.Settings.TauntAlwaysOn && variantInfo == null)
-            {
-                orig(self);
-                return;
-            }
-            var variantEnabled = FortEntrance.Settings.TauntAlwaysOn || variantInfo != null && variantInfo[self.PlayerIndex];
-            if (variantEnabled && tauntStates.ContainsKey(self))
-            {
-                var tauntState = tauntStates[self];
-                if (tauntState == null) return;
-                PlayTauntAnimation(self, tauntState);
-                return;
-            }
-        
-            orig(self);
+            // if (!settings.TauntAlwaysOn && variantInfo == null)
+            //     return true;
+            //
+            // var variantEnabled = settings.TauntAlwaysOn || variantInfo?[__instance.PlayerIndex] ?? false;
+            // if (variantEnabled && tauntStates.ContainsKey(__instance))
+            // {
+            //     var tauntState = tauntStates[__instance];
+            //     if (tauntState == null) 
+            //         return true;
+            //         
+            //     PlayTauntAnimation(__instance, tauntState);
+            //     return false;
+            // }
+            return true;
         }
+
         
         private static bool CheckTauntAnimation(Player self, Sprite<string> tauntCharacter, TauntInfo tauntInfo)
         {
@@ -673,20 +655,11 @@ namespace ArcherLoaderMod.Taunt
 
         public static void Unload()
         {
-            if(!enabled)
+            if (!enabled)
                 return;
-
-            hook_UpdateHead.Dispose();
-            hook_LeaveDucking.Dispose();
-            hook_UpdateAnimation.Dispose();
+            harmony.UnpatchAll();
         }
         
-        public delegate void orig_Player_UpdateAnimation(Player self);
-        
-        public delegate void orig_Player_UpdateHead(Player self);
-
-        public delegate void orig_Player_LeaveDucking(Player self);
-
         // public static SFX LoadSFX(string name) => Exists(name) ? new SFX(name) : (SFX) null;
 
     public static SFX LoadWithVariedBackup(string name) => Exists(name) ? new SFX(name) : (SFX) LoadVaried(name);

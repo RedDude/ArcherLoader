@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TilesetData>
+  <Tileset id="ArcherEditor" image="ArcherLoader/tilesets/archerEditorTileset">
+    <Center>0,0,0,0,0,0,0,0,0,0,1,2,3,4,5,6,7</Center>
+    <Top>8,9,10,11</Top>
+    <Bottom>12,13,14,15</Bottom>
+    <Right>17,21,25,29</Right>
+    <Left>16,20,24,28</Left>
+    <TopLeft>32</TopLeft>
+    <TopRight>33</TopRight>
+    <BottomLeft>36</BottomLeft>
+    <BottomRight>37</BottomRight>
+    <InsideTopLeft>34</InsideTopLeft>
+    <InsideTopRight>35</InsideTopRight>
+    <InsideBottomLeft>38</InsideBottomLeft>
+    <InsideBottomRight>39</InsideBottomRight>
+    <Single>19,23,27,31</Single>
+    <SingleHorizontalLeft>40</SingleHorizontalLeft>
+    <SingleHorizontalCenter>41,42</SingleHorizontalCenter>
+    <SingleHorizontalRight>43</SingleHorizontalRight>
+    <SingleVerticalTop>18</SingleVerticalTop>
+    <SingleVerticalCenter>22,26</SingleVerticalCenter>
+    <SingleVerticalBottom>30</SingleVerticalBottom>
+  </Tileset>
+  <Tileset id="ArcherEditorBG" image="tilesets/archerEditorBGTileset">
+    <Center>0,1,2,3,20,21,22,23</Center>
+    <Top>40,41,42,43</Top>
+    <Bottom>60,61,62,63</Bottom>
+    <Right>5,25,45,65</Right>
+    <Left>4,24,44,64</Left>
+    <TopLeft>6</TopLeft>
+    <TopRight>7</TopRight>
+    <BottomLeft>26</BottomLeft>
+    <BottomRight>27</BottomRight>
+    <InsideTopLeft>46</InsideTopLeft>
+    <InsideTopRight>47</InsideTopRight>
+    <InsideBottomLeft>66</InsideBottomLeft>
+    <InsideBottomRight>67</InsideBottomRight>
+    <Single>29</Single>
+    <SingleHorizontalLeft>8</SingleHorizontalLeft>
+    <SingleHorizontalCenter>9</SingleHorizontalCenter>
+    <SingleHorizontalRight>10</SingleHorizontalRight>
+    <SingleVerticalTop>28</SingleVerticalTop>
+    <SingleVerticalCenter>48</SingleVerticalCenter>
+    <SingleVerticalBottom>68</SingleVerticalBottom>
+  </Tileset>
+</TilesetData>

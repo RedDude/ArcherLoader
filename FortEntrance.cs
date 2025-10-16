@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using ArcherLoaderMod;
 using ArcherLoaderMod.Source.ModImport;
 using FortRise;
+using Microsoft.Extensions.Logging;
 // using HarmonyLib;
 using Monocle;
 using MonoMod.ModInterop;
@@ -10,27 +12,23 @@ using TowerFall;
 namespace ArcherLoaderMod
 {
 
-    [Fort("com.reddude.archerLoader", "archer Loader")]
-    public class FortEntrance : FortModule
+    // [Fort("com.reddude.archerLoader", "archer Loader")]
+    public class FortEntrance : Mod
     {
         public static FortEntrance Instance;
-
-        public FortEntrance()
+        public static IModContent content;
+        public static IModContent context;
+        public static IModContent logger;
+        
+        public FortEntrance(IModContent content, IModuleContext context, ILogger logger) : base(content, context, logger)
         {
             Instance = this;
-        }
 
-        public override Type SettingsType => typeof(ArcherLoaderSettings);
-        public static ArcherLoaderSettings Settings => (ArcherLoaderSettings)Instance.InternalSettings;
 
-        public override void LoadContent()
-        {
-            Mod.LoadContent(Content);
-        }
-
-        public override void Load()
-        {
-            Mod.Load();
+            OnInitialize += moduleContext =>
+            {
+                ArcherLoaderMod.Load();
+            };
             //Settings.FlightTest = () => { Music.Play("Flight"); };
 
             //PinkSlime.LoadPatch();
@@ -38,22 +36,34 @@ namespace ArcherLoaderMod
             //PatchEnemyBramble.Load();
 
             typeof(ModExports).ModInterop();
-            FortRise.RiseCore.Events.OnPreInitialize += OnPreInitialize;
+            // FortRise.RiseCore.Events.OnPreInitialize += OnPreInitialize;
+            
+            // ArcherLoaderMod.OnVariantsRegister(context);
+            // This is where you register a lot of features such as custom arrows, variants, pickups, etc..
+            // use context.Registry for adding new feature to the game.
+            // This is also where you hook methods from the game.
+            // use context.Harmony for hooks.
         }
+        
+        public Type SettingsType => typeof(ArcherLoaderSettings);
 
-        public override void Unload()
-        {
-            Mod.Unload();
-        }
-        public override void OnVariantsRegister(VariantManager manager, bool noPerPlayer = false)
-        {
-            Mod.OnVariantsRegister(manager, noPerPlayer);
-        }
+        public ArcherLoaderSettings Settings => GetSettings<ArcherLoaderSettings>()!;
 
-        private void OnPreInitialize()
-        {
-            TfExAPIModImport.MarkModuleAsSafe?.Invoke(this);
-        }
+        // public override void LoadContent()
+        // {
+        //     ArcherLoaderMod.LoadContent(Content);
+        // }
+        //
+        // public override void Unload()
+        // {
+        //     ArcherLoaderMod.Unload();
+        // }
+        // }
+        //
+        // private void OnPreInitialize()
+        // {
+        //     TfExAPIModImport.MarkModuleAsSafe?.Invoke(this);
+        // }
     }
 
     // Harmony can be supported
@@ -82,10 +92,10 @@ namespace ArcherLoaderMod
     [ModExportName("CustomArcherLoaderModExport")]
     public static class ModExports
     {
-        public static Dictionary<ArcherData, ArcherCustomData> GetArcherCustomDataDict() => Mod.ArcherCustomDataDict;
-        public static List<Atlas> GetCustomAtlasList() => Mod.customAtlasList;
-        public static List<SpriteData> GetCustomSpriteDataList() => Mod.customSpriteDataList;
-        public static List<CharacterSounds> GetCustomSFXList() => Mod.customSFXList;
+        public static Dictionary<ArcherData, ArcherCustomData> GetArcherCustomDataDict() => ArcherLoaderMod.ArcherCustomDataDict;
+        public static List<Atlas> GetCustomAtlasList() => ArcherLoaderMod.customAtlasList;
+        public static List<SpriteData> GetCustomSpriteDataList() => ArcherLoaderMod.customSpriteDataList;
+        public static List<CharacterSounds> GetCustomSFXList() => ArcherLoaderMod.customSFXList;
     }
 
 }

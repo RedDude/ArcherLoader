@@ -1,10 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TowerfallPath>D:\SteamLibrary\steamapps\common\FortRise</TowerfallPath>
+    <TowerfallPath>D:\SteamLibrary\steamapps\common\TowerFall\FortRise</TowerfallPath>
+    <ModLoaderPath>D:\SteamLibrary\steamapps\common\TowerFall\FortRise</ModLoaderPath>
+    
+    <ModVersion>2.0.0</ModVersion>
   </PropertyGroup>
   <PropertyGroup Condition="$(DefineConstants.Contains('ITCHIO'))">
-    <TowerfallPath>D:\Games\TowerFall-FortRise</TowerfallPath>
+    <TowerfallPath>D:\Games\TowerFall-FortRise5</TowerfallPath>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -12,8 +15,8 @@
     <LangVersion>latestmajor</LangVersion>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <OutputPath Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">$(TowerfallPath)\Mods\$(AssemblyName)</OutputPath>
-    <OutputPath Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">$(TowerfallPath)\Mods\$(AssemblyName)-Debug</OutputPath>
+<!--    <OutputPath Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">$(TowerfallPath)\Mods\$(AssemblyName)</OutputPath>-->
+<!--    <OutputPath Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">$(TowerfallPath)\Mods\$(AssemblyName)-Debug</OutputPath>-->
   </PropertyGroup>
   
   <ItemGroup>
@@ -34,27 +37,14 @@
     </Content>
   </ItemGroup>
 
-
-  <ItemGroup>
-    <Reference Include="FNA, Version=23.10.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>D:\Games\TowerFall-FortRise\FNA.dll</HintPath>
-    </Reference>
-    <Reference Include="MMHOOK_TowerFall">
-      <HintPath>D:\Games\TowerFall-FortRise\MMHOOK_TowerFall.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="MonoMod.RuntimeDetour, Version=22.7.31.1, Culture=neutral, PublicKeyToken=null">
-      <HintPath>D:\Games\TowerFall-FortRise\MonoMod.RuntimeDetour.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="MonoMod.Utils, Version=22.7.31.1, Culture=neutral, PublicKeyToken=null">
-      <HintPath>D:\Games\TowerFall-FortRise\MonoMod.Utils.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
-    <Reference Include="TowerFall, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <HintPath>D:\SteamLibrary\steamapps\common\FortRise\TowerFall.Patch.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+<!--  <ItemGroup>-->
+<!--    <Reference Include="FNA, Version=23.10.0.0, Culture=neutral, PublicKeyToken=null">-->
+<!--      <HintPath>D:\Games\TowerFall-FortRise\FNA.dll</HintPath>-->
+<!--    </Reference>-->
+<!--    <Reference Include="TowerFall, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">-->
+<!--      <HintPath>D:\SteamLibrary\steamapps\common\FortRise\TowerFall.Patch.dll</HintPath>-->
+<!--    </Reference>-->
+<!--  </ItemGroup>-->
 
   <ItemGroup>
     <Compile Remove="Content\Atlas\**" />
@@ -69,5 +59,15 @@
   <ItemGroup>
     <None Remove="Content\Atlas\**" />
     <None Remove="OldBeinpexVersion\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="TowerFall, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>D:\SteamLibrary\steamapps\common\TowerFall\FortRise\TowerFall.Patch.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FortRise.Configuration" Version="1.5.6" />
   </ItemGroup>
 </Project>

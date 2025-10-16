@@ -1,39 +1,49 @@
-﻿using Microsoft.Xna.Framework;
+﻿using HarmonyLib;
+using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
 using TowerFall;
-using PlayerGhost = On.TowerFall.PlayerGhost;
 
 namespace ArcherLoaderMod.Ghost
 {
     public class GhostPatcher
     {
         private static bool enabled = false;
+        private static Harmony harmony;
+
         public static void Load()
         {
-            if (FortEntrance.Settings.DisableCustomGhosts)
+            if (FortEntrance.Instance.Settings.DisableCustomGhosts)
                 return;
+                
             enabled = true;
-            On.TowerFall.PlayerGhost.Added += OnPlayerGhostOnAdded;
+            harmony = new Harmony("mod.archerloader.ghost");
+            harmony.Patch(
+                typeof(PlayerGhost).GetMethod("Added"),
+                postfix: new HarmonyMethod(typeof(GhostPatcher), nameof(PlayerGhost_Added_Postfix))
+            );
         }
-
 
         public static void Unload()
         {
             if (!enabled)
                 return;
-            On.TowerFall.PlayerGhost.Added -= OnPlayerGhostOnAdded;
+                
+            harmony.UnpatchAll();
+            harmony = null;
         }
 
-        private static void OnPlayerGhostOnAdded(PlayerGhost.orig_Added orig, TowerFall.PlayerGhost self)
+        [HarmonyPostfix]
+        private static void PlayerGhost_Added_Postfix(PlayerGhost __instance)
         {
-            orig(self);
+            if (FortEntrance.Instance.Settings.DisableCustomGhosts)
+                return;
 
             var ghostChange = "";
             Color? ghostColor = null;
-            var archerData = ArcherData.Get(TFGame.Characters[self.PlayerIndex], TFGame.AltSelect[self.PlayerIndex]);
-            var exist = Mod.ArcherCustomDataDict.TryGetValue(archerData, out var archerCustomData);
-            var sprite = DynamicData.For(self).Get<Sprite<string>>("sprite");
+            var archerData = ArcherData.Get(TFGame.Characters[__instance.PlayerIndex], TFGame.AltSelect[__instance.PlayerIndex]);
+            var exist = ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(archerData, out var archerCustomData);
+            var sprite = DynamicData.For(__instance).Get<Sprite<string>>("sprite");
             
             if (exist)
             {
@@ -44,24 +54,28 @@ namespace ArcherLoaderMod.Ghost
                 }
                 if (archerCustomData.GhostColor.HasValue)
                 {
-                    DynamicData.For(self).Set("blendColor", archerCustomData.GhostColor.Value); 
+                    DynamicData.For(__instance).Set("blendColor", archerCustomData.GhostColor.Value); 
                 }
             }
            
-            
-            Mod.customSpriteDataCategoryDict.TryGetValue("ghost", out var category);
+            ArcherLoaderMod.customSpriteDataCategoryDict.TryGetValue("ghost", out var category);
             if(category == null)
                 return;
+                
             foreach (var customSpriteData in category)
             {
                 var xmlElement = customSpriteData.Element;
-                var forAttribute = Mod.GetForAttribute(xmlElement);
+                var forAttribute = ArcherLoaderMod.GetForAttribute(xmlElement);
                 if(string.IsNullOrEmpty(forAttribute)) continue;
-                Mod.BaseArcherByNameDict.TryGetValue(xmlElement.GetAttribute(forAttribute).ToLower(),
-                    out var searchArcherData);
+                
+                ArcherLoaderMod.BaseArcherByNameDict.TryGetValue(
+                    xmlElement.GetAttribute(forAttribute).ToLower(),
+                    out var searchArcherData
+                );
+                
                 if (searchArcherData == null)
                 {
-                    foreach (var customData in Mod.ArcherCustomDataDict)
+                    foreach (var customData in ArcherLoaderMod.ArcherCustomDataDict)
                     {
                         if (customData.Value.ID == xmlElement.GetAttribute(forAttribute))
                         {
@@ -71,8 +85,11 @@ namespace ArcherLoaderMod.Ghost
                 }
 
                 if (archerData != searchArcherData) continue;
+                
                 ghostChange = xmlElement.ChildText("Texture", "");
-                ghostColor = xmlElement.HasChild("Color") ? xmlElement.ChildHexColor("Color") : null;
+                ghostColor = xmlElement.HasChild("Color") 
+                    ? xmlElement.ChildHexColor("Color") 
+                    : null;
                 break;
             }
 
@@ -82,7 +99,7 @@ namespace ArcherLoaderMod.Ghost
             }
             if (ghostColor.HasValue)
             {
-                DynamicData.For(self).Set("blendColor",  ghostColor.Value); 
+                DynamicData.For(__instance).Set("blendColor", ghostColor.Value); 
             }
         }
     }

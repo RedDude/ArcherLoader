@@ -54,7 +54,6 @@ namespace ArcherLoaderMod
     public SpriteData spriteData;
     public SpriteData menuSpriteData;
 
-    
     public int EightPlayersNotJoinedPortraitTopOffset = 0;
     public int EightPlayersJoinedPortraitTopOffset = 0;
     
@@ -478,20 +477,20 @@ namespace ArcherLoaderMod
         sfxName = xml["CustomSFX"].ChildText("Name", ID);
         if (archerData == null)
         {
-          originalIndex = Mod.CheckForBaseSFXArchers(originalName.ToUpper());
+          originalIndex = ArcherLoaderMod.CheckForBaseSFXArchers(originalName.ToUpper());
           if (originalIndex != -1){
             SFXID = originalIndex;
           }
           if (originalIndex == -1)
           {
-            var items = new List<ArcherCustomData>(Mod.ArcherCustomDataDict.Values);
+            var items = new List<ArcherCustomData>(ArcherLoaderMod.ArcherCustomDataDict.Values);
             var data = items.First(o => o.ID.ToUpper() == originalName.ToUpper());
             originalIndex = items.IndexOf(data);
           }
           if (originalIndex == -1)
           {
               var originalName = xml["CustomSFX"].ChildText("Fallback", "GREEN");
-              originalIndex = Mod.CheckForBaseSFXArchers(originalName);
+              originalIndex = ArcherLoaderMod.CheckForBaseSFXArchers(originalName);
               if (originalIndex == -1)
                 SFXID = originalIndex;
           }
@@ -505,7 +504,7 @@ namespace ArcherLoaderMod
       var originalAudiosPath = Audio.LOAD_PREFIX;
       Audio.LOAD_PREFIX = $"{FolderPath}SFX{Path.DirectorySeparatorChar.ToString()}";
       CharacterSounds = new CharacterSounds(sfxName, Sounds.Characters[SFXID]);
-      Mod.customSFXList.Add(CharacterSounds);
+      ArcherLoaderMod.customSFXList.Add(CharacterSounds);
       victory = CharacterSounds.Load("VICTORY");
       Audio.LOAD_PREFIX = originalAudiosPath;
     }

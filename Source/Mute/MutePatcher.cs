@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using ArcherLoaderMod.Skin;
+﻿using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Monocle;
-using MonoMod.Utils;
 using TowerFall;
 
 namespace ArcherLoaderMod.Mute
@@ -11,53 +8,71 @@ namespace ArcherLoaderMod.Mute
     public class MutePatcher
     {
         private static bool enabled = false;
+        private static Harmony harmony;
+
         public static void Load()
         {
-            // if(FortEntrance.Settings.DisableMutes)
-                // return;
-            On.TowerFall.Player.EnterDodge += OnEnterDodge;
-            On.TowerFall.Player.Jump += OnJump;
+            // if(FortEntrance.Settings.DisableMutes) return;
             
-            // On.TowerFall.PMuteCorpse.Added += OnPMuteCorpseOnAdded;
+            harmony = new Harmony("mod.archerloader.mute");
+            enabled = true;
+            
+            // Patch Player.EnterDodge
+            harmony.Patch(
+                typeof(Player).GetMethod("EnterDodge"),
+                prefix: new HarmonyMethod(typeof(MutePatcher), nameof(EnterDodge_Prefix)),
+                postfix: new HarmonyMethod(typeof(MutePatcher), nameof(EnterDodge_Postfix))
+            );
+            
+            // Patch Player.Jump
+            harmony.Patch(
+                typeof(Player).GetMethod("Jump"),
+                prefix: new HarmonyMethod(typeof(MutePatcher), nameof(Jump_Prefix)),
+                postfix: new HarmonyMethod(typeof(MutePatcher), nameof(Jump_Postfix))
+            );
         }
 
-        private static float SetVolumeAndGetOriginal(Player self)
+        private static void SetVolumeAndGetOriginal(Player self, out float originalVolume)
         {
-            var originalSound = Audio.MasterVolume;
-            for (var i = 0; i < self.Components.Count; i++)
+            originalVolume = Audio.MasterVolume;
+            foreach (var component in self.Components)
             {
-                if (self.Components[i].GetType() == typeof(MutePlayerComponent))
+                if (component is MutePlayerComponent)
                 {
                     Audio.MasterVolume = 0;
+                    return;
                 }
             }
-
-            return originalSound;
         }
 
-
-        private static void OnEnterDodge(On.TowerFall.Player.orig_EnterDodge orig, TowerFall.Player self)
+        [HarmonyPrefix]
+        private static void EnterDodge_Prefix(Player __instance, out float __state)
         {
-            float originalSound = SetVolumeAndGetOriginal(self);
-            orig(self);
-            Audio.MasterVolume = originalSound;
+            SetVolumeAndGetOriginal(__instance, out __state);
         }
 
-
-        private static void OnJump(On.TowerFall.Player.orig_Jump orig, TowerFall.Player self, bool particles, bool canSuper, bool forceSuper, int ledgeDir, bool doubleJump)
+        [HarmonyPostfix]
+        private static void EnterDodge_Postfix(float __state)
         {
-            float originalSound = SetVolumeAndGetOriginal(self);
-            orig(self, particles, canSuper, forceSuper, ledgeDir, doubleJump);
-            Audio.MasterVolume = originalSound;
+            Audio.MasterVolume = __state;
+        }
+
+        [HarmonyPrefix]
+        private static void Jump_Prefix(Player __instance, out float __state)
+        {
+            SetVolumeAndGetOriginal(__instance, out __state);
+        }
+
+        [HarmonyPostfix]
+        private static void Jump_Postfix(float __state)
+        {
+            Audio.MasterVolume = __state;
         }
 
         public static void Unload()
         {
-            On.TowerFall.Player.EnterDodge -= OnEnterDodge;
-            On.TowerFall.Player.Jump -= OnJump;
+            if (!enabled) return;
+            harmony.UnpatchAll();
         }
-        
-        
-     
     }
 }

@@ -40,7 +40,7 @@ namespace ArcherLoaderMod.Layer
 
         private static LayerInfo HandleLayer(XmlElement xml)
         {
-            if (FortEntrance.Settings.DisableLayers)
+            if (FortEntrance.Instance.Settings.DisableLayers)
                 return null;
 
             var attachToText = xml.ChildText("AttachTo");

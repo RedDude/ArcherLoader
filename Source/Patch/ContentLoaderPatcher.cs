@@ -1,181 +1,165 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Xml;
+using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Monocle;
-using MonoMod.Cil;
-using MonoMod.RuntimeDetour;
 using TowerFall;
-using Sounds = On.TowerFall.Sounds;
-using SpriteData = On.Monocle.SpriteData;
 
 namespace ArcherLoaderMod.Patch
 {
-    
     public class ContentLoaderPatcher
     {
-        private static Hook _atlasGetItemHook;
+        private static Harmony harmony;
         
         public static void Load()
         {
-            On.TowerFall.ArcherData.Initialize += OnArcherDataOnInitialize;
-            On.TowerFall.Sounds.Load += OnSoundsOnLoad;
-
-            On.Monocle.SpriteData.GetSpriteString += OnSpriteDataOnGetSpriteString;
-            On.Monocle.SpriteData.GetSpriteInt += OnSpriteDataOnGetSpriteInt;
-            On.Monocle.SpriteData.GetXML += SpriteDataOnGetXML;
+            harmony = new Harmony("mod.archerloader.content");
             
-            MethodInfo targetMethod = typeof(Atlas).GetMethod("get_Item", new[] { typeof(string) });
-            MethodInfo hookMethod = typeof(ContentLoaderPatcher).GetMethod(nameof(AtlasGetItemHook), BindingFlags.Static | BindingFlags.NonPublic);
-            _atlasGetItemHook = new Hook(targetMethod, hookMethod);
+            // Patch methods
+            harmony.Patch(
+                typeof(ArcherData).GetMethod("Initialize", BindingFlags.Public | BindingFlags.Static),
+                postfix: new HarmonyMethod(typeof(ContentLoaderPatcher), nameof(ArcherData_Initialize_Postfix))
+            );
+            
+            harmony.Patch(
+                typeof(Sounds).GetMethod("Load", BindingFlags.Public | BindingFlags.Static),
+                postfix: new HarmonyMethod(typeof(ContentLoaderPatcher), nameof(Sounds_Load_Postfix))
+            );
+            
+            harmony.Patch(
+                typeof(Monocle.SpriteData).GetMethod("GetSpriteString", new[] { typeof(string) }),
+                prefix: new HarmonyMethod(typeof(ContentLoaderPatcher), nameof(SpriteData_GetSpriteString_Prefix))
+            );
+            
+            harmony.Patch(
+                typeof(Monocle.SpriteData).GetMethod("GetSpriteInt", new[] { typeof(string) }),
+                prefix: new HarmonyMethod(typeof(ContentLoaderPatcher), nameof(SpriteData_GetSpriteInt_Prefix))
+            );
+            
+            harmony.Patch(
+                typeof(Monocle.SpriteData).GetMethod("GetXML", new[] { typeof(string) }),
+                prefix: new HarmonyMethod(typeof(ContentLoaderPatcher), nameof(SpriteData_GetXML_Prefix))
+            );
+            
+            harmony.Patch(
+                typeof(Atlas).GetMethod("get_Item", new[] { typeof(string) }),
+                prefix: new HarmonyMethod(typeof(ContentLoaderPatcher), nameof(Atlas_GetItem_Prefix))
+            );
         }
 
         public static void Unload()
         {
-            On.TowerFall.ArcherData.Initialize -= OnArcherDataOnInitialize;
-            On.TowerFall.Sounds.Load -= OnSoundsOnLoad;
-            
-            On.Monocle.SpriteData.GetSpriteString -= OnSpriteDataOnGetSpriteString;
-            On.Monocle.SpriteData.GetSpriteInt -= OnSpriteDataOnGetSpriteInt;
-            On.Monocle.SpriteData.GetXML -= SpriteDataOnGetXML;
+            harmony?.UnpatchAll();
         }
 
-        private static void OnArcherDataOnInitialize(On.TowerFall.ArcherData.orig_Initialize orig)
+        [HarmonyPostfix]
+        private static void ArcherData_Initialize_Postfix()
         {
-            Mod.LoadArcherContents();
-            orig();
-            Mod.Start();
+            ArcherLoaderMod.LoadArcherContents();
+            ArcherLoaderMod.Start();
         }
         
-        private static void OnSoundsOnLoad(Sounds.orig_Load orig)
+        [HarmonyPostfix]
+        private static void Sounds_Load_Postfix()
         {
-            orig();
-            Mod.FixSFX();
+            ArcherLoaderMod.FixSFX();
         }
         
-        private static Sprite<string> OnSpriteDataOnGetSpriteString(SpriteData.orig_GetSpriteString orig, Monocle.SpriteData self, string id)
+        [HarmonyPrefix]
+        private static bool SpriteData_GetSpriteString_Prefix(Monocle.SpriteData __instance, string id, ref Sprite<string> __result)
         {
-            if (self.Contains(id))
+            if (__instance.Contains(id)) 
+                return true; // Continue to original method
+
+            __result = FindInCustomSpriteData(id, data => data.GetSpriteString(id));
+            return false; // Skip original method
+        }
+        
+        [HarmonyPrefix]
+        private static bool SpriteData_GetSpriteInt_Prefix(Monocle.SpriteData __instance, string id, ref Sprite<int> __result)
+        {
+            if (__instance.Contains(id)) 
+                return true; // Continue to original method
+
+            __result = FindInCustomSpriteData(id, data => data.GetSpriteInt(id));
+            return false; // Skip original method
+        }
+        
+        [HarmonyPrefix]
+        private static bool SpriteData_GetXML_Prefix(Monocle.SpriteData __instance, string id, ref XmlElement __result)
+        {
+            if (__instance.Contains(id)) 
+                return true; // Continue to original method
+
+            __result = FindInCustomSpriteData(id, data => data.GetXML(id));
+            return false; // Skip original method
+        }
+
+        private static T FindInCustomSpriteData<T>(string id, Func<Monocle.SpriteData, T> getter)
+        {
+            // Check cached sprite data first
+            foreach (var cachedSpriteData in ArcherLoaderMod.cachedCustomSpriteDataList)
             {
-                return orig(self, id);
+                if (cachedSpriteData.Contains(id))
+                    return getter(cachedSpriteData);
             }
 
-            foreach (var cachedSpriteData in Mod.cachedCustomSpriteDataList)
-            {
-                if (!cachedSpriteData.Contains(id)) continue;
-                return cachedSpriteData.GetSpriteString(id);
-            }
-
-            foreach (var customSpriteData in Mod.customSpriteDataList)
+            // Check all custom sprite data
+            foreach (var customSpriteData in ArcherLoaderMod.customSpriteDataList)
             {
                 if (!customSpriteData.Contains(id)) continue;
-                if (!Mod.cachedCustomSpriteDataList.Contains(customSpriteData)) Mod.cachedCustomSpriteDataList.Add(customSpriteData);
-                return customSpriteData.GetSpriteString(id);
+                
+                if (!ArcherLoaderMod.cachedCustomSpriteDataList.Contains(customSpriteData))
+                    ArcherLoaderMod.cachedCustomSpriteDataList.Add(customSpriteData);
+                    
+                return getter(customSpriteData);
             }
 
-            return null;
+            return default;
         }
         
-        
-        private static Sprite<int> OnSpriteDataOnGetSpriteInt(SpriteData.orig_GetSpriteInt orig, Monocle.SpriteData self, string id)
-        {
-            if (self.Contains(id))
-            {
-                return orig(self, id);
-            }
-
-            foreach (var cachedSpriteData in Mod.cachedCustomSpriteDataList)
-            {
-                if (!cachedSpriteData.Contains(id)) continue;
-                return cachedSpriteData.GetSpriteInt(id);
-            }
-
-            foreach (var customSpriteData in Mod.customSpriteDataList)
-            {
-                if (!customSpriteData.Contains(id)) continue;
-                if (!Mod.cachedCustomSpriteDataList.Contains(customSpriteData)) Mod.cachedCustomSpriteDataList.Add(customSpriteData);
-                return customSpriteData.GetSpriteInt(id);
-            }
-
-            return null;
-        }
-        
-        private static XmlElement SpriteDataOnGetXML(SpriteData.orig_GetXML orig, Monocle.SpriteData self, string id)
-        {
-            if (self.Contains(id))
-            {
-                return orig(self, id);
-            }
-
-            foreach (var cachedSpriteData in Mod.cachedCustomSpriteDataList)
-            {
-                if (!cachedSpriteData.Contains(id)) continue;
-                return cachedSpriteData.GetXML(id);
-            }
-
-            foreach (var customSpriteData in Mod.customSpriteDataList)
-            {
-                if (!customSpriteData.Contains(id)) continue;
-                if (!Mod.cachedCustomSpriteDataList.Contains(customSpriteData)) Mod.cachedCustomSpriteDataList.Add(customSpriteData);
-                return customSpriteData.GetXML(id);
-            }
-
-            return null;
-        }
-
-        public static Sprite<string> GetSpriteString(string id, Dictionary<string, XmlElement> sprites, Atlas atlas)
-        {
-            var sprite1 = sprites[id];
-            var sprite2 = new Sprite<string>(atlas[sprite1.ChildText("Texture")], sprite1.ChildInt("FrameWidth"),
-                sprite1.ChildInt("FrameHeight"))
-            {
-                Origin = new Vector2(sprite1.ChildFloat("OriginX", 0.0f), sprite1.ChildFloat("OriginY", 0.0f)),
-                Position = new Vector2(sprite1.ChildFloat("X", 0.0f), sprite1.ChildFloat("Y", 0.0f)),
-                Color = sprite1.ChildHexColor("Color", Color.White)
-            };
-            var xmlElement = sprite1["Animations"];
-            if (xmlElement != null)
-            {
-                foreach (XmlElement xml in xmlElement.GetElementsByTagName("Anim"))
-                    sprite2.Add(xml.Attr(nameof(id)), xml.AttrFloat("delay", 0.0f), xml.AttrBool("loop", true),
-                        Calc.ReadCSVInt(xml.Attr("frames")));
-            }
-
-            return sprite2;
-        }
-
-        private static Subtexture AtlasGetItemHook(Func<Atlas, string, Subtexture> orig, Atlas self, string name)
+        [HarmonyPrefix]
+        private static bool Atlas_GetItem_Prefix(Atlas __instance, string name, ref Subtexture __result)
         {
             try
             {
-                // First, attempt to get the subtexture using the original method
-                return orig(self, name);
+                // First try the original atlas
+                if (__instance.Contains(name))
+                {
+                    __result = __instance[name]; // Let original handle it
+                    return true;
+                }
             }
             catch
             {
-                // Ignore the exception and proceed to check custom atlases
+                // Ignore exception and check custom atlases
             }
 
-            // If the original method failed, check cached custom atlases
-            foreach (var atlas in Mod.cachedCustomAtlasList)
+            // Check cached custom atlases
+            foreach (var atlas in ArcherLoaderMod.cachedCustomAtlasList)
             {
                 if (atlas.Contains(name))
-                    return atlas[name];
+                {
+                    __result = atlas[name];
+                    return false;
+                }
             }
 
-            // Check custom atlases and cache them if found
-            foreach (var atlas in Mod.customAtlasList)
+            // Check all custom atlases
+            foreach (var atlas in ArcherLoaderMod.customAtlasList)
             {
                 if (!atlas.Contains(name)) continue;
-                if (!Mod.cachedCustomAtlasList.Contains(atlas))
-                    Mod.cachedCustomAtlasList.Add(atlas);
-                return atlas[name];
+                
+                if (!ArcherLoaderMod.cachedCustomAtlasList.Contains(atlas))
+                    ArcherLoaderMod.cachedCustomAtlasList.Add(atlas);
+                    
+                __result = atlas[name];
+                return false;
             }
 
-            // If not found, rethrow the original exception or a new exception
-            throw new KeyNotFoundException($"Subtexture '{name}' not found in any atlas.");
+            return true; // Continue to original method (which will throw)
         }
     }
 }

@@ -39,7 +39,7 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
 
         private static PortraitLayerInfo ParseLayer(XmlElement xml)
         {
-            if (FortEntrance.Settings.DisableLayers)
+            if (FortEntrance.Instance.Settings.DisableLayers)
                 return null;
 
             var attachToText = xml.ChildText("AttachTo", null);

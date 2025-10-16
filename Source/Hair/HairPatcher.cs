@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using ArcherLoaderMod.Rainbow;
+using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Monocle;
 using TowerFall;
@@ -11,284 +12,234 @@ namespace ArcherLoaderMod.Hair
     public class HairPatcher
     {
         public static bool enabled = false;
-        //public static ManualLogSource Logger;
-        private static FieldInfo _scaleField;
-        private PropertyInfo _hatState;
-        public static FieldInfo LinksField;
-        private static FieldInfo _linkDistField;
-        private static FieldInfo _offsetsField;
-        private static FieldInfo _imagesField;
-        private static FieldInfo _sineField;
-
         public static Dictionary<int, ArcherCustomData> Hairs = new();
+        private static Harmony harmony;
 
-        public void Load()
+        // Cached reflection fields
+        private static readonly FieldInfo _scaleField = typeof(PlayerHair).GetField("scale", BindingFlags.NonPublic | BindingFlags.Instance);
+        public static readonly FieldInfo LinksField = typeof(PlayerHair).GetField("links", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly FieldInfo _linkDistField = typeof(PlayerHair).GetField("linkDist", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly FieldInfo _offsetsField = typeof(PlayerHair).GetField("offsets", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly FieldInfo _imagesField = typeof(PlayerHair).GetField("images", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly FieldInfo _sineField = typeof(PlayerHair).GetField("sine", BindingFlags.NonPublic | BindingFlags.Instance);
+
+        public static void Load()
         {
-            _scaleField = typeof(PlayerHair).GetField("scale", BindingFlags.NonPublic | BindingFlags.Instance);
-            LinksField = typeof(PlayerHair).GetField("links", BindingFlags.NonPublic | BindingFlags.Instance);
-            _linkDistField = typeof(PlayerHair).GetField("linkDist", BindingFlags.NonPublic | BindingFlags.Instance);
-            _offsetsField = typeof(PlayerHair).GetField("offsets", BindingFlags.NonPublic | BindingFlags.Instance);
-            _imagesField = typeof(PlayerHair).GetField("images", BindingFlags.NonPublic | BindingFlags.Instance);
-            _sineField = typeof(PlayerHair).GetField("sine", BindingFlags.NonPublic | BindingFlags.Instance);
-            _scaleField = typeof(PlayerHair).GetField("scale", BindingFlags.NonPublic | BindingFlags.Instance);
-            _hatState = typeof(PlayerHair).GetProperty("HatState", BindingFlags.NonPublic | BindingFlags.Instance);
-
-            On.TowerFall.Player.Added += OnPlayerOnAdded;
-            On.TowerFall.PlayerHair.ctor += OnPlayerHairConstructor;
-            On.TowerFall.PlayerHair.Render += OnPlayerHairOnRender;
-            On.TowerFall.PlayerHair.RenderOutline += OnPlayerHairOnRenderOutline;
+            harmony = new Harmony("mod.archerloader.hair");
+            
+            // Patch methods
+            harmony.Patch(
+                typeof(Player).GetMethod("Added"),
+                postfix: new HarmonyMethod(typeof(HairPatcher), nameof(Player_Added_Postfix))
+            );
+            
+            harmony.Patch(
+                typeof(PlayerHair).GetConstructor(new[] { typeof(Entity), typeof(Vector2), typeof(float) }),
+                postfix: new HarmonyMethod(typeof(HairPatcher), nameof(PlayerHair_ctor_Postfix))
+            );
+            
+            harmony.Patch(
+                typeof(PlayerHair).GetMethod("Render"),
+                prefix: new HarmonyMethod(typeof(HairPatcher), nameof(PlayerHair_Render_Prefix))
+            );
+            
+            harmony.Patch(
+                typeof(PlayerHair).GetMethod("RenderOutline"),
+                prefix: new HarmonyMethod(typeof(HairPatcher), nameof(PlayerHair_RenderOutline_Prefix))
+            );
+            
             enabled = true;
         }
 
-        static public void Unload()
+        public static void Unload()
         {
-            if (!enabled)
-                return;
-
-            On.TowerFall.Player.Added -= OnPlayerOnAdded;
-            On.TowerFall.PlayerHair.ctor -= OnPlayerHairConstructor;
-            On.TowerFall.PlayerHair.Render -= OnPlayerHairOnRender;
-            On.TowerFall.PlayerHair.RenderOutline -= OnPlayerHairOnRenderOutline;
+            if (!enabled) return;
+            harmony?.UnpatchAll();
         }
 
-        
-        private static void OnPlayerOnAdded(On.TowerFall.Player.orig_Added orig, Player self)
+        [HarmonyPostfix]
+        private static void Player_Added_Postfix(Player __instance)
         {
-            orig(self);
-            if (self == null)
-            {
+            if (__instance.Hair == null) return;
+            
+            if (!ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(__instance.ArcherData, out var archerCustomData)) 
                 return;
-            }
-
-            if (!self.Hair) return;
-
-            var exist = Mod.ArcherCustomDataDict.TryGetValue(self.ArcherData, out var archerCustomData);
-            if (!exist) return;
-            var hairInfo = archerCustomData.HairInfo;
-            if (hairInfo != null)
-            {
-                self.Hair.Visible = hairInfo.VisibleWithHat;
-            }
+                
+            __instance.Hair.Visible = archerCustomData.HairInfo?.VisibleWithHat ?? true;
         }
 
-        private static void OnPlayerHairConstructor(On.TowerFall.PlayerHair.orig_ctor orig, PlayerHair self, Entity follow,
-            Vector2 position, float scale)
+        [HarmonyPostfix]
+        private static void PlayerHair_ctor_Postfix(PlayerHair __instance, Entity follow, Vector2 position, float scale)
         {
-            orig(self, follow, position, scale);
-
             HairInfo hairInfo = null;
-            if (follow is PlayerCorpse corpse)
+            
+            if (follow is PlayerCorpse corpse && Hairs.TryGetValue(corpse.PlayerIndex, out var corpseData))
             {
-                var exist = Hairs.TryGetValue(corpse.PlayerIndex, out var hair);
-                if (exist)
-                    hairInfo = Hairs[corpse.PlayerIndex].HairInfo;
+                hairInfo = corpseData.HairInfo;
+            }
+            else if (follow is Player player && 
+                     ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(player.ArcherData, out var playerData))
+            {
+                Hairs[player.PlayerIndex] = playerData;
+                hairInfo = playerData.HairInfo;
             }
 
-            if (follow is Player player)
-            {
-                var exist = Mod.ArcherCustomDataDict.TryGetValue(player.ArcherData, out var archerCustomData);
-                if (exist)
-                {
-                    Hairs[player.PlayerIndex] = archerCustomData;
-                    hairInfo = archerCustomData?.HairInfo;
-                }
-            }
+            if (hairInfo == null) return;
+            
+            __instance.Visible = true;
+            ApplyHairCustomization(__instance, hairInfo);
+        }
 
-            if (hairInfo == null)
-                return;
-
-            self.Visible = true;
-            var hairSprite = hairInfo.HairSprite;
-            var hairEndSprite = hairInfo.HairEndSprite;
-            var sineValue = hairInfo.SineValue;
-            var size = hairInfo.Size;
+        private static void ApplyHairCustomization(PlayerHair hair, HairInfo hairInfo)
+        {
             var links = hairInfo.Links;
-            var linksDist = hairInfo.LinksDist;
+            LinksField.SetValue(hair, links);
+            _linkDistField.SetValue(hair, hairInfo.LinksDist);
+
+            // Create offsets
             var offsets = new Vector2[links];
-
-            // self.Position = hairInfo.position;
-            // self.Alpha = hairInfo.Alpha;
-            // scaleField.SetValue(self, scale);
-
-            LinksField.SetValue(self, links);
-            _linkDistField.SetValue(self, linksDist);
-
             for (var i = 0; i < links; i++)
             {
-                offsets[i] = new Vector2(0f, size * i);
+                offsets[i] = new Vector2(0f, hairInfo.Size * i);
             }
+            _offsetsField.SetValue(hair, offsets);
 
+            // Create images
             var images = new Subtexture[links];
             for (var i = 0; i < links - 1; i++)
             {
-                images[i] = TFGame.Atlas[hairSprite];
+                images[i] = TFGame.Atlas[hairInfo.HairSprite];
             }
+            images[links - 1] = TFGame.Atlas[hairInfo.HairEndSprite];
+            _imagesField.SetValue(hair, images);
 
-            images[links - 1] = TFGame.Atlas[hairEndSprite];
-
-            var sine = new SineWave(sineValue);
-            _sineField.SetValue(self, sine);
-            _offsetsField.SetValue(self, offsets);
-            _imagesField.SetValue(self, images);
+            // Set sine wave
+            _sineField.SetValue(hair, new SineWave(hairInfo.SineValue));
         }
 
-        private static void OnPlayerHairOnRender(On.TowerFall.PlayerHair.orig_Render orig, PlayerHair self)
+        [HarmonyPrefix]
+        private static bool PlayerHair_Render_Prefix(PlayerHair __instance)
+        {
+            return HandleHairRendering(__instance, isOutline: false);
+        }
+
+        [HarmonyPrefix]
+        private static bool PlayerHair_RenderOutline_Prefix(PlayerHair __instance)
+        {
+            return HandleHairRendering(__instance, isOutline: true);
+        }
+
+        private static bool HandleHairRendering(PlayerHair self, bool isOutline)
         {
             var follow = self.Follow;
+            if (follow == null) return true;
+            
             HairInfo hairInfo = null;
-            var duckingOffset = Vector2.Zero;
-            var withHatOffset = Vector2.Zero;
+            Vector2 duckingOffset = Vector2.Zero;
+            Vector2 withHatOffset = Vector2.Zero;
             var facing = Facing.Right;
 
-            if (follow is PlayerCorpse corpse)
+            if (follow is PlayerCorpse corpse && Hairs.TryGetValue(corpse.PlayerIndex, out var corpseData))
             {
-                var exist = Hairs.TryGetValue(corpse.PlayerIndex, out var hair);
-                if (exist)
-                    hairInfo = Hairs[corpse.PlayerIndex].HairInfo;
+                hairInfo = corpseData.HairInfo;
+            }
+            else if (follow is Player player)
+            {
+                if (!Hairs.TryGetValue(player.PlayerIndex, out var playerData)) 
+                    return true;
+                    
+                hairInfo = playerData.HairInfo;
+                if (hairInfo == null) return true;
+                
+                facing = player.Facing;
+                
+                if (player.State == Player.PlayerStates.Ducking)
+                    duckingOffset = hairInfo.DuckingOffset;
+                
+                if (player.HatState == Player.HatStates.Normal)
+                    withHatOffset = hairInfo.WithHatOffset;
             }
 
-            if (follow is Player player)
-            {
-                var exist = Mod.ArcherCustomDataDict.TryGetValue(player.ArcherData, out var archerCustomData);
-                if (exist)
-                {
-                    facing = player.Facing;
-                    Hairs[player.PlayerIndex] = archerCustomData;
-                    hairInfo = archerCustomData.HairInfo;
-                    if (hairInfo != null && player.State == Player.PlayerStates.Ducking)
-                    {
-                        duckingOffset = hairInfo.DuckingOffset;
-                    }
+            if (hairInfo == null) return true;
 
-                    if (hairInfo != null && player.HatState == Player.HatStates.Normal)
-                    {
-                        withHatOffset = hairInfo.WithHatOffset;
-                    }
-                }
-            }
-
-            if (hairInfo == null)
-            {
-                orig(self);
-                return;
-            }
-
-            var links = (int) LinksField.GetValue(self);
-            var images = (Subtexture[]) _imagesField.GetValue(self);
-            var offsets = (Vector2[]) _offsetsField.GetValue(self);
+            var links = (int)LinksField.GetValue(self);
+            var images = (Subtexture[])_imagesField.GetValue(self);
+            var offsets = (Vector2[])_offsetsField.GetValue(self);
+            var scale = (float)_scaleField.GetValue(self);
 
             var actionsOffsets = duckingOffset.X + hairInfo.Position.X + withHatOffset.X;
             var positionEntity = new Vector2(
                 self.Position.X + (facing == Facing.Right ? actionsOffsets : actionsOffsets * -1),
-                self.Position.Y + duckingOffset.Y + hairInfo.Position.Y + withHatOffset.Y);
+                self.Position.Y + duckingOffset.Y + hairInfo.Position.Y + withHatOffset.Y
+            );
 
-            var scale = (float) _scaleField.GetValue(self);
-
-            for (var index = 0; index < links; ++index)
+            for (var index = 0; index < links; index++)
             {
-                var color = hairInfo.Color;
-                if (hairInfo.Prismatic || hairInfo.Rainbow)
-                {
-                    color = RainbowManager.CurrentColor; //RainbowManager.GetColor(Environment.TickCount, 0, hairInfo.PrismaticTime);
-                }
-                else if (hairInfo.EndColor.A != 0 && !hairInfo.PrismaticEnd)
-                {
-                    color = index == links - 1 ? hairInfo.EndColor : hairInfo.Color;
-                    if (hairInfo.Gradient)
-                    {
-                        if (index >= hairInfo.GradientOffset)
-                        {
-                            var amount = (float) (index - hairInfo.GradientOffset) / links;
-                            color = Color.Lerp(hairInfo.Color, hairInfo.EndColor, amount);
-                        }
-                    }
-                }
-
-                if (hairInfo.PrismaticEnd)
-                {
-                    var prismatic = RainbowManager.CurrentColor;// RainbowManager.GetColor(Environment.TickCount, 0, hairInfo.PrismaticTime);
-                    color = index == links - 1 ? prismatic : hairInfo.Color;
-                    if (hairInfo.Gradient)
-                    {
-                        if (index > hairInfo.GradientOffset)
-                        {
-                            var amount = (float) index / links;
-                            color = hairInfo.Rainbow
-                                ? RainbowManager.GetColor(index, hairInfo.PrismaticTime)
-                                : Color.Lerp(hairInfo.Color, prismatic, amount);
-                        }
-                    }
-                }
-
                 var position = follow.Position + positionEntity + offsets[index];
                 var rotation = index == 0 ? 0.0f : Calc.Angle(offsets[index], offsets[index - 1]);
-                Draw.TextureCentered(images[index], position, color * self.Alpha * self.Alpha,
-                    scale, rotation);
-            }
-        }
 
-        private static void OnPlayerHairOnRenderOutline(On.TowerFall.PlayerHair.orig_RenderOutline orig, PlayerHair self)
-        {
-            var follow = self.Follow;
-            HairInfo hairInfo = null;
-            var duckingOffset = Vector2.Zero;
-            var withHatOffset = Vector2.Zero;
-
-            var facing = Facing.Right;
-            if (follow is PlayerCorpse corpse)
-            {
-                var exist = Hairs.TryGetValue(corpse.PlayerIndex, out var hair);
-                if (exist)
-                    hairInfo = Hairs[corpse.PlayerIndex].HairInfo;
-            }
-
-            if (follow is Player player)
-            {
-                var exist = Mod.ArcherCustomDataDict.TryGetValue(player.ArcherData, out var archerCustomData);
-                if (exist)
+                if (isOutline)
                 {
-                    facing = player.Facing;
-                    Hairs[player.PlayerIndex] = archerCustomData;
-                    hairInfo = archerCustomData.HairInfo;
-                    if (hairInfo != null && player.State == Player.PlayerStates.Ducking)
-                    {
-                        duckingOffset = hairInfo.DuckingOffset;
-                    }
-
-                    if (hairInfo != null && player.HatState == Player.HatStates.Normal)
-                    {
-                        withHatOffset = hairInfo.WithHatOffset;
-                    }
+                    RenderHairOutline(images[index], position, hairInfo.OutlineColor, scale, rotation);
+                }
+                else
+                {
+                    var color = GetHairColor(index, links, hairInfo);
+                    Draw.TextureCentered(images[index], position, color * self.Alpha, scale, rotation);
                 }
             }
 
-            if (hairInfo == null)
+            return false; // Skip original rendering
+        }
+
+        private static Color GetHairColor(int index, int links, HairInfo hairInfo)
+        {
+            // Handle prismatic/rainbow effects
+            if (hairInfo.Prismatic || hairInfo.Rainbow)
+                return RainbowManager.CurrentColor;
+
+            // Handle end color without prismatic
+            if (hairInfo.EndColor.A != 0 && !hairInfo.PrismaticEnd)
             {
-                orig(self);
-                return;
+                if (index == links - 1) 
+                    return hairInfo.EndColor;
+                    
+                if (hairInfo.Gradient && index >= hairInfo.GradientOffset)
+                {
+                    var amount = (float)(index - hairInfo.GradientOffset) / links;
+                    return Color.Lerp(hairInfo.Color, hairInfo.EndColor, amount);
+                }
+                return hairInfo.Color;
             }
 
-            var links = (int) LinksField.GetValue(self);
-            var images = (Subtexture[]) _imagesField.GetValue(self);
-            var offsets = (Vector2[]) _offsetsField.GetValue(self);
-
-            var actionsOffsets = duckingOffset.X + hairInfo.Position.X + withHatOffset.X;
-            var positionEntity = new Vector2(
-                self.Position.X + (facing == Facing.Right ? actionsOffsets : actionsOffsets * -1),
-                self.Position.Y + duckingOffset.Y + hairInfo.Position.Y + withHatOffset.Y);
-            var scale = (float) _scaleField.GetValue(self);
-
-            for (var index1 = 0; index1 < links; ++index1)
+            // Handle prismatic end
+            if (hairInfo.PrismaticEnd)
             {
-                var vector2 = follow.Position + positionEntity + offsets[index1];
-                var rotation = index1 == 0 ? 0.0f : Calc.Angle(offsets[index1], offsets[index1 - 1]);
-                for (var index2 = -1; index2 < 2; ++index2)
+                if (index == links - 1)
+                    return RainbowManager.CurrentColor;
+                    
+                if (hairInfo.Gradient && index > hairInfo.GradientOffset)
                 {
-                    for (var index3 = -1; index3 < 2; ++index3)
+                    var amount = (float)index / links;
+                    return hairInfo.Rainbow 
+                        ? RainbowManager.GetColor(index, hairInfo.PrismaticTime) 
+                        : Color.Lerp(hairInfo.Color, RainbowManager.CurrentColor, amount);
+                }
+                return hairInfo.Color;
+            }
+
+            return hairInfo.Color;
+        }
+
+        private static void RenderHairOutline(Subtexture texture, Vector2 position, Color color, float scale, float rotation)
+        {
+            for (var x = -1; x < 2; x++)
+            {
+                for (var y = -1; y < 2; y++)
+                {
+                    if (x != 0 || y != 0)
                     {
-                        if (index2 != 0 || index3 != 0)
-                            Draw.TextureCentered(images[index1], vector2 + new Vector2((float) index2, (float) index3),
-                                hairInfo.OutlineColor, scale, rotation);
+                        Draw.TextureCentered(texture, position + new Vector2(x, y), color, scale, rotation);
                     }
                 }
             }

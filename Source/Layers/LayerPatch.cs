@@ -1,158 +1,132 @@
-﻿using System.Collections.Generic;
-using ArcherLoaderMod.Layer;
+﻿using ArcherLoaderMod.Layer;
 using ArcherLoaderMod.Skin;
+using HarmonyLib;
 using Monocle;
 using MonoMod.Utils;
+using System.Collections.Generic;
 using TowerFall;
-using PlayerCorpse = On.TowerFall.PlayerCorpse;
 
 namespace ArcherLoaderMod.Layers
 {
     public class LayerPatch
     {
-        
         private static bool enabled = false;
-        private static int headIndex;
-        private static Sprite<string> headSprite;
-        private static Sprite<string> bodySprite;
-        private static Sprite<string> bowSprite;
-        private static Sprite<string> corpseSprite;
+        private static Harmony harmony;
 
         public static void Load()
         {
-            if(FortEntrance.Settings.DisableLayers)
+            if (FortEntrance.Instance.Settings.DisableLayers)
                 return;
-            On.TowerFall.Player.Added += OnPlayerOnAdded;
-            On.TowerFall.PlayerCorpse.Added += OnPlayerCorpseOnAdded;
+
+            harmony = new Harmony("mod.archerloader.layers");
+            harmony.Patch(
+                typeof(Player).GetMethod("Added"),
+                postfix: new HarmonyMethod(typeof(LayerPatch), nameof(Player_Added_Postfix))
+            );
+            
+            harmony.Patch(
+                typeof(PlayerCorpse).GetMethod("Added"),
+                postfix: new HarmonyMethod(typeof(LayerPatch), nameof(PlayerCorpse_Added_Postfix))
+            );
+            
+            enabled = true;
         }
-        
+
         public static void Unload()
         {
-            if(!enabled)
-                return;
-            On.TowerFall.Player.Added -= OnPlayerOnAdded;
-            
-            On.TowerFall.PlayerCorpse.Added -= OnPlayerCorpseOnAdded;
+            if (!enabled) return;
+            harmony?.UnpatchAll();
         }
-        
-        
-        private static void OnPlayerCorpseOnAdded(PlayerCorpse.orig_Added orig, TowerFall.PlayerCorpse self)
-        {
-            orig(self);
 
-            if (self.PlayerIndex == -1)
-            {
-                return;
-            }
-            
-            var data = ArcherData.Get(TFGame.Characters[self.PlayerIndex], TFGame.AltSelect[self.PlayerIndex]);
-
-            var skinData = SkinPatcher.GetSkinCharacter(self.PlayerIndex, data);
-                
-            var exist = Mod.ArcherCustomDataDict.TryGetValue(skinData, out var archerCustomData);
-            List<LayerInfo> layerInfos = null;
-            if (!exist)
-            {
-                var xml = Mod.FindSpriteDataXmlOnCategories("Layer", data);
-                if (xml != null)
-                {
-                    layerInfos = LayerParser.Parse(xml);
-                }
-            }
-            else
-            {
-                layerInfos = archerCustomData.LayerInfos;
-            }
-            if (layerInfos == null) return;
-            
-            foreach (var layerInfo in layerInfos)
-            {
-                var attachedSprite = layerInfo.AttachTo == LayerAttachType.Corpse;
-                
-                if(!attachedSprite)
-                    continue;
-                
-                corpseSprite = DynamicData.For(self).Get<Sprite<string>>("sprite");
-                
-                var layer = new LayerSpriteComponent(layerInfo, corpseSprite, archerCustomData, data, true, true);
-                self.Add(layer);
-                
-                // for (var i = 0; i < self.Components.Count; i++)
-                // {
-                    // if (self.Components[i] == headSprite)
-                    // {
-                        // headIndex = i;
-                    // }
-                // }
-                
-                // if (layerInfo.AttachTo == LayerAttachType.Body) continue;
-                // self.Components.Remove(layer);
-                // self.Components.Insert(headIndex+(layerInfo.AttachTo == LayerAttachType.Bow ? 2 : 1), layer);
-            }
-        }
-        
-        private static void OnPlayerOnAdded(On.TowerFall.Player.orig_Added orig, Player self)
+        [HarmonyPostfix]
+        private static void Player_Added_Postfix(Player __instance)
         {
-            orig(self);
-            
-            var exist = Mod.ArcherCustomDataDict.TryGetValue(self.ArcherData, out var archerCustomData);
-            List<LayerInfo> layerInfos = null;
-            if (!exist)
-            {
-                var xml = Mod.FindSpriteDataXmlOnCategories("layer", self.ArcherData);
-                if (xml != null)
-                {
-                    layerInfos = LayerParser.Parse(xml);
-                }
-            }
-            else
-            {
-                layerInfos = archerCustomData.LayerInfos;
-            }
+            var archerData = __instance.ArcherData;
+            var layerInfos = GetLayerInfos(archerData);
             if (layerInfos == null) return;
 
-            headSprite = DynamicData.For(self).Get<Sprite<string>>("headSprite");
-            bodySprite = DynamicData.For(self).Get<Sprite<string>>("bodySprite");
-            bowSprite = DynamicData.For(self).Get<Sprite<string>>("bowSprite");
-            headIndex = 0;
-            
-            for (var i = 0; i < self.Components.Count; i++)
+            // Get sprite components
+            var headSprite = DynamicData.For(__instance).Get<Sprite<string>>("headSprite");
+            var bodySprite = DynamicData.For(__instance).Get<Sprite<string>>("bodySprite");
+            var bowSprite = DynamicData.For(__instance).Get<Sprite<string>>("bowSprite");
+
+            // Find head component index
+            int headIndex = 0;
+            for (int i = 0; i < __instance.Components.Count; i++)
             {
-                if (self.Components[i] == headSprite)
+                if (__instance.Components[i] == headSprite)
                 {
                     headIndex = i;
+                    break;
                 }
             }
-            
-            var data = ArcherData.Get(TFGame.Characters[self.PlayerIndex], TFGame.AltSelect[self.PlayerIndex]);
 
+            // Add layer components
             foreach (var layerInfo in layerInfos)
             {
-                if(layerInfo.AttachTo == LayerAttachType.Corpse)
-                    continue;
-                        
-                var attachedSprite = layerInfo.AttachTo == LayerAttachType.Body ? bodySprite :
-                    layerInfo.AttachTo == LayerAttachType.Head ? headSprite : bowSprite;
+                if (layerInfo.AttachTo == LayerAttachType.Corpse) continue;
+
+                var attachedSprite = GetAttachedSprite(layerInfo, headSprite, bodySprite, bowSprite);
+                var layer = new LayerSpriteComponent(layerInfo, attachedSprite, 
+                    ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(archerData, out var customData) ? customData : null,
+                    archerData, true, true);
                 
+                __instance.Add(layer);
                 
-                var layer = new LayerSpriteComponent(layerInfo, attachedSprite, archerCustomData, data, true, true);
-                self.Add(layer);
-                if (layerInfo.AttachTo == LayerAttachType.Body) continue;
-                self.Components.Remove(layer);
-                self.Components.Insert(headIndex+(layerInfo.AttachTo == LayerAttachType.Bow ? 2 : 1), layer);
+                if (layerInfo.AttachTo != LayerAttachType.Body)
+                {
+                    __instance.Components.Remove(layer);
+                    int insertIndex = headIndex + (layerInfo.AttachTo == LayerAttachType.Bow ? 2 : 1);
+                    __instance.Components.Insert(insertIndex, layer);
+                }
             }
         }
-        
-        // public static void PassThroughTeam_patch(orig_Player_PlayerOnPlayer orig, Player a, Player b)
-        // {
-        //     var matchVariants = a.Level.Session.MatchSettings.Variants;
-        //     if (matchVariants.GetCustomVariant("PassThroughTeam")[a.PlayerIndex] && a.Allegiance == b.Allegiance && a.Allegiance != Allegiance.Neutral)
-        //     {
-        //         return;
-        //     }
-        //
-        //     orig(a, b);
-        // }
-        
+
+        [HarmonyPostfix]
+        private static void PlayerCorpse_Added_Postfix(PlayerCorpse __instance)
+        {
+            if (__instance.PlayerIndex == -1) return;
+            
+            var archerData = ArcherData.Get(TFGame.Characters[__instance.PlayerIndex], TFGame.AltSelect[__instance.PlayerIndex]);
+            var skinData = SkinPatcher.GetSkinCharacter(__instance.PlayerIndex, archerData);
+            var layerInfos = GetLayerInfos(skinData);
+            if (layerInfos == null) return;
+
+            // Add layer components
+            var corpseSprite = DynamicData.For(__instance).Get<Sprite<string>>("sprite");
+            foreach (var layerInfo in layerInfos)
+            {
+                if (layerInfo.AttachTo != LayerAttachType.Corpse) continue;
+                
+                var layer = new LayerSpriteComponent(layerInfo, corpseSprite,
+                    ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(archerData, out var customData) ? customData : null,
+                    archerData, true, true);
+                
+                __instance.Add(layer);
+            }
+        }
+
+        private static List<LayerInfo> GetLayerInfos(ArcherData archerData)
+        {
+            if (ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(archerData, out var archerCustomData))
+            {
+                return archerCustomData.LayerInfos;
+            }
+
+            var xml = ArcherLoaderMod.FindSpriteDataXmlOnCategories("layer", archerData);
+            return xml != null ? LayerParser.Parse(xml) : null;
+        }
+
+        private static Sprite<string> GetAttachedSprite(LayerInfo layerInfo, 
+            Sprite<string> headSprite, Sprite<string> bodySprite, Sprite<string> bowSprite)
+        {
+            return layerInfo.AttachTo switch
+            {
+                LayerAttachType.Body => bodySprite,
+                LayerAttachType.Head => headSprite,
+                LayerAttachType.Bow => bowSprite,
+                _ => bodySprite
+            };
+        }
     }
 }

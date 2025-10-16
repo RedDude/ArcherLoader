@@ -7,17 +7,12 @@ using Monocle;
 using MonoMod.Utils;
 using TowerFall;
 using TowerFall.Editor;
+using HarmonyLib;
 using Level = TowerFall.Level;
 
 public static class ArcherEditor
 {
-    // public static void Init(){
-    //         MethodInfo targetMethod = typeof(MockPlayer).GetMethod("Update", new[] { typeof(string) });
-    //         MethodInfo hookMethod = typeof(ContentLoaderPatcher).GetMethod(nameof(AtlasGetItemHook), BindingFlags.Static | BindingFlags.NonPublic);
-    //         _atlasGetItemHook = new Hook(targetMethod, hookMethod);
-    // }
     public static List<MockPlayer> allCurrentMocks = new List<MockPlayer>();
-
     private static EditorUI lastMoused;
     public static Allegiance editorAllegiance = Allegiance.Neutral;
     private static ArcherLoader.Editor.OverlayTextButton editorAllegianceButton;
@@ -26,63 +21,92 @@ public static class ArcherEditor
     private static RollcallElement rollcallNotJoinedPreview;
     private static MatchResultsPortraitPreview resultsPortraitWin;
     private static MatchResultsPortraitPreview resultsPortraitLose;
+    private static Harmony harmony;
+    private static bool once;
 
     public static void Load()
     {
-        On.TowerFall.RollcallElement.EnterJoined += OnForceStart;
-        On.TowerFall.RollcallElement.NotJoinedUpdate += OnNotJoinedUpdate;
-        On.TowerFall.RollcallElement.JoinedUpdate += OnJoinedUpdate;
-        On.TowerFall.RollcallElement.Render += OnRender;
-    }
-
-    private static void OnRender(On.TowerFall.RollcallElement.orig_Render orig, RollcallElement self)
-    {
-       if(rollcallPreview != null){
-            DynamicData.For(rollcallPreview).Set("input", null);
-       }
-       if(rollcallNotJoinedPreview != null){
-            DynamicData.For(rollcallNotJoinedPreview).Set("input", null);
-       }
-
-       orig(self);
+        harmony = new Harmony("mod.archerloader.editor");
+        
+        // Patch RollcallElement methods
+        harmony.Patch(
+            typeof(RollcallElement).GetMethod("EnterJoined"),
+            prefix: new HarmonyMethod(typeof(ArcherEditor), nameof(RollcallElement_EnterJoined_Prefix))
+        );
+        
+        harmony.Patch(
+            typeof(RollcallElement).GetMethod("NotJoinedUpdate"),
+            prefix: new HarmonyMethod(typeof(ArcherEditor), nameof(RollcallElement_NotJoinedUpdate_Prefix))
+        );
+        
+        harmony.Patch(
+            typeof(RollcallElement).GetMethod("JoinedUpdate"),
+            prefix: new HarmonyMethod(typeof(ArcherEditor), nameof(RollcallElement_JoinedUpdate_Prefix))
+        );
+        
+        harmony.Patch(
+            typeof(RollcallElement).GetMethod("Render"),
+            prefix: new HarmonyMethod(typeof(ArcherEditor), nameof(RollcallElement_Render_Prefix))
+        );
     }
 
     public static void Unload()
     {
-        On.TowerFall.RollcallElement.EnterJoined -= OnForceStart;
-        On.TowerFall.RollcallElement.NotJoinedUpdate -= OnNotJoinedUpdate;
-        On.TowerFall.RollcallElement.JoinedUpdate -= OnJoinedUpdate;
-        On.TowerFall.RollcallElement.Render -= OnRender;
+        harmony?.UnpatchAll();
     }
 
-    private static int OnJoinedUpdate(On.TowerFall.RollcallElement.orig_JoinedUpdate orig, RollcallElement self)
+    [HarmonyPrefix]
+    private static bool RollcallElement_EnterJoined_Prefix(RollcallElement __instance)
     {
-        return rollcallPreview != null ? 1 : orig(self);
-    }
-
-    private static int OnNotJoinedUpdate(On.TowerFall.RollcallElement.orig_NotJoinedUpdate orig, RollcallElement self)
-    {
-        return rollcallNotJoinedPreview != null ? 0 : orig(self);
-    }
-
-    private static void OnForceStart(On.TowerFall.RollcallElement.orig_EnterJoined orig, RollcallElement self)
-    {
-        if(rollcall){
+        if (rollcall != null)
+        {
             rollcall.RemoveSelf();
             rollcall = null;
             HotRefresh();
-            return;
+            return false; // Skip original
         }
+        return true; // Continue to original
+    }
 
-        orig(self);
+    [HarmonyPrefix]
+    private static bool RollcallElement_NotJoinedUpdate_Prefix(RollcallElement __instance, ref int __result)
+    {
+        if (rollcallNotJoinedPreview != null)
+        {
+            __result = 0; // Stay in NotJoined state
+            return false; // Skip original
+        }
+        return true; // Continue to original
+    }
+
+    [HarmonyPrefix]
+    private static bool RollcallElement_JoinedUpdate_Prefix(RollcallElement __instance, ref int __result)
+    {
+        if (rollcallPreview != null)
+        {
+            __result = 1; // Stay in Joined state
+            return false; // Skip original
+        }
+        return true; // Continue to original
+    }
+
+    [HarmonyPrefix]
+    private static void RollcallElement_Render_Prefix(RollcallElement __instance)
+    {
+        if (rollcallPreview != null)
+        {
+            DynamicData.For(rollcallPreview).Set("input", null);
+        }
+        if (rollcallNotJoinedPreview != null)
+        {
+            DynamicData.For(rollcallNotJoinedPreview).Set("input", null);
+        }
     }
 
     public static void HandleHotReload()
     {
-
-        if (FortEntrance.Settings.QuickStart) {
-            var scene = (Engine.Instance.Scene as Level);
-            if(scene != null)
+        if (FortEntrance.Instance.Settings.QuickStart) {
+            if(Engine.Instance.Scene is TowerFall.Level scene)
                 UpdateScene(scene);
         };
 
@@ -239,7 +263,7 @@ public static class ArcherEditor
     private static bool HotRefresh()
     {
         var session = (Engine.Instance.Scene as Level)?.Session;
-        CommandList.ReloadArcher(null);
+        ArcherLoaderCommands.ReloadArcher(null);
 
         if (session == null)
             return false;
@@ -311,26 +335,26 @@ public static class ArcherEditor
             (matchSettings.LevelSystem as VersusLevelSystem).StartOnLevel(0);
             var newSession = new Session(matchSettings);
 
-            void OnSessionOnStartRound(On.TowerFall.Session.orig_OnUpdate round, Session self1)
-            {
-                round(self1);
-
-                try
-                {
-                    foreach (var currentLevelPlayer in newSession.CurrentLevel.Players)
-                    {
-                        var p = (Player)currentLevelPlayer;
-                        if (positions.ContainsKey(p.PlayerIndex))
-                            currentLevelPlayer.Position = positions[p.PlayerIndex];
-                    }
-                    On.TowerFall.Session.OnUpdate -= OnSessionOnStartRound;
-                }
-                catch (Exception e)
-                {
-                }
-            }
-
-            On.TowerFall.Session.OnUpdate += OnSessionOnStartRound;
+            // void OnSessionOnStartRound(On.TowerFall.Session.orig_OnUpdate round, Session self1)
+            // {
+            //     round(self1);
+            //
+            //     try
+            //     {
+            //         foreach (var currentLevelPlayer in newSession.CurrentLevel.Players)
+            //         {
+            //             var p = (Player)currentLevelPlayer;
+            //             if (positions.ContainsKey(p.PlayerIndex))
+            //                 currentLevelPlayer.Position = positions[p.PlayerIndex];
+            //         }
+            //         On.TowerFall.Session.OnUpdate -= OnSessionOnStartRound;
+            //     }
+            //     catch (Exception e)
+            //     {
+            //     }
+            // }
+            //
+            // On.TowerFall.Session.OnUpdate += OnSessionOnStartRound;
             newSession.StartGame();
 
         }
@@ -426,17 +450,84 @@ public static class ArcherEditor
         allCurrentMocks.Add(mockPlayer);
     }
 
+    // public static void HandleQuickStart()
+    // {
+    //     if (!FortEntrance.Settings.QuickStart) return;
+    //     var once = false;
+    //
+    //     void OnMainMenuOnUpdate(On.TowerFall.MainMenu.orig_Update orig, MainMenu self)
+    //     {
+    //         orig(self);
+    //
+    //         //quick portrait
+    //         if (self.State == MainMenu.MenuState.Loading) return;
+    //
+    //         if (once) return;
+    //         once = true;
+    //
+    //         for (var i = 0; i < TFGame.PlayerInputs.Length; i++)
+    //         {
+    //             TFGame.Players[i] = TFGame.PlayerInputs[i] != null;
+    //         }
+    //
+    //         var player1CharacterIndex = FortEntrance.Settings.Player1CharacterIndex;
+    //         if (player1CharacterIndex > -1)
+    //             TFGame.Characters[0] = player1CharacterIndex >= ArcherData.Archers.Length
+    //                 ? ArcherData.Archers.Length - 1
+    //                 : player1CharacterIndex;
+    //
+    //         var player2CharacterIndex = FortEntrance.Settings.Player2CharacterIndex;
+    //         if (player2CharacterIndex > -1)
+    //             TFGame.Characters[1] = player2CharacterIndex >= ArcherData.Archers.Length
+    //                 ? ArcherData.Archers.Length - 1
+    //                 : player2CharacterIndex;
+    //
+    //         var player3CharacterIndex = FortEntrance.Settings.Player3CharacterIndex;
+    //         if (player3CharacterIndex > -1)
+    //             TFGame.Characters[2] = player3CharacterIndex >= ArcherData.Archers.Length
+    //                 ? ArcherData.Archers.Length - 1
+    //                 : player3CharacterIndex;
+    //
+    //
+    //         // TFGame.Characters[1] = 2;
+    //
+    //         // self.State = MainMenu.MenuState.Rollcall;
+    //         // return;
+    //
+    //         var matchSettings = new MatchSettings(GameData.VersusTowers[0].GetLevelSystem(), Modes.LevelTest,
+    //             MatchSettings.MatchLengths.Standard);
+    //         // matchSettings.Mode = ModRegisters.GameModeType<ArcherEditorMode>();
+    //         (matchSettings.LevelSystem as VersusLevelSystem).StartOnLevel(0);
+    //         var session = new Session(matchSettings);
+    //         session.StartGame();
+    //
+    //         // var matchSettings = new MatchSettings(GameData.VersusTowers[GameData.VersusTowers.Count-1].GetLevelSystem(), Modes.LevelTest,
+    //         //     MatchSettings.MatchLengths.Standard);
+    //         // matchSettings.Variants.GetCustomVariant("ReaperChalice").Value = true;
+    //
+    //         // (matchSettings.LevelSystem as VersusLevelSystem).StartOnLevel(-1);
+    //         // new Session(matchSettings).StartGame();
+    //
+    //         On.TowerFall.MainMenu.Update -= OnMainMenuOnUpdate;
+    //     }
+    //
+    //     On.TowerFall.MainMenu.Update += OnMainMenuOnUpdate;
+    // }
+    
     public static void HandleQuickStart()
     {
-        if (!FortEntrance.Settings.QuickStart) return;
-        var once = false;
+        if (!FortEntrance.Instance.Settings.QuickStart) return;
+        
+        harmony.Patch(
+            typeof(MainMenu).GetMethod("Update"),
+            prefix: new HarmonyMethod(typeof(ArcherEditor), nameof(MainMenu_Update_Prefix))
+        );
+    }
 
-        void OnMainMenuOnUpdate(On.TowerFall.MainMenu.orig_Update orig, MainMenu self)
-        {
-            orig(self);
-
-            //quick portrait
-            if (self.State == MainMenu.MenuState.Loading) return;
+    [HarmonyPrefix]
+    private static void MainMenu_Update_Prefix(MainMenu __instance)
+    {
+        if (__instance.State == MainMenu.MenuState.Loading) return;
 
             if (once) return;
             once = true;
@@ -446,19 +537,19 @@ public static class ArcherEditor
                 TFGame.Players[i] = TFGame.PlayerInputs[i] != null;
             }
 
-            var player1CharacterIndex = FortEntrance.Settings.Player1CharacterIndex;
+            var player1CharacterIndex = FortEntrance.Instance.Settings.Player1CharacterIndex;
             if (player1CharacterIndex > -1)
                 TFGame.Characters[0] = player1CharacterIndex >= ArcherData.Archers.Length
                     ? ArcherData.Archers.Length - 1
                     : player1CharacterIndex;
 
-            var player2CharacterIndex = FortEntrance.Settings.Player2CharacterIndex;
+            var player2CharacterIndex = FortEntrance.Instance.Settings.Player2CharacterIndex;
             if (player2CharacterIndex > -1)
                 TFGame.Characters[1] = player2CharacterIndex >= ArcherData.Archers.Length
                     ? ArcherData.Archers.Length - 1
                     : player2CharacterIndex;
 
-            var player3CharacterIndex = FortEntrance.Settings.Player3CharacterIndex;
+            var player3CharacterIndex = FortEntrance.Instance.Settings.Player3CharacterIndex;
             if (player3CharacterIndex > -1)
                 TFGame.Characters[2] = player3CharacterIndex >= ArcherData.Archers.Length
                     ? ArcherData.Archers.Length - 1
@@ -484,10 +575,9 @@ public static class ArcherEditor
             // (matchSettings.LevelSystem as VersusLevelSystem).StartOnLevel(-1);
             // new Session(matchSettings).StartGame();
 
-            On.TowerFall.MainMenu.Update -= OnMainMenuOnUpdate;
-        }
-
-        On.TowerFall.MainMenu.Update += OnMainMenuOnUpdate;
+        
+        // Unpatch after running once
+        harmony.Unpatch(typeof(MainMenu).GetMethod("Update"), HarmonyPatchType.Prefix);
     }
 
 

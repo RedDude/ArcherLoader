@@ -29,7 +29,7 @@ namespace ArcherLoaderMod.Particles
 
         private static ParticlesInfo HandleParticle(XmlElement xml)
         {
-            if (FortEntrance.Settings.DisableParticles)
+            if (FortEntrance.Instance.Settings.DisableParticles)
                 return null;
 
             var particlesInfo = new ParticlesInfo

@@ -1,37 +1,48 @@
-﻿using Monocle;
+﻿using HarmonyLib;
+using Monocle;
 using TowerFall;
 
 namespace ArcherLoaderMod.Patch
 {
     public class VictoryMusicPatcher
     {
+        private static Harmony harmony;
+
         public static void Load()
         {
-            On.TowerFall.ArcherData.PlayVictoryMusic += OnArcherDataOnPlayVictoryMusic;
+            harmony = new Harmony("mod.archerloader.victorymusic");
+            harmony.Patch(
+                typeof(ArcherData).GetMethod("PlayVictoryMusic"),
+                prefix: new HarmonyMethod(typeof(VictoryMusicPatcher), nameof(PlayVictoryMusic_Prefix))
+            );
         }
 
         public static void Unload()
         {
-            On.TowerFall.ArcherData.PlayVictoryMusic -= OnArcherDataOnPlayVictoryMusic;
+            harmony?.UnpatchAll();
         }
 
-        private static void OnArcherDataOnPlayVictoryMusic(On.TowerFall.ArcherData.orig_PlayVictoryMusic orig, ArcherData self)
+        [HarmonyPrefix]
+        private static bool PlayVictoryMusic_Prefix(ArcherData __instance)
         {
-            Mod.ArcherCustomDataDict.TryGetValue(self, out var custom);
-
-            var victory = custom?.victory;
-            if (victory == null)
+            if (!ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(__instance, out var custom) || 
+                custom?.victory == null)
             {
-                orig(self);
-                return;
+                // Continue to original method if no custom victory music
+                return true;
             }
-                
+
+            // Handle custom victory music
             var masterVolume = Audio.MasterVolume;
             if (Music.MasterVolume > 0 && masterVolume == 0)
                 Audio.MasterVolume = 1;
+                
             var volume = Music.MasterVolume * 2f;
-            victory.Play(160,  volume > 1 ? 1 : volume);
+            custom.victory.Play(160, volume > 1 ? 1 : volume);
             Audio.MasterVolume = masterVolume;
+            
+            // Skip original method
+            return false;
         }
     }
 }

@@ -7,7 +7,7 @@ namespace ArcherLoaderMod.Source.ModImport
     [ModImportName("TF.EX.API")]
     public class TfExAPIModImport
     {
-        public static Action<FortModule> MarkModuleAsSafe;
+        public static Action<Mod> MarkModuleAsSafe;
 
         static TfExAPIModImport()
         {

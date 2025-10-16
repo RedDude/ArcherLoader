@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Xml;
+using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
@@ -11,69 +12,61 @@ namespace ArcherLoaderMod.Wings
     {
         public static Dictionary<ArcherData, Color?> Colors = new();
         public static Dictionary<ArcherData, Sprite<string>> Sprites = new();
-
         private static bool enabled;
+        private static Harmony harmony;
 
-        // public static Dictionary<PlayerWings, Sprite<string>> Sprites = new();
         public static void Load()
         {
-            if (FortEntrance.Settings.DisableCustomWings)
+            if (FortEntrance.Instance.Settings.DisableCustomWings)
                 return;
 
-            On.TowerFall.Player.Added += OnPlayerOnAdded;
+            harmony = new Harmony("mod.archerloader.wings");
+            harmony.Patch(
+                typeof(Player).GetMethod("Added"),
+                postfix: new HarmonyMethod(typeof(WingsPatcher), nameof(Player_Added_Postfix))
+            );
+            
             enabled = true;
-            // On.TowerFall.PlayerWings.Render += OnPlayerWingsOnRender;
         }
 
         public static void Unload()
         {
-            if(!enabled)
-                return;
-
-            On.TowerFall.Player.Added -= OnPlayerOnAdded;
-            // On.TowerFall.PlayerWings.Render -= OnPlayerWingsOnRender;
+            if (!enabled) return;
+            harmony?.UnpatchAll();
         }
 
-        
-        private static void OnPlayerWingsOnRender(On.TowerFall.PlayerWings.orig_Render orig, PlayerWings self)
+        [HarmonyPostfix]
+        private static void Player_Added_Postfix(Player __instance)
         {
-            orig(self);
-            // var owner = DynamicData.For(self).Get<Entity>("owner");
-            // if (owner is not Player) return;
-            // var player = owner as Player;
-            //
-            // var archerData = ArcherData.Get(TFGame.Characters[player.PlayerIndex], TFGame.AltSelect[player.PlayerIndex]);
-            // var color = Colors[archerData];
-            // if (!color.HasValue) return;
-            // var sprite = Sprites[archerData];
-            // sprite.Scale.X *= (float) player.Facing;
-            // sprite.Color = color.Value * player.InvisOpacity;
-            // self.Render();
-            // sprite.Scale.X *= (float) player.Facing;
-        }
-
-        private static void OnPlayerOnAdded(On.TowerFall.Player.orig_Added orig, TowerFall.Player self)
-        {
-            orig(self);
-
             PlayerWings wings = null;
-            foreach (var t in self.Components)
+            foreach (var component in __instance.Components)
             {
-                if (t is not PlayerWings pw) continue;
-                wings = pw;
-                break;
+                if (component is PlayerWings pw)
+                {
+                    wings = pw;
+                    break;
+                }
             }
 
-            if(wings == null)
+            if (wings == null)
                 return;
             
-            var wingsChange = "";
+            var archerData = ArcherData.Get(
+                TFGame.Characters[__instance.PlayerIndex], 
+                TFGame.AltSelect[__instance.PlayerIndex]
+            );
+            
+            var sprite = DynamicData.For(wings).Get<Sprite<string>>("sprite");
+            ApplyCustomWings(__instance, archerData, sprite);
+        }
+
+        private static void ApplyCustomWings(Player player, ArcherData archerData, Sprite<string> sprite)
+        {
+            string wingsChange = null;
             Color? wingsColor = null;
             
-            var archerData = ArcherData.Get(TFGame.Characters[self.PlayerIndex], TFGame.AltSelect[self.PlayerIndex]);
-            var exist = Mod.ArcherCustomDataDict.TryGetValue(archerData, out var archerCustomData);
-            var sprite = DynamicData.For(wings).Get<Sprite<string>>("sprite");
-            if (exist)
+            // Check custom archer data first
+            if (ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(archerData, out var archerCustomData))
             {
                 wingsChange = archerCustomData.Wings;
                 if (!string.IsNullOrWhiteSpace(wingsChange))
@@ -81,51 +74,59 @@ namespace ArcherLoaderMod.Wings
                     sprite.SwapSubtexture(TFGame.Atlas[wingsChange]);
                     Sprites[archerData] = sprite;
                 }
-                // if (archerCustomData.WingsColor.HasValue)
-                // {
-                //     Colors[archerData] = archerCustomData.WingsColor.Value;
-                //     Sprites[archerData] = sprite;
-                // }
-    
-                return;
+                return; // Custom archer data takes priority
             }
 
-            Mod.customSpriteDataCategoryDict.TryGetValue("wings", out var wingsCategory);
-            if(wingsCategory == null)
+            // Check wings category in custom sprite data
+            if (!ArcherLoaderMod.customSpriteDataCategoryDict.TryGetValue("wings", out var wingsCategory) || 
+                wingsCategory == null)
                 return;
+
             foreach (var customSpriteData in wingsCategory)
             {
                 var xmlElement = customSpriteData.Element;
-                var forAttribute = Mod.GetForAttribute(xmlElement);
+                var forAttribute = ArcherLoaderMod.GetForAttribute(xmlElement);
                 if (string.IsNullOrEmpty(forAttribute)) continue;
-                Mod.BaseArcherByNameDict.TryGetValue(xmlElement.GetAttribute(forAttribute).ToLower(),
-                    out var searchArcherData);
-                if (searchArcherData == null)
-                {
-                    foreach (var customData in Mod.ArcherCustomDataDict)
-                    {
-                        if (customData.Value.ID == xmlElement.GetAttribute(forAttribute))
-                        {
-                            searchArcherData = customData.Key;
-                        }
-                    }
-                }
+                
+                if (!TryFindArcherData(xmlElement.GetAttribute(forAttribute), out var searchArcherData))
+                    continue;
 
-                if (archerData != searchArcherData) continue;
+                if (archerData != searchArcherData) 
+                    continue;
+
                 wingsChange = xmlElement.ChildText("Texture", "");
-                wingsColor = xmlElement.HasChild("Color") ? xmlElement.ChildHexColor("Color") : null;
+                wingsColor = xmlElement.HasChild("Color") 
+                    ? xmlElement.ChildHexColor("Color") 
+                    : null;
                 break;
             }
 
             if (!string.IsNullOrWhiteSpace(wingsChange))
-            {
                 sprite.SwapSubtexture(TFGame.Atlas[wingsChange]);
-            }
+            
             if (wingsColor.HasValue)
             {
                 Colors[archerData] = wingsColor.Value;
                 Sprites[archerData] = sprite;
             }
+        }
+
+        private static bool TryFindArcherData(string id, out ArcherData archerData)
+        {
+            if (ArcherLoaderMod.BaseArcherByNameDict.TryGetValue(id.ToLower(), out archerData))
+                return true;
+
+            foreach (var customData in ArcherLoaderMod.ArcherCustomDataDict)
+            {
+                if (customData.Value.ID == id)
+                {
+                    archerData = customData.Key;
+                    return true;
+                }
+            }
+
+            archerData = null;
+            return false;
         }
     }
 }

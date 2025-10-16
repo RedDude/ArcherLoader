@@ -24,10 +24,10 @@ using TowerFall;
 
 namespace ArcherLoaderMod
 {
-    public class Mod
+    public class ArcherLoaderMod
     {
         private static string _separator;
-        private static string _contentCustomArchersPath;
+        // private static string _contentCustomArchersPath;
 
         public static List<SpriteData> customSpriteDataList = new();
         public static List<SpriteData> cachedCustomSpriteDataList = new();
@@ -46,20 +46,19 @@ namespace ArcherLoaderMod
 
         public static List<CharacterSounds> customSFXList = new();
 
-
-        public static FortContent Content;
-        private static string _customArchersPath;
+        // private static string _customArchersPath;
         private static List<ArcherCustomData> allCustomArchers = new List<ArcherCustomData>();
 
         public static List<ArcherData> originalArchersList = new List<ArcherData>();
+        private static ArcherLoaderSettings settings;
 
-        public static void LoadContent(FortContent fortContent)
-        {
-            TauntVariant.LoadContent(fortContent);
-            TeamsPatcher.LoadContent(fortContent);
-
-            Content = fortContent;
-        }
+        // public static void LoadContent(FortContent fortContent)
+        // {
+        //     TauntVariant.LoadContent(fortContent);
+        //     TeamsPatcher.LoadContent(fortContent);
+        //
+        //     Content = fortContent;
+        // }
 
         public static void Load()
         {
@@ -67,41 +66,41 @@ namespace ArcherLoaderMod
             typeof(EightPlayerImport).ModInterop();
 
             _separator = Path.DirectorySeparatorChar.ToString();
-            _customArchersPath = $"CustomArchers{_separator}";
-            _contentCustomArchersPath = $"Mod{_separator}{_customArchersPath}";
+            // _customArchersPath = $"CustomArchers{_separator}";
+            // _contentCustomArchersPath = $"Mod{_separator}{_customArchersPath}";
+            //
+            // Directory.CreateDirectory($"{Calc.LOADPATH}{_contentCustomArchersPath}");
 
-            Directory.CreateDirectory($"{Calc.LOADPATH}{_contentCustomArchersPath}");
-
-            ContentLoaderPatcher.Load();
-            if (!FortEntrance.Settings.DisableHairs)
-            {
-                var hairPatcher = new HairPatcher();
-                hairPatcher.Load();
-            }
-
-            TauntVariant.Load();
-            ParticlePatcher.Load();
+            // ContentLoaderPatcher.Load();
+            settings = FortEntrance.Instance.Settings;
+            // if (!settings.DisableHairs)
+            // {
+            //     HairPatcher.Load();
+            // }
+            //
+            // TauntVariant.Load();
+            // ParticlePatcher.Load();
             WingsPatcher.Load();
-            GhostPatcher.Load();
-            VictoryMusicPatcher.Load();
-            SkinPatcher.Load();
-            LayerPatch.Load();
-            PortraitLayerPatch.Load();
-            PrismaticPatcher.Load();
-            TeamsPatcher.Load();
-            MutePatcher.Load();
-            ArcherEditor.Load();
+            // GhostPatcher.Load();
+            // VictoryMusicPatcher.Load();
+            // SkinPatcher.Load();
+            // LayerPatch.Load();
+            // PortraitLayerPatch.Load();
+            // PrismaticPatcher.Load();
+            // TeamsPatcher.Load();
+            // MutePatcher.Load();
+            // ArcherEditor.Load();
 
-            On.TowerFall.TFGame.Update += (orig, self, time) =>
-            {
-                orig(self, time);
-
-                ArcherEditor.HandleHotReload();
-            };
+            // On.TowerFall.TFGame.Update += (orig, self, time) =>
+            // {
+            //     orig(self, time);
+            //
+            //     ArcherEditor.HandleHotReload();
+            // };
 
             ArcherEditor.HandleQuickStart();
         }
-
+        
 
         public static void LoadArcherContents()
         {
@@ -116,25 +115,17 @@ namespace ArcherLoaderMod
             BaseArcherByNameDict.Clear();
             allCustomArchers.Clear();
 
-            // customSFXList = new();
-            // allCustomArchers = new List<ArcherCustomData>();
-            // var modContentDirectory = FortRise.IO.ModIO.GetDirectories($"mod:ArcherLoader/Content/{_customArchersPath}");
-
-            // Console.WriteLine($"{FortRise.IO.ModIO.GetRootPath()}");
-            // Path.GetFullPath()
-            allCustomArchers.AddRange(LoadContentAtPath(
-                $"{_contentCustomArchersPath}", ContentAccess.Content));
-
-            allCustomArchers.AddRange(LoadContentAtPath(
-                $"{FortRise.IO.ModIO.GetRootPath()}Mods{_separator}{_customArchersPath}", ContentAccess.ModContent));
-            // allCustomArchers.AddRange(LoadContentAtPath($"{_customArchersPath}", ContentAccess.Root));
-
-            // We need to think a better solution than loading content at random location
-
-            var contentPath = Content.ContentPath;
-            allCustomArchers.AddRange(LoadContentAtPath($"/{_customArchersPath}", ContentAccess.ModContent));
-            // allCustomArchers.AddRange(LoadContentAtPath(contentPath.Replace("/Content", "")+$"/{_customArchersPath}", ContentAccess.Root));
-            // allCustomArchers.AddRange(LoadContentAtPath(Content.GetContentPath("").Replace("/Content", ""), ContentAccess.Root));
+            // allCustomArchers.AddRange(LoadContentAtPath(
+            //     $"{_contentCustomArchersPath}", ContentAccess.Content));
+            //
+            // allCustomArchers.AddRange(LoadContentAtPath(
+            //     $"{FortRise.IO.ModIO.GetRootPath()}Mods{_separator}{_customArchersPath}", ContentAccess.ModContent));
+            // // allCustomArchers.AddRange(LoadContentAtPath($"{_customArchersPath}", ContentAccess.Root));
+            //
+            // // We need to think a better solution than loading content at random location
+            //
+            // var contentPath = Content.ContentPath;
+            // allCustomArchers.AddRange(LoadContentAtPath($"/{_customArchersPath}", ContentAccess.ModContent));
         }
 
         public static void Start()
@@ -244,7 +235,7 @@ namespace ArcherLoaderMod
                     continue;
                 }
 
-                if (FortEntrance.Settings.Validate)
+                if (settings.Validate)
                 {
                     var errors =
                         ArcherCustomManager.validator.Validate(
@@ -312,7 +303,7 @@ namespace ArcherLoaderMod
                     continue;
                 }
 
-                if (FortEntrance.Settings.Validate)
+                if (settings.Validate)
                 {
                     var errors =
                         ArcherCustomManager.validator.Validate(
@@ -350,159 +341,159 @@ namespace ArcherLoaderMod
             }
         }
 
-        public static List<ArcherCustomData> LoadContentAtPath(string path, ContentAccess contentAccess, bool warnNotFound = true)
-        {
-            var allCustomArchers = new List<ArcherCustomData>();
-            // Console.WriteLine($"{modContentDirectory[0]}");
-            Console.WriteLine($"{path}");
-            if (!Directory.Exists(path))
-            {
-                if (warnNotFound)
-                    Console.WriteLine($"\nNo Archer Found in \"{path}\" Folder");
-                return allCustomArchers;
-            }
-
-            var customArchersFound = Directory.GetDirectories(path);
-
-            foreach (var directory in customArchersFound)
-            {
-                // if(directory.EndsWith("Content"))
-                //     continue;
-
-                allCustomArchers.AddRange(LoadContent(Content, directory, contentAccess, contentAccess == ContentAccess.Content));
-            }
-
-            if (warnNotFound && allCustomArchers.Count == 0)
-            {
-                Console.WriteLine($"\nNo New Archers Found in \"{path}\" Folder");
-            }
-            if (allCustomArchers.Count > 0)
-            {
-                ArcherCustomDataValidator.PrintLineWithColor($"\n{allCustomArchers.Count} New Archer(s) Found in \"{path}\" Folder", ConsoleColor.DarkGreen);
-            }
-
-            if (allCustomArchers.Count == 0)
-            {
-                return allCustomArchers;
-            }
-            foreach (var archerCustomData in allCustomArchers)
-            {
-                var meta = string.IsNullOrEmpty(archerCustomData?.Meta?.Author) ? "" : $"By {archerCustomData.Meta.Author}";
-                var type = archerCustomData?.ArcherType == (ArcherData.ArcherTypes)3 ? "Skin" : archerCustomData?.ArcherType.ToString();
-                ArcherCustomDataValidator.PrintLineWithColor($"{archerCustomData?.ID} {type} ({archerCustomData?.Name0 + " " + archerCustomData?.Name1}) {meta}", ConsoleColor.Green);
-            }
-
-            return allCustomArchers;
-        }
-
-        private static List<ArcherCustomData> LoadContent(FortContent content, string directory, ContentAccess contentAccess, bool addContentPrefix = false)
-        {
-            var newArchers = new List<ArcherCustomData>();
-            newArchers.AddRange(LoadContentAtPath(directory, contentAccess, false));
-
-            var archerName = directory.Split(Convert.ToChar(_separator)).Last();
-            var path = $"{directory}{_separator}".Replace($"Content{_separator}", $"");
-            if (contentAccess == ContentAccess.ModContent)
-            {
-                // path = path.Replace(Content.GetContentPath(), "");
-                // path = Content.GetContentPath() + path;
-                contentAccess = ContentAccess.Root;
-            }
-
-            var pathWithContentPrefix = addContentPrefix ? Calc.LOADPATH + path : path;
-
-            Atlas atlas = null;
-            if (File.Exists($"{pathWithContentPrefix}atlas.xml") && File.Exists($"{pathWithContentPrefix}atlas.png"))
-            {
-                atlas = AtlasExt.CreateAtlas(content, $"{path}atlas.xml", $"{path}atlas.png", contentAccess);
-                customAtlasList.Add(atlas);
-            }
-
-            if (!File.Exists($"{pathWithContentPrefix}spriteData.xml") || atlas == null)
-            {
-                return newArchers;
-            }
-
-            var spriteData = content.CreateSpriteData($"{path}spriteData.xml", atlas, contentAccess);
-            var sprites = DynamicData.For(spriteData).Get<Dictionary<string, XmlElement>>("sprites");
-
-            if (sprites.Count > 0)
-            {
-                foreach (var sprite in sprites)
-                {
-                    if (!sprite.Value.HasAttribute("Category") && !sprite.Value.HasAttribute("category")) continue;
-                    var category = sprite.Value.HasAttribute("Category")
-                        ? sprite.Value.GetAttribute("Category")
-                        : sprite.Value.GetAttribute("category");
-
-                    var lower = category.ToLower();
-                    if (!customSpriteDataCategoryDict.ContainsKey(lower))
-                    {
-                        customSpriteDataCategoryDict[lower]
-                            = new List<CustomSpriteDataInfo>();
-                    }
-
-                    customSpriteDataCategoryDict[lower].Add(new CustomSpriteDataInfo()
-                    {
-                        id = sprite.Key,
-                        Element = sprite.Value,
-                        PathName = directory + Path.DirectorySeparatorChar
-                    });
-                }
-
-                customSpriteDataList.Add(spriteData);
-                customSpriteDataPath.Add(spriteData, $"{path}spriteData.xml");
-            }
-
-            var atlasArcherMenu = atlas;
-            if (File.Exists($"{pathWithContentPrefix}menuAtlas.xml") &&
-                File.Exists($"{pathWithContentPrefix}menuAtlas.png"))
-            {
-                atlasArcherMenu = AtlasExt.CreateAtlas(content, $"{path}menuAtlas.xml", $"{path}menuAtlas.png", contentAccess);
-                customAtlasList.Add(atlasArcherMenu);
-            }
-
-            var spriteDataMenu = spriteData;
-            if (File.Exists($"{pathWithContentPrefix}menuSpriteData.xml") || atlas == null)
-            {
-                spriteDataMenu = content.CreateSpriteData($"{path}menuSpriteData.xml", atlas, contentAccess);
-                var spritesMenu  = DynamicData.For(spriteDataMenu).Get<Dictionary<string, XmlElement>>("sprites");
-
-                if (spritesMenu.Count > 0)
-                {
-                    foreach (var sprite in spritesMenu)
-                    {
-                        if (!sprite.Value.HasAttribute("Category") && !sprite.Value.HasAttribute("category")) continue;
-                        var category = sprite.Value.HasAttribute("Category")
-                            ? sprite.Value.GetAttribute("Category")
-                            : sprite.Value.GetAttribute("category");
-
-                        var lower = category.ToLower();
-                        if (!customSpriteDataCategoryDict.ContainsKey(lower))
-                        {
-                            customSpriteDataCategoryDict[lower]
-                                = new List<CustomSpriteDataInfo>();
-                        }
-
-                        customSpriteDataCategoryDict[lower].Add(new CustomSpriteDataInfo()
-                        {
-                            id = sprite.Key,
-                            Element = sprite.Value,
-                            PathName = directory + Path.DirectorySeparatorChar
-                        });
-                    }
-
-                    customSpriteDataList.Add(spriteDataMenu);
-                    customSpriteDataPath.Add(spriteDataMenu, $"{path}menuSpriteData.xml");
-                }
-            }
-
-            var filePath = $"{pathWithContentPrefix}archerData.xml";
-            if (!File.Exists(filePath)) return newArchers;
-            var newArchersFromPack =
-                InitializeArcherData(pathWithContentPrefix, atlas, atlasArcherMenu, spriteData, spriteDataMenu, archerName.ToUpper());
-            return newArchersFromPack;
-        }
+        // public static List<ArcherCustomData> LoadContentAtPath(string path, ContentAccess contentAccess, bool warnNotFound = true)
+        // {
+        //     var allCustomArchers = new List<ArcherCustomData>();
+        //     // Console.WriteLine($"{modContentDirectory[0]}");
+        //     Console.WriteLine($"{path}");
+        //     if (!Directory.Exists(path))
+        //     {
+        //         if (warnNotFound)
+        //             Console.WriteLine($"\nNo Archer Found in \"{path}\" Folder");
+        //         return allCustomArchers;
+        //     }
+        //
+        //     var customArchersFound = Directory.GetDirectories(path);
+        //
+        //     foreach (var directory in customArchersFound)
+        //     {
+        //         // if(directory.EndsWith("Content"))
+        //         //     continue;
+        //
+        //         allCustomArchers.AddRange(LoadContent(Content, directory, contentAccess, contentAccess == ContentAccess.Content));
+        //     }
+        //
+        //     if (warnNotFound && allCustomArchers.Count == 0)
+        //     {
+        //         Console.WriteLine($"\nNo New Archers Found in \"{path}\" Folder");
+        //     }
+        //     if (allCustomArchers.Count > 0)
+        //     {
+        //         ArcherCustomDataValidator.PrintLineWithColor($"\n{allCustomArchers.Count} New Archer(s) Found in \"{path}\" Folder", ConsoleColor.DarkGreen);
+        //     }
+        //
+        //     if (allCustomArchers.Count == 0)
+        //     {
+        //         return allCustomArchers;
+        //     }
+        //     foreach (var archerCustomData in allCustomArchers)
+        //     {
+        //         var meta = string.IsNullOrEmpty(archerCustomData?.Meta?.Author) ? "" : $"By {archerCustomData.Meta.Author}";
+        //         var type = archerCustomData?.ArcherType == (ArcherData.ArcherTypes)3 ? "Skin" : archerCustomData?.ArcherType.ToString();
+        //         ArcherCustomDataValidator.PrintLineWithColor($"{archerCustomData?.ID} {type} ({archerCustomData?.Name0 + " " + archerCustomData?.Name1}) {meta}", ConsoleColor.Green);
+        //     }
+        //
+        //     return allCustomArchers;
+        // }
+        //
+        // private static List<ArcherCustomData> LoadContent(FortContent content, string directory, ContentAccess contentAccess, bool addContentPrefix = false)
+        // {
+        //     var newArchers = new List<ArcherCustomData>();
+        //     newArchers.AddRange(LoadContentAtPath(directory, contentAccess, false));
+        //
+        //     var archerName = directory.Split(Convert.ToChar(_separator)).Last();
+        //     var path = $"{directory}{_separator}".Replace($"Content{_separator}", $"");
+        //     if (contentAccess == ContentAccess.ModContent)
+        //     {
+        //         // path = path.Replace(Content.GetContentPath(), "");
+        //         // path = Content.GetContentPath() + path;
+        //         contentAccess = ContentAccess.Root;
+        //     }
+        //
+        //     var pathWithContentPrefix = addContentPrefix ? Calc.LOADPATH + path : path;
+        //
+        //     Atlas atlas = null;
+        //     if (File.Exists($"{pathWithContentPrefix}atlas.xml") && File.Exists($"{pathWithContentPrefix}atlas.png"))
+        //     {
+        //         atlas = AtlasExt.CreateAtlas(content, $"{path}atlas.xml", $"{path}atlas.png", contentAccess);
+        //         customAtlasList.Add(atlas);
+        //     }
+        //
+        //     if (!File.Exists($"{pathWithContentPrefix}spriteData.xml") || atlas == null)
+        //     {
+        //         return newArchers;
+        //     }
+        //
+        //     var spriteData = content.CreateSpriteData($"{path}spriteData.xml", atlas, contentAccess);
+        //     var sprites = DynamicData.For(spriteData).Get<Dictionary<string, XmlElement>>("sprites");
+        //
+        //     if (sprites.Count > 0)
+        //     {
+        //         foreach (var sprite in sprites)
+        //         {
+        //             if (!sprite.Value.HasAttribute("Category") && !sprite.Value.HasAttribute("category")) continue;
+        //             var category = sprite.Value.HasAttribute("Category")
+        //                 ? sprite.Value.GetAttribute("Category")
+        //                 : sprite.Value.GetAttribute("category");
+        //
+        //             var lower = category.ToLower();
+        //             if (!customSpriteDataCategoryDict.ContainsKey(lower))
+        //             {
+        //                 customSpriteDataCategoryDict[lower]
+        //                     = new List<CustomSpriteDataInfo>();
+        //             }
+        //
+        //             customSpriteDataCategoryDict[lower].Add(new CustomSpriteDataInfo()
+        //             {
+        //                 id = sprite.Key,
+        //                 Element = sprite.Value,
+        //                 PathName = directory + Path.DirectorySeparatorChar
+        //             });
+        //         }
+        //
+        //         customSpriteDataList.Add(spriteData);
+        //         customSpriteDataPath.Add(spriteData, $"{path}spriteData.xml");
+        //     }
+        //
+        //     var atlasArcherMenu = atlas;
+        //     if (File.Exists($"{pathWithContentPrefix}menuAtlas.xml") &&
+        //         File.Exists($"{pathWithContentPrefix}menuAtlas.png"))
+        //     {
+        //         atlasArcherMenu = AtlasExt.CreateAtlas(content, $"{path}menuAtlas.xml", $"{path}menuAtlas.png", contentAccess);
+        //         customAtlasList.Add(atlasArcherMenu);
+        //     }
+        //
+        //     var spriteDataMenu = spriteData;
+        //     if (File.Exists($"{pathWithContentPrefix}menuSpriteData.xml") || atlas == null)
+        //     {
+        //         spriteDataMenu = content.CreateSpriteData($"{path}menuSpriteData.xml", atlas, contentAccess);
+        //         var spritesMenu  = DynamicData.For(spriteDataMenu).Get<Dictionary<string, XmlElement>>("sprites");
+        //
+        //         if (spritesMenu.Count > 0)
+        //         {
+        //             foreach (var sprite in spritesMenu)
+        //             {
+        //                 if (!sprite.Value.HasAttribute("Category") && !sprite.Value.HasAttribute("category")) continue;
+        //                 var category = sprite.Value.HasAttribute("Category")
+        //                     ? sprite.Value.GetAttribute("Category")
+        //                     : sprite.Value.GetAttribute("category");
+        //
+        //                 var lower = category.ToLower();
+        //                 if (!customSpriteDataCategoryDict.ContainsKey(lower))
+        //                 {
+        //                     customSpriteDataCategoryDict[lower]
+        //                         = new List<CustomSpriteDataInfo>();
+        //                 }
+        //
+        //                 customSpriteDataCategoryDict[lower].Add(new CustomSpriteDataInfo()
+        //                 {
+        //                     id = sprite.Key,
+        //                     Element = sprite.Value,
+        //                     PathName = directory + Path.DirectorySeparatorChar
+        //                 });
+        //             }
+        //
+        //             customSpriteDataList.Add(spriteDataMenu);
+        //             customSpriteDataPath.Add(spriteDataMenu, $"{path}menuSpriteData.xml");
+        //         }
+        //     }
+        //
+        //     var filePath = $"{pathWithContentPrefix}archerData.xml";
+        //     if (!File.Exists(filePath)) return newArchers;
+        //     var newArchersFromPack =
+        //         InitializeArcherData(pathWithContentPrefix, atlas, atlasArcherMenu, spriteData, spriteDataMenu, archerName.ToUpper());
+        //     return newArchersFromPack;
+        // }
 
         private static void AddBaseArcherToDict(string name, int index, List<ArcherData> newNormal, ArcherData[] newAlt, ArcherData[] newSecret)
         {
@@ -616,7 +607,7 @@ namespace ArcherLoaderMod
             string archerName)
         {
             // Console.WriteLine("InitializeArcherData");
-            return ArcherCustomManager.Initialize(path, atlasArcher, atlasArcherMenu, spriteData, spriteDataMenu, archerName, FortEntrance.Settings.Validate);
+            return ArcherCustomManager.Initialize(path, atlasArcher, atlasArcherMenu, spriteData, spriteDataMenu, archerName, settings.Validate);
         }
 
         public static void Unload()
@@ -637,9 +628,9 @@ namespace ArcherLoaderMod
             ArcherEditor.Unload();
         }
 
-        public static void OnVariantsRegister(VariantManager variants, bool noPerPlayer = false)
+        public static void OnVariantsRegister(IModuleContext variants)
         {
-            TauntVariant.OnVariantsRegister(variants, noPerPlayer);
+            TauntVariant.OnVariantsRegister(variants);
         }
 
         public static string GetForAttribute(XmlElement xmlElement)

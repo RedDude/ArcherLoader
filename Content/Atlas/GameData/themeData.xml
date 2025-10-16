@@ -1,0 +1,28 @@
+﻿<ThemeData>
+  <Theme id="ArcherEditor">
+    <Name>Archer Editor</Name>
+    <Icon>darkfang</Icon>
+    <TowerType>Dark</TowerType>
+    <MapPosition x="245" y="66"/>
+    <Music>Darkfang</Music>
+    <DarknessColor>000000</DarknessColor>
+    <DarknessOpacity>0.2</DarknessOpacity>
+    <Tileset>Darkfang</Tileset>
+    <BGTileset>DarkfangBG</BGTileset>
+    <Lanterns>DarkHallsTorch</Lanterns>
+    <World>Dark</World>
+    <DrillParticleColor>90769E</DrillParticleColor>
+    <Background>Darkfang</Background>
+    <PlayerInvisibility>
+      <Green>0</Green>
+      <Blue>2</Blue>
+      <Pink>0</Pink>
+      <Orange>0</Orange>
+      <White>0</White>
+      <Yellow>0</Yellow>
+      <Cyan>2</Cyan>
+      <Purple>2</Purple>
+      <Red>0</Red>
+    </PlayerInvisibility>
+  </Theme>
+</ThemeData>

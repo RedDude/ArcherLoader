@@ -1,160 +1,138 @@
 ﻿using System;
 using System.Collections.Generic;
 using ArcherLoaderMod.Source.Layers.PortraitLayers;
+using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
 using TowerFall;
-using VersusPlayerMatchResults = On.TowerFall.VersusPlayerMatchResults;
 
 namespace ArcherLoaderMod.Rainbow
 {
     public class PrismaticPatcher
     {
-
-        public static Dictionary<ArcherData, Color> originalColorA = new Dictionary<ArcherData, Color>();
-        public static Dictionary<ArcherData, Color> originalColorB = new Dictionary<ArcherData, Color>();
-        public static bool Enabled { get; set; }
+        public static Dictionary<ArcherData, Color> originalColorA = new();
+        public static Dictionary<ArcherData, Color> originalColorB = new();
+        private static Harmony harmony;
 
         public static void Load()
         {
-            // if(FortEntrance.Settings.DisableLayers)
-                // return;
-
-            On.TowerFall.ArcherPortrait.Update += OnArcherPortraitOnUpdate;
-            On.TowerFall.Player.Added += OnPlayerOnAdded;
-            On.TowerFall.VersusPlayerMatchResults.Render += OnVersusPlayerMatchResultsOnRender;
-            On.TowerFall.VersusPlayerMatchResults.ctor += OnVersusPlayerMatchResultsOnctor  ;
-            On.TowerFall.TFGame.Update += OnTfGameOnUpdate;
-            // Enabled = true;
+            harmony = new Harmony("mod.archerloader.prismatic");
+            
+            // Patch methods
+            harmony.Patch(
+                typeof(ArcherPortrait).GetMethod("Update"),
+                prefix: new HarmonyMethod(typeof(PrismaticPatcher), nameof(ArcherPortrait_Update_Prefix))
+            );
+            
+            harmony.Patch(
+                typeof(Player).GetMethod("Added"),
+                postfix: new HarmonyMethod(typeof(PrismaticPatcher), nameof(Player_Added_Postfix))
+            );
+            
+            harmony.Patch(
+                typeof(VersusPlayerMatchResults).GetMethod("Render"),
+                prefix: new HarmonyMethod(typeof(PrismaticPatcher), nameof(VersusPlayerMatchResults_Render_Prefix))
+            );
+            
+            harmony.Patch(
+                typeof(VersusPlayerMatchResults).GetMethod("ctor"),
+                postfix: new HarmonyMethod(typeof(PrismaticPatcher), nameof(VersusPlayerMatchResults_ctor_Postfix))
+            );
+            
+            harmony.Patch(
+                typeof(TFGame).GetMethod("Update"),
+                postfix: new HarmonyMethod(typeof(PrismaticPatcher), nameof(TFGame_Update_Postfix))
+            );
         }
 
         public static void Unload()
         {
-            // if(!Enabled)
-                // return;
-
-            On.TowerFall.ArcherPortrait.Update -= OnArcherPortraitOnUpdate;
-            On.TowerFall.Player.Added -= OnPlayerOnAdded;
-            VersusPlayerMatchResults.Render -= OnVersusPlayerMatchResultsOnRender;
-            On.TowerFall.TFGame.Update -= OnTfGameOnUpdate;
+            harmony?.UnpatchAll();
         }
 
-        
-        private static void OnTfGameOnUpdate(On.TowerFall.TFGame.orig_Update orig, TFGame self, GameTime time)
+        [HarmonyPostfix]
+        private static void TFGame_Update_Postfix(GameTime time)
         {
-            orig(self, time);
             RainbowManager.CurrentColor = RainbowManager.GetColor();
         }
 
-        private static void OnPlayerOnAdded(On.TowerFall.Player.orig_Added orig, Player self)
+        [HarmonyPostfix]
+        private static void Player_Added_Postfix(Player __instance)
         {
-            orig(self);
-            
-            var exist = Mod.ArcherCustomDataDict.TryGetValue(self.ArcherData, out var archerCustomData);
-            if (!exist) return;
+            if (!ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(__instance.ArcherData, out var archerCustomData)) 
+                return;
 
-            self.Add(new PrismaticMainColorsComponent(self.ArcherData, archerCustomData, true, true));
-            if ((Engine.Instance.Scene as Level)?.Session.RoundLogic is not QuestRoundLogic questRoundLogic) return;
+            __instance.Add(new PrismaticMainColorsComponent(__instance.ArcherData, archerCustomData, true, true));
             
-            var hud = questRoundLogic.PlayerHUDs[self.PlayerIndex];
+            if ((Engine.Instance.Scene as Level)?.Session.RoundLogic is not QuestRoundLogic questRoundLogic) 
+                return;
+            
+            var hud = questRoundLogic.PlayerHUDs[__instance.PlayerIndex];
             var gems = DynamicData.For(hud).Get<List<Sprite<int>>>("gems");
             
             foreach (var gem in gems)
             {
                 if (archerCustomData.PrismaticArcher)
-                {
                     gem.Color = RainbowManager.CurrentColor;
-                }
-                if (archerCustomData.IsGemColorA)
-                {
+                else if (archerCustomData.IsGemColorA)
                     gem.Color = archerCustomData.ColorA;
-                }
-                if (archerCustomData.IsGemColorB)
-                {
+                else if (archerCustomData.IsGemColorB)
                     gem.Color = archerCustomData.ColorB;
-                }
             }
             
-            var isPrismaticArcher = archerCustomData.PrismaticArcher;
-            if (!isPrismaticArcher) return;
+            if (!archerCustomData.PrismaticArcher) 
+                return;
 
-            self.Add(new PrismaticQuestGemColorsComponent(hud, self.ArcherData, archerCustomData, true, true));
+            __instance.Add(new PrismaticQuestGemColorsComponent(hud, __instance.ArcherData, archerCustomData, true, true));
         }
 
-        
-        private static void OnVersusPlayerMatchResultsOnRender(VersusPlayerMatchResults.orig_Render orig, TowerFall.VersusPlayerMatchResults self)
+        [HarmonyPrefix]
+        private static void VersusPlayerMatchResults_Render_Prefix(VersusPlayerMatchResults __instance)
         {
-            var playerIndex = DynamicData.For(self).Get<int>("playerIndex");
+            var playerIndex = DynamicData.For(__instance).Get<int>("playerIndex");
             var archerData = ArcherData.Get(TFGame.Characters[playerIndex], TFGame.AltSelect[playerIndex]);
-            var exist = Mod.ArcherCustomDataDict.TryGetValue(archerData, out var archerCustomData);
-            if (exist && archerCustomData.IsPrismaticGem)
-            {
-                var gem = DynamicData.For(self).Get<Sprite<string>>("gem");
-                gem.Color = RainbowManager.CurrentColor;
-            }
             
-            orig(self);
-        }
-        private static void OnArcherPortraitOnUpdate(On.TowerFall.ArcherPortrait.orig_Update orig, TowerFall.ArcherPortrait self)
-        {
-            if (Mod.ArcherCustomDataDict.TryGetValue(self.ArcherData, out var data))
-            {
-                // if (data.IsPrismaticGem || data.PrismaticArcher)
-                // {
-                //     if (!originalColorA.ContainsKey(self.ArcherData))
-                //     {
-                //         originalColorA[self.ArcherData] = new Color(self.ArcherData.ColorA.R, self.ArcherData.ColorA.G, self.ArcherData.ColorA.B);
-                //         originalColorB[self.ArcherData] = new Color(self.ArcherData.ColorB.R, self.ArcherData.ColorB.G, self.ArcherData.ColorB.B);
-                //     }
-                // }
-                // else
-                // {
-                //     if (originalColorA.ContainsKey(self.ArcherData))
-                //     {
-                //         ArcherData.Archers[self.CharacterIndex].ColorA = originalColorA[self.ArcherData];
-                //         ArcherData.Archers[self.CharacterIndex].ColorB = originalColorB[self.ArcherData];
-                //         self.ArcherData.ColorA = originalColorA[self.ArcherData];
-                //         self.ArcherData.ColorB = originalColorB[self.ArcherData];
-                //     }
-                // }
+            if (!ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(archerData, out var archerCustomData) || 
+                !archerCustomData.IsPrismaticGem) 
+                return;
 
-                if (data.IsPrismaticGem)
-                {
-                    self.ArcherData.ColorA = RainbowManager.CurrentColor;
-                    self.ArcherData.ColorB = RainbowManager.CurrentColor;// RainbowManager.GetColor(Environment.TickCount, 1);
-                    var gem = DynamicData.For(self).Get<Sprite<string>>("gem");
-                    gem.Color = RainbowManager.CurrentColor;
-                }
-
-                // if (data.PrismaticArcher)
-                // {
-                //     ArcherData.Archers[self.CharacterIndex].ColorA = RainbowManager.currentColor;
-                //     ArcherData.Archers[self.CharacterIndex].ColorB = RainbowManager.currentColor;
-                // }
-            }
-            orig(self);
+            var gem = DynamicData.For(__instance).Get<Sprite<string>>("gem");
+            gem.Color = RainbowManager.CurrentColor;
         }
-        
-        private static void OnVersusPlayerMatchResultsOnctor(VersusPlayerMatchResults.orig_ctor orig, TowerFall.VersusPlayerMatchResults self, Session session, VersusMatchResults results, int index, Vector2 @from, Vector2 to, List<AwardInfo> awards)
+
+        [HarmonyPrefix]
+        private static void ArcherPortrait_Update_Prefix(ArcherPortrait __instance)
         {
-            orig(self, session, results, index, from, to, awards);
-            var playerIndex = DynamicData.For(self).Get<int>("playerIndex");
+            if (!ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(__instance.ArcherData, out var data) || 
+                !data.IsPrismaticGem) 
+                return;
+
+            __instance.ArcherData.ColorA = RainbowManager.CurrentColor;
+            __instance.ArcherData.ColorB = RainbowManager.CurrentColor;
+            
+            var gem = DynamicData.For(__instance).Get<Sprite<string>>("gem");
+            gem.Color = RainbowManager.CurrentColor;
+        }
+
+        [HarmonyPostfix]
+        private static void VersusPlayerMatchResults_ctor_Postfix(VersusPlayerMatchResults __instance, 
+            Session session, VersusMatchResults results, int index, Vector2 from, Vector2 to, List<AwardInfo> awards)
+        {
+            var playerIndex = DynamicData.For(__instance).Get<int>("playerIndex");
             var archerData = ArcherData.Get(TFGame.Characters[playerIndex], TFGame.AltSelect[playerIndex]);
-            var exist = Mod.ArcherCustomDataDict.TryGetValue(archerData, out var archerCustomData);
-            if(!exist) return;
             
-            var gem = DynamicData.For(self).Get<Sprite<string>>("gem");
-            gem.Color = archerCustomData.GemColor;
+            if (!ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(archerData, out var archerCustomData)) 
+                return;
+
+            var gem = DynamicData.For(__instance).Get<Sprite<string>>("gem");
+            
             if (archerCustomData.IsGemColorA)
-            {
                 gem.Color = archerCustomData.ColorA;
-            }
-            if (archerCustomData.IsGemColorB)
-            {
+            else if (archerCustomData.IsGemColorB)
                 gem.Color = archerCustomData.ColorB;
-            }
+            else
+                gem.Color = archerCustomData.GemColor;
         }
-
     }
 }
