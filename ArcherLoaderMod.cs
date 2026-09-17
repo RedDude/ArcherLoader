@@ -15,7 +15,7 @@ using ArcherLoaderMod.Skin;
 using ArcherLoaderMod.Source.Layers.PortraitLayers;
 using ArcherLoaderMod.Taunt;
 using ArcherLoaderMod.Teams;
-using ArcherLoaderMod.Wings;
+
 using FortRise;
 using Monocle;
 using MonoMod.ModInterop;
@@ -80,7 +80,7 @@ namespace ArcherLoaderMod
             //
             // TauntVariant.Load();
             // ParticlePatcher.Load();
-            WingsPatcher.Load();
+            // Wings is now a standalone feature (Source/Features/Wings)
             // GhostPatcher.Load();
             // VictoryMusicPatcher.Load();
             // SkinPatcher.Load();
@@ -615,7 +615,7 @@ namespace ArcherLoaderMod
             ContentLoaderPatcher.Unload();
             TauntVariant.Unload();
             ParticlePatcher.Unload();
-            WingsPatcher.Unload();
+            // Wings is now a standalone feature (Source/Features/Wings)
             GhostPatcher.Unload();
             HairPatcher.Unload();
             VictoryMusicPatcher.Unload();
