@@ -26,7 +26,9 @@ namespace ArcherLoaderMod
             Source.Features.ArcherDecorationRegistry.Load(context, logger,
                 new Source.Features.Wings.WingsFeature(),
                 new Source.Features.Hair.HairFeature(),
-                new Source.Features.Ghost.GhostFeature());
+                new Source.Features.Ghost.GhostFeature(),
+                new Source.Features.Particles.ParticlesFeature(),
+                new Source.Features.Layers.LayerFeature());
 
 
             OnInitialize += moduleContext =>

@@ -613,11 +613,9 @@ namespace ArcherLoaderMod
         {
             ContentLoaderPatcher.Unload();
             TauntVariant.Unload();
-            ParticlePatcher.Unload();
             // Wings is now a standalone feature (Source/Features/Wings)
             VictoryMusicPatcher.Unload();
             SkinPatcher.Unload();
-            LayerPatch.Unload();
             PortraitLayerPatch.Unload();
             PrismaticPatcher.Unload();
             TeamsPatcher.Unload();

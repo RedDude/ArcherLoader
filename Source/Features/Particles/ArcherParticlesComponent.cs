@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 using Monocle;
 using TowerFall;
 
-namespace ArcherLoaderMod.Particles
+namespace ArcherLoaderMod.Source.Features.Particles
 {
     public class ArcherParticlesComponent : Component
     {
