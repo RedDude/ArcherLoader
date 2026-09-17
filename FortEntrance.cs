@@ -28,7 +28,9 @@ namespace ArcherLoaderMod
                 new Source.Features.Hair.HairFeature(),
                 new Source.Features.Ghost.GhostFeature(),
                 new Source.Features.Particles.ParticlesFeature(),
-                new Source.Features.Layers.LayerFeature());
+                new Source.Features.Layers.LayerFeature(),
+                new Source.Features.PortraitLayers.PortraitLayersFeature(),
+                new Source.Features.Taunt.TauntFeature(content));
 
 
             OnInitialize += moduleContext =>
