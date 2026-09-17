@@ -23,6 +23,7 @@ namespace ArcherLoaderMod
         public FortEntrance(IModContent content, IModuleContext context, ILogger logger) : base(content, context, logger)
         {
             Instance = this;
+            Source.Registry.ArcherExtraDataRegistry.Load(context);
 
 
             OnInitialize += moduleContext =>
