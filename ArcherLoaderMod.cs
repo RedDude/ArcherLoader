@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
-using ArcherLoaderMod.Ghost;
 using ArcherLoaderMod.Hair;
 using ArcherLoaderMod.Layers;
 using ArcherLoaderMod.Mute;
@@ -616,8 +615,6 @@ namespace ArcherLoaderMod
             TauntVariant.Unload();
             ParticlePatcher.Unload();
             // Wings is now a standalone feature (Source/Features/Wings)
-            GhostPatcher.Unload();
-            HairPatcher.Unload();
             VictoryMusicPatcher.Unload();
             SkinPatcher.Unload();
             LayerPatch.Unload();
