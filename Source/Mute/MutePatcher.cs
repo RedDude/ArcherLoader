@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using System.Reflection;
+using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Monocle;
 using TowerFall;
@@ -17,9 +18,9 @@ namespace ArcherLoaderMod.Mute
             harmony = new Harmony("mod.archerloader.mute");
             enabled = true;
             
-            // Patch Player.EnterDodge
+            // Patch Player.EnterDodge (private in the current FortRise Player patch)
             harmony.Patch(
-                typeof(Player).GetMethod("EnterDodge"),
+                typeof(Player).GetMethod("EnterDodge", BindingFlags.Instance | BindingFlags.NonPublic),
                 prefix: new HarmonyMethod(typeof(MutePatcher), nameof(EnterDodge_Prefix)),
                 postfix: new HarmonyMethod(typeof(MutePatcher), nameof(EnterDodge_Postfix))
             );

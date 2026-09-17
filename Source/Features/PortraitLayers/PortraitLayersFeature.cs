@@ -55,14 +55,14 @@ namespace ArcherLoaderMod.Source.Features.PortraitLayers
             var infos = new List<PortraitLayerInfo>();
 
             if (xml.HasChild("PortraitLayer"))
-                infos.Add(HandleLayer(xml["PortraitLayer"]!));
+                infos.Add(HandleLayer(decoration, xml["PortraitLayer"]!));
 
             if (xml.HasChild("PortraitLayers"))
             {
                 foreach (var node in xml["PortraitLayers"]!)
                 {
                     if (node is XmlElement { Name: "PortraitLayer" } layerXml)
-                        infos.Add(HandleLayer(layerXml));
+                        infos.Add(HandleLayer(decoration, layerXml));
                 }
             }
 
@@ -73,7 +73,7 @@ namespace ArcherLoaderMod.Source.Features.PortraitLayers
             return true;
         }
 
-        private static PortraitLayerInfo HandleLayer(XmlElement xml)
+        private static PortraitLayerInfo HandleLayer(ArcherDecoration decoration, XmlElement xml)
         {
             var attachTo = xml.ChildText("AttachTo", "").ToLowerInvariant() switch
             {
@@ -83,10 +83,14 @@ namespace ArcherLoaderMod.Source.Features.PortraitLayers
                 _ => PortraitLayersAttachType.Lose
             };
 
+            var spriteId = xml.ChildText("Sprite", xml.GetAttribute("id"));
+            var (resolvedSprite, isMenuSprite) = ResolveSpriteString(decoration, spriteId);
+
             return new PortraitLayerInfo
             {
                 AttachTo = attachTo,
-                Sprite = xml.ChildText("Sprite", xml.GetAttribute("id")),
+                Sprite = resolvedSprite,
+                IsMenuSprite = isMenuSprite,
                 Position = xml.ChildPosition("Position", Vector2.Zero),
                 Color = Calc.HexToColor(xml.ChildText("Color", "FFFFFF")),
                 ScaleAnimation = xml.ChildPosition("ScaleAnimation", Vector2.Zero),
@@ -102,6 +106,26 @@ namespace ArcherLoaderMod.Source.Features.PortraitLayers
 
                 ToScale = xml.ChildBool("ToScale", true),
             };
+        }
+
+        // sprite_string entries are registered as "{mod}/{id}" (see ModSprites.RegisterSprite/RegisterMenuSprite),
+        // so a mod referencing its own layer sprite needs the same mod-prefixed-then-raw resolution as
+        // Wings/Ghost/Texture/Taunt. Layer sprites are conventionally defined in menuSpriteData.xml, so the
+        // menu container is checked first, falling back to the main container for compatibility.
+        private static (string id, bool isMenuSprite) ResolveSpriteString(ArcherDecoration decoration, string id)
+        {
+            var prefixed = $"{decoration.ModContent.Metadata.Name}/{id}";
+            var menuSprites = TFGame.MenuSpriteData.GetSprites();
+            if (menuSprites.ContainsKey(prefixed))
+                return (prefixed, true);
+            if (menuSprites.ContainsKey(id))
+                return (id, true);
+
+            var sprites = TFGame.SpriteData.GetSprites();
+            if (sprites.ContainsKey(prefixed))
+                return (prefixed, false);
+
+            return (id, false);
         }
 
         private static void MainMenu_DestroyRollcall_Postfix() => PortraitLayersManager.Clear();

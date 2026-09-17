@@ -8,6 +8,7 @@ namespace ArcherLoaderMod.Source.Features.PortraitLayers
         public PortraitLayersAttachType AttachTo;
 
         public string Sprite = null!;
+        public bool IsMenuSprite;
         public Vector2 Position;
         public Color Color = Color.White;
         public bool ToScale = true;

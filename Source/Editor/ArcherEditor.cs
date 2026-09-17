@@ -8,6 +8,7 @@ using MonoMod.Utils;
 using TowerFall;
 using TowerFall.Editor;
 using HarmonyLib;
+using System.Reflection;
 using Level = TowerFall.Level;
 
 public static class ArcherEditor
@@ -28,22 +29,24 @@ public static class ArcherEditor
     {
         harmony = new Harmony("mod.archerloader.editor");
         
-        // Patch RollcallElement methods
+        // Patch RollcallElement methods (EnterJoined/NotJoinedUpdate/JoinedUpdate are private in the
+        // current FortRise RollcallElement patch, so GetMethod needs the NonPublic flag or it returns
+        // null and Harmony throws "Null method").
         harmony.Patch(
-            typeof(RollcallElement).GetMethod("EnterJoined"),
+            typeof(RollcallElement).GetMethod("EnterJoined", BindingFlags.Instance | BindingFlags.NonPublic),
             prefix: new HarmonyMethod(typeof(ArcherEditor), nameof(RollcallElement_EnterJoined_Prefix))
         );
-        
+
         harmony.Patch(
-            typeof(RollcallElement).GetMethod("NotJoinedUpdate"),
+            typeof(RollcallElement).GetMethod("NotJoinedUpdate", BindingFlags.Instance | BindingFlags.NonPublic),
             prefix: new HarmonyMethod(typeof(ArcherEditor), nameof(RollcallElement_NotJoinedUpdate_Prefix))
         );
-        
+
         harmony.Patch(
-            typeof(RollcallElement).GetMethod("JoinedUpdate"),
+            typeof(RollcallElement).GetMethod("JoinedUpdate", BindingFlags.Instance | BindingFlags.NonPublic),
             prefix: new HarmonyMethod(typeof(ArcherEditor), nameof(RollcallElement_JoinedUpdate_Prefix))
         );
-        
+
         harmony.Patch(
             typeof(RollcallElement).GetMethod("Render"),
             prefix: new HarmonyMethod(typeof(ArcherEditor), nameof(RollcallElement_Render_Prefix))
@@ -53,7 +56,7 @@ public static class ArcherEditor
         // hook (see git history); that hook (and this Load() call) got commented out during the standalone
         // features migration and never reconnected, which is why the editor stopped responding to input.
         harmony.Patch(
-            typeof(TFGame).GetMethod("Update", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public),
+            typeof(TFGame).GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public),
             postfix: new HarmonyMethod(typeof(ArcherEditor), nameof(TFGame_Update_Postfix))
         );
     }
@@ -542,6 +545,12 @@ public static class ArcherEditor
             if (once) return;
             once = true;
 
+            OpenEditor();
+        harmony.Unpatch(typeof(MainMenu).GetMethod("Update"), HarmonyPatchType.Prefix);
+    }
+
+   public static void OpenEditor()
+    {
             for (var i = 0; i < TFGame.PlayerInputs.Length; i++)
             {
                 TFGame.Players[i] = TFGame.PlayerInputs[i] != null;
@@ -585,9 +594,6 @@ public static class ArcherEditor
             // (matchSettings.LevelSystem as VersusLevelSystem).StartOnLevel(-1);
             // new Session(matchSettings).StartGame();
 
-        
-        // Unpatch after running once
-        harmony.Unpatch(typeof(MainMenu).GetMethod("Update"), HarmonyPatchType.Prefix);
     }
 
 

@@ -6,6 +6,7 @@ using System.Xml;
 using ArcherLoaderMod.Taunt;
 using FortRise;
 using HarmonyLib;
+using Microsoft.Extensions.Logging;
 using Microsoft.Xna.Framework.Input;
 using Monocle;
 using MonoMod.Utils;
@@ -39,6 +40,7 @@ namespace ArcherLoaderMod.Source.Features.Taunt
         private static MethodInfo loseHatMethod = null!;
         private static PropertyInfo drawSelfProperty = null!;
         private static IVariantEntry? variant;
+        private static ILogger? logger;
 
         public TauntFeature(IModContent content)
         {
@@ -51,6 +53,7 @@ namespace ArcherLoaderMod.Source.Features.Taunt
 
         public void Load(IModuleContext context)
         {
+            logger = context.Logger;
             loseHatMethod = AccessTools.Method(typeof(Player), "LoseHat");
             drawSelfProperty = AccessTools.Property(typeof(Player), "DrawSelf");
 
@@ -96,13 +99,18 @@ namespace ArcherLoaderMod.Source.Features.Taunt
             if (string.IsNullOrEmpty(id))
                 throw new System.Exception("<Taunt> is missing the required <Id> element");
 
-            var spriteEntry = TFGame.SpriteData.GetSpriteString(id);
-            if (spriteEntry == null)
+            // sprite_string entries are registered as "{mod}/{id}" (see ModSprites.RegisterSprite), so a
+            // mod referencing its own spriteData entry has to be resolved the same way Wings/Ghost/Texture
+            // are: mod-prefixed name first, then the raw name for vanilla-provided sprite strings.
+            var resolvedId = ResolveSpriteStringId(decoration, id);
+            if (resolvedId == null)
                 throw new System.Exception($"<Taunt><Id> '{id}' is not a registered spriteData entry");
+
+            var spriteEntry = TFGame.SpriteData.GetSpriteString(resolvedId);
 
             var info = new TauntInfo
             {
-                SpriteId = id,
+                SpriteId = resolvedId,
                 SelfDestruction = element.ChildBool("SelfDestruction", false),
             };
 
@@ -147,34 +155,66 @@ namespace ArcherLoaderMod.Source.Features.Taunt
             return string.IsNullOrWhiteSpace(name) ? null : decoration.FindTexture(name);
         }
 
+        private static string? ResolveSpriteStringId(ArcherDecoration decoration, string id)
+        {
+            var sprites = TFGame.SpriteData.GetSprites();
+            var prefixed = $"{decoration.ModContent.Metadata.Name}/{id}";
+            if (sprites.ContainsKey(prefixed))
+                return prefixed;
+            return sprites.ContainsKey(id) ? id : null;
+        }
+
         private static SFX? LoadSound(ArcherDecoration decoration, XmlElement element)
         {
+            var modName = decoration.ModContent.Metadata.Name;
             var folder = decoration.ModContent.Metadata.PathDirectory;
+
+            var sfx = element.ChildText("SFX", null);
+            var sfxLooped = element.ChildText("SFXLooped", null);
+            var sfxVaried = element.ChildText("SFXVaried", null);
+            if (sfx == null && sfxLooped == null && sfxVaried == null)
+                return null; // no sound requested, silent by design
+
             if (string.IsNullOrEmpty(folder))
-                return null; // zipped mods can't be probed for loose .wav files the way SFX/SFXLooped/SFXVaried need
+            {
+                logger?.LogWarning("[{modName}] Taunt sound requested but the mod is zipped; loose .wav files can't be probed.", modName);
+                return null;
+            }
 
             var originalPrefix = Audio.LOAD_PREFIX;
             Audio.LOAD_PREFIX = folder + Path.DirectorySeparatorChar;
             try
             {
-                var sfx = element.ChildText("SFX", null);
-                if (sfx != null && Exists(sfx))
+                if (sfx != null)
                 {
-                    var looped = LoadLooped(sfx);
-                    if (looped != null)
+                    if (Exists(sfx))
                     {
-                        looped.Instance.IsLooped = false;
-                        return looped;
+                        var looped = LoadLooped(sfx);
+                        if (looped != null)
+                        {
+                            looped.Instance.IsLooped = false;
+                            return looped;
+                        }
+                    }
+                    else
+                    {
+                        logger?.LogWarning("[{modName}] Taunt <SFX>{sfx}</SFX> not found at '{path}'", modName, sfx, $"{Audio.LOAD_PREFIX}{sfx}.wav");
                     }
                 }
 
-                var sfxLooped = element.ChildText("SFXLooped", null);
-                if (sfxLooped != null && Exists(sfxLooped))
-                    return LoadLooped(sfxLooped);
+                if (sfxLooped != null)
+                {
+                    if (Exists(sfxLooped))
+                        return LoadLooped(sfxLooped);
+                    logger?.LogWarning("[{modName}] Taunt <SFXLooped>{sfxLooped}</SFXLooped> not found at '{path}'", modName, sfxLooped, $"{Audio.LOAD_PREFIX}{sfxLooped}.wav");
+                }
 
-                var sfxVaried = element.ChildText("SFXVaried", null);
-                if (sfxVaried != null && Exists(sfxVaried))
-                    return LoadVaried(sfxVaried);
+                if (sfxVaried != null)
+                {
+                    if (Exists(sfxVaried))
+                        return LoadVaried(sfxVaried);
+                    logger?.LogWarning("[{modName}] Taunt <SFXVaried>{sfxVaried}</SFXVaried> not found at '{path}'", modName, sfxVaried, $"{Audio.LOAD_PREFIX}{sfxVaried}_01.wav");
+                }
 
                 return null;
             }

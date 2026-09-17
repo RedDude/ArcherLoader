@@ -87,11 +87,11 @@ namespace ArcherLoaderMod
             // PortraitLayerPatch.Load();
             // PrismaticPatcher.Load();
             // TeamsPatcher.Load();
-            // MutePatcher.Load();
+            MutePatcher.Load();
             
-            // ArcherEditor.Load();
+            ArcherEditor.Load();
 
-            // ArcherEditor.HandleQuickStart();
+            ArcherEditor.HandleQuickStart();
         }
         
 

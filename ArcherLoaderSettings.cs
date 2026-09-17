@@ -21,33 +21,37 @@ namespace ArcherLoaderMod
         public bool DisableCustomWings = false;
         public bool Validate = true;
 
+        // FortRise side (robust, fixes every mod with this pattern): change MainMenu.cs:155 from ToStartSelected = list[1]; to ToStartSelected = list.FirstOrDefault(b => b is not OptionsButtonHeader); so initial focus never lands on a header regardless of how a mod orders its items./
         public override void Create(ISettingsCreate settings)
         {
-            settings.CreateHeader("Quick Start");
-            settings.CreateOnOff("Quick Start", QuickStart, v => QuickStart = v,
-                "Skip the main menu and jump straight into a quick match.");
-            settings.CreateNumber("P1 Quick Index", Player1CharacterIndex, v => Player1CharacterIndex = v, -1, 100, 1);
-            settings.CreateNumber("P2 Quick Index", Player2CharacterIndex, v => Player2CharacterIndex = v, -1, 100, 1);
-            settings.CreateNumber("P3 Quick Index", Player3CharacterIndex, v => Player3CharacterIndex = v, -1, 100, 1);
+           
+            settings.CreateButton("OPEN EDITOR", () => ArcherEditor.OpenEditor() );
+            settings.CreateHeader("QUICK START");
+            settings.CreateOnOff("QUICK START", QuickStart, v => QuickStart = v,
+                "SKIP THE MAIN MENU AND JUMP STRAIGHT TO THE EDITOR.");
+            settings.CreateNumber("P1 QUICK INDEX", Player1CharacterIndex, v => Player1CharacterIndex = v, -1, 100, 1);
+            settings.CreateNumber("P2 QUICK INDEX", Player2CharacterIndex, v => Player2CharacterIndex = v, -1, 100, 1);
+            settings.CreateNumber("P3 QUICK INDEX", Player3CharacterIndex, v => Player3CharacterIndex = v, -1, 100, 1);
 
-            settings.CreateHeader("Taunt");
-            settings.CreateOnOff("Taunt Always On", TauntAlwaysOn, v => TauntAlwaysOn = v);
-            settings.CreateOnOff("Over-Taunt Combustion", TauntTooExplode, v => TauntTooExplode = v);
-            settings.CreateOnOff("Taunt Hide Arrows", HideArrowsWhileTaunt, v => HideArrowsWhileTaunt = v);
+            settings.CreateHeader("TAUNT");
+            settings.CreateOnOff("TAUNT ALWAYS ON", TauntAlwaysOn, v => TauntAlwaysOn = v);
+            settings.CreateOnOff("OVER-TAUNT COMBUSTION", TauntTooExplode, v => TauntTooExplode = v);
+            settings.CreateOnOff("TAUNT HIDE ARROWS", HideArrowsWhileTaunt, v => HideArrowsWhileTaunt = v);
 
-            settings.CreateHeader("Controls");
-            settings.CreateOnOff("Idle R Stick + Right Drops Hat (Or L key)", DropHat, v => DropHat = v);
-            settings.CreateOnOff("Aim + R Stick + Left Selfkills (Or K key)", SelfKill, v => SelfKill = v);
+            settings.CreateHeader("CONTROLS");
+            settings.CreateOnOff("IDLE R STICK + RIGHT DROPS HAT (OR L KEY)", DropHat, v => DropHat = v);
+            settings.CreateOnOff("AIM + R STICK + LEFT SELFKILLS (OR K KEY)", SelfKill, v => SelfKill = v);
 
-            settings.CreateHeader("Features");
-            settings.CreateOnOff("Disable Particles", DisableParticles, v => DisableParticles = v, restartRequired: true);
-            settings.CreateOnOff("Disable Hairs", DisableHairs, v => DisableHairs = v, restartRequired: true);
-            settings.CreateOnOff("Disable Layers", DisableLayers, v => DisableLayers = v, restartRequired: true);
-            settings.CreateOnOff("Disable Team Colors", DisableTeamColors, v => DisableTeamColors = v);
-            settings.CreateOnOff("Disable Custom Ghosts", DisableCustomGhosts, v => DisableCustomGhosts = v, restartRequired: true);
-            settings.CreateOnOff("Disable Custom Wings", DisableCustomWings, v => DisableCustomWings = v, restartRequired: true);
-            settings.CreateOnOff("Validate", Validate, v => Validate = v,
-                "Validate custom archer data on load and print errors to the console.");
+            settings.CreateHeader("FEATURES");
+            settings.CreateOnOff("DISABLE HAIRS", DisableHairs, v => DisableHairs = v, restartRequired: true);
+            settings.CreateOnOff("DISABLE CUSTOM WINGS", DisableCustomWings, v => DisableCustomWings = v, restartRequired: true);
+            settings.CreateOnOff("DISABLE CUSTOM GHOSTS", DisableCustomGhosts, v => DisableCustomGhosts = v, restartRequired: true);
+            settings.CreateOnOff("DISABLE PARTICLES", DisableParticles, v => DisableParticles = v, restartRequired: true);
+            settings.CreateOnOff("DISABLE LAYERS", DisableLayers, v => DisableLayers = v, restartRequired: true);
+            settings.CreateOnOff("DISABLE TEAM COLORS", DisableTeamColors, v => DisableTeamColors = v);
+         
+            settings.CreateOnOff("VALIDATE", Validate, v => Validate = v,
+                "VALIDATE CUSTOM ARCHER DATA ON LOAD AND PRINT ERRORS TO THE CONSOLE.");
         }
     }
 }

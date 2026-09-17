@@ -31,7 +31,9 @@ namespace ArcherLoaderMod.Source.Features.PortraitLayers
 
         public override void Added()
         {
-            LayerSprite = TFGame.SpriteData.GetSpriteString(LayerInfo.Sprite);
+            LayerSprite = LayerInfo.IsMenuSprite
+                ? TFGame.MenuSpriteData.GetSpriteString(LayerInfo.Sprite)
+                : TFGame.SpriteData.GetSpriteString(LayerInfo.Sprite);
             if (LayerSprite == null)
                 return;
 
