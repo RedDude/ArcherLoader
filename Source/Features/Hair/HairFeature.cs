@@ -1,6 +1,9 @@
 #nullable enable
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Xml;
 using ArcherLoaderMod.Rainbow;
 using FortRise;
 using HarmonyLib;
@@ -10,7 +13,10 @@ using TowerFall;
 
 namespace ArcherLoaderMod.Source.Features.Hair
 {
-    // <HairInfo>
+    // One hair: <HairInfo>...</HairInfo>
+    // Several independent hairs on the same archer (e.g. a ponytail plus a fringe, each with its own
+    // sprite/color/physics): <HairInfos><HairInfo/><HairInfo/>...</HairInfos>
+    //
     //   <HairSprite>player/hair</HairSprite>       optional
     //   <HairEndSprite>player/hairEnd</HairEndSprite> optional
     //   <Links>2</Links> <Size>1</Size> <LinksDist>1</LinksDist> <SineValue>30</SineValue>
@@ -19,20 +25,31 @@ namespace ArcherLoaderMod.Source.Features.Hair
     //   <Prismatic>false</Prismatic> <PrismaticEnd>false</PrismaticEnd> <PrismaticTime>1</PrismaticTime>
     //   <Rainbow>false</Rainbow> <VisibleWithHat>true</VisibleWithHat>
     //   <X>0</X> <Y>0</Y> <DuckingOffset x="0" y="0"/> <WithHatOffset x="0" y="0"/>
-    // </HairInfo>
     public sealed class HairFeature : IArcherFeature
     {
-        private static readonly FieldInfo ScaleField = typeof(PlayerHair).GetField("scale", BindingFlags.NonPublic | BindingFlags.Instance)!;
-        private static readonly FieldInfo LinksField = typeof(PlayerHair).GetField("links", BindingFlags.NonPublic | BindingFlags.Instance)!;
-        private static readonly FieldInfo LinkDistField = typeof(PlayerHair).GetField("linkDist", BindingFlags.NonPublic | BindingFlags.Instance)!;
-        private static readonly FieldInfo OffsetsField = typeof(PlayerHair).GetField("offsets", BindingFlags.NonPublic | BindingFlags.Instance)!;
-        private static readonly FieldInfo ImagesField = typeof(PlayerHair).GetField("images", BindingFlags.NonPublic | BindingFlags.Instance)!;
-        private static readonly FieldInfo SineField = typeof(PlayerHair).GetField("sine", BindingFlags.NonPublic | BindingFlags.Instance)!;
+        private static readonly FieldInfo ScaleField = AccessTools.Field(typeof(PlayerHair), "scale");
+        private static readonly FieldInfo LinksField = AccessTools.Field(typeof(PlayerHair), "links");
+        private static readonly FieldInfo LinkDistField = AccessTools.Field(typeof(PlayerHair), "linkDist");
+        private static readonly FieldInfo OffsetsField = AccessTools.Field(typeof(PlayerHair), "offsets");
+        private static readonly FieldInfo ImagesField = AccessTools.Field(typeof(PlayerHair), "images");
+        private static readonly FieldInfo SineField = AccessTools.Field(typeof(PlayerHair), "sine");
 
-        // Keyed by ArcherData for the initial lookup, and cached per player index so corpses (which
-        // re-parent a PlayerHair away from the Player) keep using the same info.
-        private static readonly Dictionary<ArcherData, HairInfo> hairByArcher = new();
-        private static readonly Dictionary<int, HairInfo> hairByPlayerIndex = new();
+        // The archer's configured hairs, first one is the "primary" (the PlayerHair the game itself
+        // creates); the rest are extra PlayerHair components we construct and attach ourselves.
+        private static readonly Dictionary<ArcherData, List<HairInfo>> hairByArcher = new();
+
+        // Cached per player index so a PlayerCorpse (which gets a fresh PlayerHair of its own) can
+        // reconstruct the same set of hairs the living player had.
+        private static readonly Dictionary<int, List<HairInfo>> hairsByPlayerIndex = new();
+
+        // Extra hairs we are in the middle of constructing for a Follow entity, consumed in order by
+        // PlayerHair_ctor_Postfix so each new instance gets the right HairInfo instead of the primary's.
+        private static readonly Dictionary<Entity, Queue<HairInfo>> pendingExtraHair = new();
+
+        // Which HairInfo a given PlayerHair instance renders. A ConditionalWeakTable so entries are
+        // collected automatically once the component itself is gone (players/corpses come and go a lot
+        // over a long session).
+        private static readonly ConditionalWeakTable<PlayerHair, HairInfo> infoByInstance = new();
 
         public string Name => "Hair";
 
@@ -43,6 +60,10 @@ namespace ArcherLoaderMod.Source.Features.Hair
             context.Harmony.Patch(
                 AccessTools.Method(typeof(Player), nameof(Player.Added)),
                 postfix: new HarmonyMethod(typeof(HairFeature), nameof(Player_Added_Postfix)));
+
+            context.Harmony.Patch(
+                AccessTools.Method(typeof(PlayerCorpse), nameof(PlayerCorpse.Added)),
+                postfix: new HarmonyMethod(typeof(HairFeature), nameof(PlayerCorpse_Added_Postfix)));
 
             context.Harmony.Patch(
                 AccessTools.Constructor(typeof(PlayerHair), [typeof(Entity), typeof(Vector2), typeof(float)]),
@@ -59,10 +80,30 @@ namespace ArcherLoaderMod.Source.Features.Hair
 
         public bool Decorate(ArcherDecoration decoration)
         {
-            var element = decoration.Xml["HairInfo"];
-            if (element == null)
+            var xml = decoration.Xml;
+            var infos = new List<HairInfo>();
+
+            if (xml.HasChild("HairInfo"))
+                infos.Add(ParseHairInfo(xml["HairInfo"]!));
+
+            if (xml.HasChild("HairInfos"))
+            {
+                foreach (var node in xml["HairInfos"]!)
+                {
+                    if (node is XmlElement { Name: "HairInfo" } hairXml)
+                        infos.Add(ParseHairInfo(hairXml));
+                }
+            }
+
+            if (infos.Count == 0)
                 return false;
 
+            hairByArcher[decoration.ArcherData] = infos;
+            return true;
+        }
+
+        private static HairInfo ParseHairInfo(XmlElement element)
+        {
             var info = new HairInfo
             {
                 Links = element.ChildInt("Links", 2),
@@ -103,8 +144,7 @@ namespace ArcherLoaderMod.Source.Features.Hair
             if (element.HasChild("WithHatOffset"))
                 info.WithHatOffset = element.ChildPosition("WithHatOffset");
 
-            hairByArcher[decoration.ArcherData] = info;
-            return true;
+            return info;
         }
 
         private static void Player_Added_Postfix(Player __instance)
@@ -112,30 +152,86 @@ namespace ArcherLoaderMod.Source.Features.Hair
             if (__instance.Hair == null)
                 return;
 
-            if (!hairByArcher.TryGetValue(__instance.ArcherData, out var hairInfo))
+            if (!hairByArcher.TryGetValue(__instance.ArcherData, out var hairInfos) || hairInfos.Count == 0)
                 return;
 
-            __instance.Hair.Visible = hairInfo.VisibleWithHat;
+            hairsByPlayerIndex[__instance.PlayerIndex] = hairInfos;
+
+            // The primary hair is picked up by PlayerHair_ctor_Postfix when the game constructs it; here
+            // we only need to add the extra ones ourselves, reusing the same Follow/Position/Scale.
+            AddExtraHairs(__instance, __instance.Hair, hairInfos);
+        }
+
+        private static void PlayerCorpse_Added_Postfix(PlayerCorpse __instance)
+        {
+            if (__instance.PlayerIndex == -1)
+                return;
+
+            if (!hairsByPlayerIndex.TryGetValue(__instance.PlayerIndex, out var hairInfos) || hairInfos.Count == 0)
+                return;
+
+            var primary = FindCorpseHair(__instance);
+            if (primary == null)
+                return;
+
+            AddExtraHairs(__instance, primary, hairInfos);
+        }
+
+        private static PlayerHair? FindCorpseHair(PlayerCorpse corpse)
+        {
+            foreach (var component in corpse.Components)
+            {
+                if (component is PlayerHair hair)
+                    return hair;
+            }
+            return null;
+        }
+
+        private static void AddExtraHairs(Entity follow, PlayerHair primary, List<HairInfo> hairInfos)
+        {
+            if (hairInfos.Count <= 1)
+                return;
+
+            var position = primary.Position;
+            var scale = (float)ScaleField.GetValue(primary)!;
+
+            pendingExtraHair[follow] = new Queue<HairInfo>(hairInfos.Skip(1));
+            try
+            {
+                for (var i = 1; i < hairInfos.Count; i++)
+                {
+                    var extra = new PlayerHair(follow, position, scale);
+                    follow.Add(extra);
+                }
+            }
+            finally
+            {
+                pendingExtraHair.Remove(follow);
+            }
         }
 
         private static void PlayerHair_ctor_Postfix(PlayerHair __instance, Entity follow)
         {
             HairInfo? hairInfo = null;
 
-            if (follow is PlayerCorpse corpse && hairByPlayerIndex.TryGetValue(corpse.PlayerIndex, out var corpseHair))
+            if (pendingExtraHair.TryGetValue(follow, out var queue) && queue.Count > 0)
             {
-                hairInfo = corpseHair;
+                hairInfo = queue.Dequeue();
             }
-            else if (follow is Player player && hairByArcher.TryGetValue(player.ArcherData, out var playerHair))
+            else if (follow is PlayerCorpse corpse && hairsByPlayerIndex.TryGetValue(corpse.PlayerIndex, out var corpseHairs))
             {
-                hairByPlayerIndex[player.PlayerIndex] = playerHair;
-                hairInfo = playerHair;
+                hairInfo = corpseHairs[0];
+            }
+            else if (follow is Player player && hairByArcher.TryGetValue(player.ArcherData, out var playerHairs))
+            {
+                hairInfo = playerHairs[0];
             }
 
             if (hairInfo == null)
                 return;
 
-            __instance.Visible = true;
+            infoByInstance.AddOrUpdate(__instance, hairInfo);
+            __instance.Visible = hairInfo.VisibleWithHat;
             ApplyHairCustomization(__instance, hairInfo);
         }
 
@@ -165,25 +261,19 @@ namespace ArcherLoaderMod.Source.Features.Hair
 
         private static bool HandleHairRendering(PlayerHair self, bool isOutline)
         {
+            if (!infoByInstance.TryGetValue(self, out var hairInfo))
+                return true;
+
             var follow = self.Follow;
             if (follow == null)
                 return true;
 
-            HairInfo? hairInfo = null;
             var duckingOffset = Vector2.Zero;
             var withHatOffset = Vector2.Zero;
             var facing = Facing.Right;
 
-            if (follow is PlayerCorpse corpse && hairByPlayerIndex.TryGetValue(corpse.PlayerIndex, out var corpseHair))
+            if (follow is Player player)
             {
-                hairInfo = corpseHair;
-            }
-            else if (follow is Player player)
-            {
-                if (!hairByPlayerIndex.TryGetValue(player.PlayerIndex, out var playerHair))
-                    return true;
-
-                hairInfo = playerHair;
                 facing = player.Facing;
 
                 if (player.State == Player.PlayerStates.Ducking)
@@ -192,9 +282,6 @@ namespace ArcherLoaderMod.Source.Features.Hair
                 if (player.HatState == Player.HatStates.Normal)
                     withHatOffset = hairInfo.WithHatOffset;
             }
-
-            if (hairInfo == null)
-                return true;
 
             var links = (int)LinksField.GetValue(self)!;
             var images = (Subtexture[])ImagesField.GetValue(self)!;
