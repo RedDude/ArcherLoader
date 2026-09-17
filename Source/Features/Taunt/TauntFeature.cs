@@ -16,7 +16,9 @@ namespace ArcherLoaderMod.Source.Features.Taunt
     // <Taunt>
     //   <Id>myArcherTaunt</Id>                  required: a spriteData id the mod registers itself, with
     //                                            "taunt"/"tauntNoHat"/"tauntCrown" animations on it
-    //   <Texture>...</Texture>                  at least one of these three is required
+    //   <Texture>...</Texture>                  at least one of these three is required. Resolved the same
+    //                                            way Wings/Ghost textures are: "{mod}/{name}" first, then
+    //                                            the raw name, so a plain atlas region name is enough.
     //   <TextureBlue>...</TextureBlue>
     //   <TextureRed>...</TextureRed>
     //   <NoHatTexture>...</NoHatTexture> / NoHatTextureBlue / NoHatTextureRed
@@ -104,29 +106,29 @@ namespace ArcherLoaderMod.Source.Features.Taunt
                 SelfDestruction = element.ChildBool("SelfDestruction", false),
             };
 
-            info.TauntTexture = element.ChildText("Texture", null);
-            info.NoHatTexture = element.ChildText("NoHatTexture", null);
-            info.CrownTexture = element.ChildText("CrownTexture", null);
+            info.TauntTexture = FindTexture(decoration, element, "Texture");
+            info.NoHatTexture = FindTexture(decoration, element, "NoHatTexture");
+            info.CrownTexture = FindTexture(decoration, element, "CrownTexture");
 
-            info.TauntTextureBlue = element.ChildText("TextureBlue", null);
-            info.NoHatTextureBlue = element.ChildText("NoHatTextureBlue", null);
-            info.CrownTextureBlue = element.ChildText("CrownTextureBlue", null);
+            info.TauntTextureBlue = FindTexture(decoration, element, "TextureBlue");
+            info.NoHatTextureBlue = FindTexture(decoration, element, "NoHatTextureBlue");
+            info.CrownTextureBlue = FindTexture(decoration, element, "CrownTextureBlue");
 
-            info.TauntTextureRed = element.ChildText("TextureRed", null);
-            info.NoHatTextureRed = element.ChildText("NoHatTextureRed", null);
-            info.CrownTextureRed = element.ChildText("CrownTextureRed", null);
+            info.TauntTextureRed = FindTexture(decoration, element, "TextureRed");
+            info.NoHatTextureRed = FindTexture(decoration, element, "NoHatTextureRed");
+            info.CrownTextureRed = FindTexture(decoration, element, "CrownTextureRed");
 
-            info.HasTaunt = spriteEntry.ContainsAnimation("taunt") && !string.IsNullOrEmpty(info.TauntTexture);
-            info.HasTauntNoHat = spriteEntry.ContainsAnimation("tauntNoHat") && !string.IsNullOrEmpty(info.NoHatTexture);
-            info.HasTauntCrown = spriteEntry.ContainsAnimation("tauntCrown") && !string.IsNullOrEmpty(info.CrownTexture);
+            info.HasTaunt = spriteEntry.ContainsAnimation("taunt") && info.TauntTexture != null;
+            info.HasTauntNoHat = spriteEntry.ContainsAnimation("tauntNoHat") && info.NoHatTexture != null;
+            info.HasTauntCrown = spriteEntry.ContainsAnimation("tauntCrown") && info.CrownTexture != null;
 
-            info.HasTauntBlue = spriteEntry.ContainsAnimation("taunt") && !string.IsNullOrEmpty(info.TauntTextureBlue);
-            info.HasTauntNoHatBlue = spriteEntry.ContainsAnimation("tauntNoHat") && !string.IsNullOrEmpty(info.NoHatTextureBlue);
-            info.HasTauntCrownBlue = spriteEntry.ContainsAnimation("tauntCrown") && !string.IsNullOrEmpty(info.CrownTextureBlue);
+            info.HasTauntBlue = spriteEntry.ContainsAnimation("taunt") && info.TauntTextureBlue != null;
+            info.HasTauntNoHatBlue = spriteEntry.ContainsAnimation("tauntNoHat") && info.NoHatTextureBlue != null;
+            info.HasTauntCrownBlue = spriteEntry.ContainsAnimation("tauntCrown") && info.CrownTextureBlue != null;
 
-            info.HasTauntRed = spriteEntry.ContainsAnimation("taunt") && !string.IsNullOrEmpty(info.TauntTextureRed);
-            info.HasTauntNoHatRed = spriteEntry.ContainsAnimation("tauntNoHat") && !string.IsNullOrEmpty(info.NoHatTextureRed);
-            info.HasTauntCrownRed = spriteEntry.ContainsAnimation("tauntCrown") && !string.IsNullOrEmpty(info.CrownTextureRed);
+            info.HasTauntRed = spriteEntry.ContainsAnimation("taunt") && info.TauntTextureRed != null;
+            info.HasTauntNoHatRed = spriteEntry.ContainsAnimation("tauntNoHat") && info.NoHatTextureRed != null;
+            info.HasTauntCrownRed = spriteEntry.ContainsAnimation("tauntCrown") && info.CrownTextureRed != null;
 
             if (!info.HasTaunt && !info.HasTauntNoHat && !info.HasTauntCrown &&
                 !info.HasTauntBlue && !info.HasTauntNoHatBlue && !info.HasTauntCrownBlue &&
@@ -137,6 +139,12 @@ namespace ArcherLoaderMod.Source.Features.Taunt
 
             tauntByArcher[decoration.ArcherData] = info;
             return true;
+        }
+
+        private static Subtexture? FindTexture(ArcherDecoration decoration, XmlElement element, string childName)
+        {
+            var name = element.ChildText(childName, "");
+            return string.IsNullOrWhiteSpace(name) ? null : decoration.FindTexture(name);
         }
 
         private static SFX? LoadSound(ArcherDecoration decoration, XmlElement element)
@@ -286,7 +294,7 @@ namespace ArcherLoaderMod.Source.Features.Taunt
             };
 
             state.Animation = animation;
-            state.TextureName = texture;
+            state.Texture = texture;
         }
 
         private static bool Player_UpdateAnimation_Prefix(Player __instance)
@@ -312,7 +320,7 @@ namespace ArcherLoaderMod.Source.Features.Taunt
 
             drawSelfProperty.SetValue(self, false);
             state.Sprite.FlipX = self.Facing != Facing.Right;
-            state.Sprite.SwapSubtexture(TFGame.Atlas[state.TextureName]);
+            state.Sprite.SwapSubtexture(state.Texture);
             state.BodySprite.Visible = false;
             state.Sprite.Visible = true;
             state.Sprite.Play(state.Animation);

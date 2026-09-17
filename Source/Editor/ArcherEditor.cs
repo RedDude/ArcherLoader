@@ -48,7 +48,17 @@ public static class ArcherEditor
             typeof(RollcallElement).GetMethod("Render"),
             prefix: new HarmonyMethod(typeof(ArcherEditor), nameof(RollcallElement_Render_Prefix))
         );
+
+        // Drives the T/F preview hotkeys every frame. This used to be wired via an `On.TowerFall.TFGame.Update`
+        // hook (see git history); that hook (and this Load() call) got commented out during the standalone
+        // features migration and never reconnected, which is why the editor stopped responding to input.
+        harmony.Patch(
+            typeof(TFGame).GetMethod("Update", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Public),
+            postfix: new HarmonyMethod(typeof(ArcherEditor), nameof(TFGame_Update_Postfix))
+        );
     }
+
+    private static void TFGame_Update_Postfix() => HandleHotReload();
 
     public static void Unload()
     {

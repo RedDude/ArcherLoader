@@ -1,69 +1,53 @@
-using System.Reflection;
-using ArcherLoaderMod.Hair;
 using FortRise;
-using Monocle;
-using MonoMod.Utils;
-using TowerFall;
 
 namespace ArcherLoaderMod
 {
-    
     public class ArcherLoaderSettings : ModuleSettings
     {
-        [SettingsName("Taunt Always On")]
         public bool TauntAlwaysOn;
-
-        [SettingsName("Quick Start")]
         public bool QuickStart;
-        
-        [SettingsName("P1 Quick index"), SettingsNumber(-1)]
         public int Player1CharacterIndex;
-        
-        [SettingsName("P2 Quick index"), SettingsNumber(-1)]
         public int Player2CharacterIndex = -1;
-        
-        [SettingsName("P3 Quick index"), SettingsNumber(-1)]
         public int Player3CharacterIndex;
-
-        [SettingsName("Over-Taunt Combustion")]
         public bool TauntTooExplode;
-
-        [SettingsName("Idle R Stick + Right Drops Hat (Or L key)")]
         public bool DropHat = true;
-        
-        [SettingsName("Aim + R Stick + Left selfkills (Or K key)")]
         public bool SelfKill = false;
-
-        [SettingsName("Taunt Hide Arrows")]
         public bool HideArrowsWhileTaunt = true;
-        
-        [SettingsName("Disable Particles")]
         public bool DisableParticles = false;
-        
-        [SettingsName("Disable Hairs")]
         public bool DisableHairs = false;
-
-        [SettingsName("Disable Layers")]
         public bool DisableLayers = false;
-        
-        [SettingsName("Disable Team Colors")]
         public bool DisableTeamColors = true;
-        
         public bool DisableCustomGhosts = false;
-        
         public bool DisableCustomWings = false;
-        
-        [SettingsName("Validate")]
         public bool Validate = true;
 
-        // [SettingsNumber(0, 20, 2)]
-        // public int OnStepping;
-
-        // public Action FlightTest;
         public override void Create(ISettingsCreate settings)
         {
-            // settings.
+            settings.CreateHeader("Quick Start");
+            settings.CreateOnOff("Quick Start", QuickStart, v => QuickStart = v,
+                "Skip the main menu and jump straight into a quick match.");
+            settings.CreateNumber("P1 Quick Index", Player1CharacterIndex, v => Player1CharacterIndex = v, -1, 100, 1);
+            settings.CreateNumber("P2 Quick Index", Player2CharacterIndex, v => Player2CharacterIndex = v, -1, 100, 1);
+            settings.CreateNumber("P3 Quick Index", Player3CharacterIndex, v => Player3CharacterIndex = v, -1, 100, 1);
+
+            settings.CreateHeader("Taunt");
+            settings.CreateOnOff("Taunt Always On", TauntAlwaysOn, v => TauntAlwaysOn = v);
+            settings.CreateOnOff("Over-Taunt Combustion", TauntTooExplode, v => TauntTooExplode = v);
+            settings.CreateOnOff("Taunt Hide Arrows", HideArrowsWhileTaunt, v => HideArrowsWhileTaunt = v);
+
+            settings.CreateHeader("Controls");
+            settings.CreateOnOff("Idle R Stick + Right Drops Hat (Or L key)", DropHat, v => DropHat = v);
+            settings.CreateOnOff("Aim + R Stick + Left Selfkills (Or K key)", SelfKill, v => SelfKill = v);
+
+            settings.CreateHeader("Features");
+            settings.CreateOnOff("Disable Particles", DisableParticles, v => DisableParticles = v, restartRequired: true);
+            settings.CreateOnOff("Disable Hairs", DisableHairs, v => DisableHairs = v, restartRequired: true);
+            settings.CreateOnOff("Disable Layers", DisableLayers, v => DisableLayers = v, restartRequired: true);
+            settings.CreateOnOff("Disable Team Colors", DisableTeamColors, v => DisableTeamColors = v);
+            settings.CreateOnOff("Disable Custom Ghosts", DisableCustomGhosts, v => DisableCustomGhosts = v, restartRequired: true);
+            settings.CreateOnOff("Disable Custom Wings", DisableCustomWings, v => DisableCustomWings = v, restartRequired: true);
+            settings.CreateOnOff("Validate", Validate, v => Validate = v,
+                "Validate custom archer data on load and print errors to the console.");
         }
     }
-
 }

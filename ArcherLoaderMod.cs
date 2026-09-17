@@ -88,16 +88,10 @@ namespace ArcherLoaderMod
             // PrismaticPatcher.Load();
             // TeamsPatcher.Load();
             // MutePatcher.Load();
+            
             // ArcherEditor.Load();
 
-            // On.TowerFall.TFGame.Update += (orig, self, time) =>
-            // {
-            //     orig(self, time);
-            //
-            //     ArcherEditor.HandleHotReload();
-            // };
-
-            ArcherEditor.HandleQuickStart();
+            // ArcherEditor.HandleQuickStart();
         }
         
 

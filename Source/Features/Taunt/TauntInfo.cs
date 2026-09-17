@@ -14,17 +14,17 @@ namespace ArcherLoaderMod.Source.Features.Taunt
         public bool HasTauntNoHat;
         public bool HasTauntCrown;
 
-        public string? TauntTexture;
-        public string? NoHatTexture;
-        public string? CrownTexture;
+        public Subtexture? TauntTexture;
+        public Subtexture? NoHatTexture;
+        public Subtexture? CrownTexture;
 
-        public string? TauntTextureRed;
-        public string? NoHatTextureRed;
-        public string? CrownTextureRed;
+        public Subtexture? TauntTextureRed;
+        public Subtexture? NoHatTextureRed;
+        public Subtexture? CrownTextureRed;
 
-        public string? TauntTextureBlue;
-        public string? NoHatTextureBlue;
-        public string? CrownTextureBlue;
+        public Subtexture? TauntTextureBlue;
+        public Subtexture? NoHatTextureBlue;
+        public Subtexture? CrownTextureBlue;
 
         public bool HasTauntRed;
         public bool HasTauntNoHatRed;

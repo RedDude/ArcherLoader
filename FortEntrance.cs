@@ -31,11 +31,16 @@ namespace ArcherLoaderMod
                 new Source.Features.Layers.LayerFeature(),
                 new Source.Features.PortraitLayers.PortraitLayersFeature(),
                 new Source.Features.Taunt.TauntFeature(content));
+            Source.Features.ArcherDecorationRegistry.LoadSelfContent(content, context.Registry);
 
 
             OnInitialize += moduleContext =>
             {
                 ArcherLoaderMod.Load();
+            };
+            OnUnload += moduleContext =>
+            {
+                ArcherLoaderMod.Unload();
             };
             //Settings.FlightTest = () => { Music.Play("Flight"); };
 
@@ -53,7 +58,7 @@ namespace ArcherLoaderMod
             // use context.Harmony for hooks.
         }
         
-        public Type SettingsType => typeof(ArcherLoaderSettings);
+        public override ModuleSettings CreateSettings() => new ArcherLoaderSettings();
 
         public ArcherLoaderSettings Settings => GetSettings<ArcherLoaderSettings>()!;
 
@@ -61,13 +66,7 @@ namespace ArcherLoaderMod
         // {
         //     ArcherLoaderMod.LoadContent(Content);
         // }
-        //
-        // public override void Unload()
-        // {
-        //     ArcherLoaderMod.Unload();
-        // }
-        // }
-        //
+
         // private void OnPreInitialize()
         // {
         //     TfExAPIModImport.MarkModuleAsSafe?.Invoke(this);

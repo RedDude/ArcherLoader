@@ -7,7 +7,7 @@ namespace ArcherLoaderMod.Source.Features.Taunt
     public sealed class TauntState
     {
         public string? Animation;
-        public string? TextureName;
+        public Subtexture? Texture;
         public Sprite<string> BodySprite = null!;
         public Sprite<string>? Sprite;
     }

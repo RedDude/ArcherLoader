@@ -17,7 +17,7 @@ namespace ArcherLoaderMod.Source.Features
         // Called once, before any mod is loaded. Install patches here.
         void Load(IModuleContext context);
 
-        // Called for each archerLoaderData.xml entry once its target ArcherData exists.
+        // Called for each archerCustomData.xml entry once its target ArcherData exists.
         // Return false when the element has nothing for this feature.
         bool Decorate(ArcherDecoration decoration);
     }
@@ -36,15 +36,32 @@ namespace ArcherLoaderMod.Source.Features
         public IModContent ModContent { get; init; } = null!;
         public IResourceInfo Resource { get; init; } = null!;
 
+        // The declaring mod's own registry, used to resolve textures it registered.
+        public IModRegistry? Registry { get; init; }
+
         // Absolute path of the xml on disk when the mod is in folder format (editable), null when zipped.
         public string? EditablePath { get; init; }
 
         // Resolves a texture name declared by the mod: "{mod}/{name}" first, then the raw name.
+        //
+        // TFGame.Atlas.Contains only sees textures already merged into its fast lookup dictionary;
+        // mod-registered textures instead sit in a separate "safe" dictionary until that merge happens,
+        // so Contains can report false negatives for them. Going through the mod's own registry resolves
+        // the subtexture directly (lazily, if needed) without depending on that merge having happened yet.
         public Monocle.Subtexture? FindTexture(string name)
         {
-            var prefixed = $"{ModContent.Metadata.Name}/{name}";
-            if (TFGame.Atlas.Contains(prefixed))
-                return TFGame.Atlas[prefixed];
+            if (Registry != null)
+            {
+                var prefixed = $"{ModContent.Metadata.Name}/{name}";
+                var entry = Registry.Subtextures.GetTexture(prefixed, SubtextureAtlasDestination.Atlas)
+                    ?? Registry.Subtextures.GetTexture(name, SubtextureAtlasDestination.Atlas);
+                if (entry?.Subtexture != null)
+                    return entry.Subtexture;
+            }
+
+            var prefixedName = $"{ModContent.Metadata.Name}/{name}";
+            if (TFGame.Atlas.Contains(prefixedName))
+                return TFGame.Atlas[prefixedName];
             return TFGame.Atlas.Contains(name) ? TFGame.Atlas[name] : null;
         }
     }

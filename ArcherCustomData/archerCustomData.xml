@@ -1,0 +1,71 @@
+<Archers>
+  <!--
+    Built-in ghost re-skins for the base archers, using the atlas registered from
+    Content/CustomArchers/CustomGhostsForBaseArchers/atlas.xml (see FortEntrance.LoadSelfContent).
+  -->
+  <Archer id="Green">
+    <Ghost>green/ghost</Ghost>
+  </Archer>
+  <AltArcher id="Green">
+    <Ghost>greenAlt/ghost</Ghost>
+  </AltArcher>
+
+  <Archer id="Blue">
+    <Ghost>blue/ghost</Ghost>
+  </Archer>
+  <AltArcher id="Blue">
+    <Ghost>blueAlt/ghost</Ghost>
+  </AltArcher>
+
+  <Archer id="Pink">
+    <Ghost>pink/ghost</Ghost>
+  </Archer>
+  <AltArcher id="Pink">
+    <Ghost>pinkAlt/ghost</Ghost>
+  </AltArcher>
+  <SecretArcher id="Pink">
+    <Ghost>kyle/ghost</Ghost>
+  </SecretArcher>
+
+  <Archer id="Orange">
+    <Ghost>orange/ghost</Ghost>
+  </Archer>
+  <AltArcher id="Orange">
+    <Ghost>orangeAlt/ghost</Ghost>
+  </AltArcher>
+
+  <Archer id="White">
+    <Ghost>white/ghost</Ghost>
+  </Archer>
+  <AltArcher id="White">
+    <Ghost>whiteAlt/ghost</Ghost>
+  </AltArcher>
+
+  <Archer id="Yellow">
+    <Ghost>yellow/ghost</Ghost>
+  </Archer>
+  <AltArcher id="Yellow">
+    <Ghost>yellowAlt/ghost</Ghost>
+  </AltArcher>
+
+  <Archer id="Cyan">
+    <Ghost>cyan/ghost</Ghost>
+  </Archer>
+  <AltArcher id="Cyan">
+    <Ghost>cyanAlt/ghost</Ghost>
+  </AltArcher>
+
+  <Archer id="Purple">
+    <Ghost>purple/ghost</Ghost>
+  </Archer>
+  <AltArcher id="Purple">
+    <Ghost>purpleAlt/ghost</Ghost>
+  </AltArcher>
+
+  <Archer id="Red">
+    <Ghost>red/ghost</Ghost>
+  </Archer>
+  <AltArcher id="Red">
+    <Ghost>redAlt/ghost</Ghost>
+  </AltArcher>
+</Archers>
