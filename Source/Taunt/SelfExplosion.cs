@@ -10,11 +10,11 @@ namespace ArcherLoaderMod.Taunt
   {
     // Removed all of constants in here because they're unnecessary and is not used anyway.
     // Revert it back if it's causing an issue.
-    private List<Counter> counters;
-    private List<Sprite<int>> sprites;
-    private Alarm alarm;
-    private MoonGlassBlock inMoonglass;
-    private bool super;
+    private new List<Counter> counters;
+    private new List<Sprite<int>> sprites;
+    private new Alarm alarm;
+    private new MoonGlassBlock inMoonglass;
+    private new bool super;
     public bool killOthers = false;
     public bool SelfProtection = false;
 
@@ -105,7 +105,7 @@ namespace ArcherLoaderMod.Taunt
       sprites = new List<Sprite<int>>();
     }
 
-    private SelfExplosion Init(
+    private new SelfExplosion Init(
       int playerIndex,
       Vector2 position,
       bool super,
@@ -132,7 +132,7 @@ namespace ArcherLoaderMod.Taunt
       return this;
     }
 
-    private SelfExplosion InitInMoonglass(
+    private new SelfExplosion InitInMoonglass(
       int playerIndex,
       Vector2 position,
       MoonGlassBlock inBlock)
@@ -283,7 +283,7 @@ namespace ArcherLoaderMod.Taunt
       Cache.Store<SelfExplosion>(this);
     }
 
-    private void DoCollide(Entity entity)
+    private new void DoCollide(Entity entity)
     {
       var entity1 = entity as LevelEntity;
       var zero = Vector2.Zero;
@@ -307,7 +307,7 @@ namespace ArcherLoaderMod.Taunt
         entity1.OnExplode(this, normal);
     }
 
-    private void DoCollideSuper(Entity entity)
+    private new void DoCollideSuper(Entity entity)
     {
       var entity1 = entity as LevelEntity;
       var zero = Vector2.Zero;
@@ -330,7 +330,7 @@ namespace ArcherLoaderMod.Taunt
         entity1.OnExplode(this, normal);
     }
 
-    private bool CanHurt(Vector2 pos)
+    private new bool CanHurt(Vector2 pos)
     {
       if (WrapMath.WrapLineHit(Level, GameTags.Solid, Position, pos))
         return false;
@@ -341,7 +341,7 @@ namespace ArcherLoaderMod.Taunt
              WrapMath.WrapDistanceSquared(Position, pos) <= 5625.0;
     }
 
-    private bool CanHurt(LevelEntity entity, ref Vector2 at)
+    private new bool CanHurt(LevelEntity entity, ref Vector2 at)
     {
       var flag = false;
       entity.Collidable = false;
@@ -381,7 +381,7 @@ namespace ArcherLoaderMod.Taunt
       }
     }
 
-    private Sprite<int> GenSprite(string name)
+    private new Sprite<int> GenSprite(string name)
     {
       var spriteInt = TFGame.SpriteData.GetSpriteInt(name);
       spriteInt.Play(0);
@@ -389,7 +389,7 @@ namespace ArcherLoaderMod.Taunt
       return spriteInt;
     }
 
-    private void FinishAnim(Sprite<int> sprite) => Remove(sprite);
+    private new void FinishAnim(Sprite<int> sprite) => Remove(sprite);
 
     public override void DebugRender()
     {

@@ -5,6 +5,8 @@
     <ModLoaderPath>D:\SteamLibrary\steamapps\common\TowerFall\FortRise</ModLoaderPath>
     
     <ModVersion>2.0.0</ModVersion>
+    
+    <PackageVersion>2.0.0</PackageVersion>
   </PropertyGroup>
   <PropertyGroup Condition="$(DefineConstants.Contains('ITCHIO'))">
     <TowerfallPath>D:\Games\TowerFall-FortRise5</TowerfallPath>
@@ -68,6 +70,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FortRise.Configuration" Version="1.5.6" />
+    <PackageReference Include="FortRise.Configuration" Version="1.6.2" />
   </ItemGroup>
 </Project>
