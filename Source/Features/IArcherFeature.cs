@@ -3,7 +3,7 @@ using System.Xml;
 using FortRise;
 using TowerFall;
 
-namespace ArcherLoaderMod.Source.Features
+namespace ArcherEditorMod.Source.Features
 {
     // A standalone feature that decorates archers FortRise has already registered.
     public interface IArcherFeature
@@ -52,8 +52,10 @@ namespace ArcherLoaderMod.Source.Features
         {
             if (Registry != null)
             {
+                // textures registered from a file are keyed by the resource path, which may start with a slash
                 var prefixed = $"{ModContent.Metadata.Name}/{name}";
                 var entry = Registry.Subtextures.GetTexture(prefixed, SubtextureAtlasDestination.Atlas)
+                    ?? Registry.Subtextures.GetTexture($"{ModContent.Metadata.Name}//{name.TrimStart('/')}", SubtextureAtlasDestination.Atlas)
                     ?? Registry.Subtextures.GetTexture(name, SubtextureAtlasDestination.Atlas);
                 if (entry?.Subtexture != null)
                     return entry.Subtexture;

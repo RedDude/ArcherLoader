@@ -1,7 +1,7 @@
 #nullable enable
 using Monocle;
 
-namespace ArcherLoaderMod.Source.Features.Taunt
+namespace ArcherEditorMod.Source.Features.Taunt
 {
     // Resolved once per archer: which spriteData container to reuse for the taunt animation, and which
     // per-team textures to swap onto it (the same technique the game uses for hats: one shared animation,
@@ -36,5 +36,11 @@ namespace ArcherLoaderMod.Source.Features.Taunt
 
         public bool SelfDestruction;
         public SFX? Sound;
+
+        // What the xml says, kept so the editor can show it and write it back: the spriteData id as written, the
+        // texture names by element name (Texture, NoHatTexture, CrownTexture, TextureBlue...), the sound names.
+        public string? IdText;
+        public System.Collections.Generic.Dictionary<string, string> TextureNames = new();
+        public string? SfxName, SfxLoopedName, SfxVariedName;
     }
 }

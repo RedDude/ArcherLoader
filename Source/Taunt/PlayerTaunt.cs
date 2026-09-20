@@ -2,7 +2,7 @@
 // using Monocle;
 // using TowerFall;
 //
-// namespace ArcherLoaderMod
+// namespace ArcherEditorMod
 // {
 //     public class PlayerTaunt : Component
 //     {

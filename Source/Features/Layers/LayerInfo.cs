@@ -1,7 +1,7 @@
 #nullable enable
 using Microsoft.Xna.Framework;
 
-namespace ArcherLoaderMod.Source.Features.Layers
+namespace ArcherEditorMod.Source.Features.Layers
 {
     public sealed class LayerInfo
     {

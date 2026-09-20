@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 using Monocle;
 using TowerFall;
 
-namespace ArcherLoaderMod.Source.Features.Particles
+namespace ArcherEditorMod.Source.Features.Particles
 {
     public class ArcherParticlesComponent : Component
     {
@@ -17,6 +17,9 @@ namespace ArcherLoaderMod.Source.Features.Particles
         private bool canPadParticles;
 
         private static Dictionary<ParticlesInfo, ParticleType> cache = new();
+
+        // the ParticleType is built once per info; the editor drops them after edits so new components rebuild it
+        public static void ClearCache() => cache.Clear();
         
         public ArcherParticlesComponent(ParticlesInfo info, bool active, bool visible) : base(active, visible)
         {

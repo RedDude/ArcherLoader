@@ -7,7 +7,7 @@ using Monocle;
 using MonoMod.Utils;
 using TowerFall;
 
-namespace ArcherLoaderMod.Source.Features.Wings
+namespace ArcherEditorMod.Source.Features.Wings
 {
     // <Wings>
     //   <Texture>player/wings/myWings</Texture>   optional
@@ -30,6 +30,20 @@ namespace ArcherLoaderMod.Source.Features.Wings
                 AccessTools.Method(typeof(Player), nameof(Player.Added)),
                 postfix: new HarmonyMethod(typeof(WingsFeature), nameof(Player_Added_Postfix)));
         }
+
+        // Editor access. Applied to players when they are created, so refresh the preview after changing.
+        public static bool TryGet(ArcherData archer, out Subtexture? texture, out Color? color)
+        {
+            var found = wings.TryGetValue(archer, out var info);
+            texture = info?.Texture;
+            color = info?.Color;
+            return found;
+        }
+
+        public static void Set(ArcherData archer, Subtexture? texture, Color? color) =>
+            wings[archer] = new WingsInfo(texture, color);
+
+        public static void Remove(ArcherData archer) => wings.Remove(archer);
 
         public bool Decorate(ArcherDecoration decoration)
         {

@@ -61,5 +61,5 @@ obj/
 .vscode
 obj/Debug
 obj
-obj/ArcherLoaderMod.csproj.nuget.dgspec.json
+obj/ArcherEditorMod.csproj.nuget.dgspec.json
 bin

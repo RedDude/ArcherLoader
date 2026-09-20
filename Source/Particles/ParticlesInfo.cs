@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace ArcherLoaderMod.Particles
+namespace ArcherEditorMod.Particles
 {
     public class ParticlesInfo
     {

@@ -1,12 +1,12 @@
 #nullable enable
 using System;
-using ArcherLoaderMod.Rainbow;
+using ArcherEditorMod.Rainbow;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
 using TowerFall;
 
-namespace ArcherLoaderMod.Source.Features.PortraitLayers
+namespace ArcherEditorMod.Source.Features.PortraitLayers
 {
     public sealed class PortraitLayerSpriteComponent : Component
     {

@@ -10,7 +10,7 @@ using MonoMod.Utils;
 using TowerFall;
 using ArrowHUD = TowerFall.ArrowHUD;
 
-namespace ArcherLoaderMod.Taunt
+namespace ArcherEditorMod.Taunt
 {
     public class TauntVariant
     {
@@ -27,7 +27,7 @@ namespace ArcherLoaderMod.Taunt
         private static IVariantEntry info;
 
 
-        public static ArcherLoaderSettings settings { get; set; }
+        public static ArcherEditorSettings settings { get; set; }
         
         public static void OnVariantsRegister(IModuleContext context)
         {
@@ -53,7 +53,7 @@ namespace ArcherLoaderMod.Taunt
         {
             enabled = true;
             _loseHat = typeof(Player).GetMethod("LoseHat", BindingFlags.NonPublic | BindingFlags.Instance);
-            harmony = new Harmony("mod.archerloader.taunt");
+            harmony = new Harmony("mod.archereditor.taunt");
             
             // Patch methods
             harmony.Patch(
@@ -133,7 +133,7 @@ namespace ArcherLoaderMod.Taunt
                         
             if (!variantEnabled)
             {
-                variantInfo = matchVariants.GetCustomVariant("ArcherLoader/Taunt");
+                variantInfo = matchVariants.GetCustomVariant("ArcherEditor/Taunt");
                 variantEnabled = variantInfo?[__instance.PlayerIndex] ?? false;
             }
 
@@ -231,7 +231,7 @@ namespace ArcherLoaderMod.Taunt
             tauntInfos.TryGetValue(self.ArcherData, out var tauntInfo);
             if (tauntInfo == null)
             {
-                var customExist = ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(self.ArcherData, out var archerCustomData);
+                var customExist = ArcherEditorMod.ArcherCustomDataDict.TryGetValue(self.ArcherData, out var archerCustomData);
                 if (customExist && archerCustomData.Taunt != null)
                 {
                     var xmlElement = TFGame.SpriteData.GetXML(archerCustomData.Taunt);
@@ -257,19 +257,19 @@ namespace ArcherLoaderMod.Taunt
                 }
                 else
                 {
-                    if (ArcherLoaderMod.customSpriteDataCategoryDict.ContainsKey("taunt"))
+                    if (ArcherEditorMod.customSpriteDataCategoryDict.ContainsKey("taunt"))
                     {
-                        foreach (var customSpriteData in ArcherLoaderMod.customSpriteDataCategoryDict["taunt"])
+                        foreach (var customSpriteData in ArcherEditorMod.customSpriteDataCategoryDict["taunt"])
                         {
                             var xmlElement = customSpriteData.Element;
 
-                            var forAttribute = ArcherLoaderMod.GetForAttribute(xmlElement);
+                            var forAttribute = ArcherEditorMod.GetForAttribute(xmlElement);
                             if (string.IsNullOrEmpty(forAttribute)) continue;
-                            ArcherLoaderMod.BaseArcherByNameDict.TryGetValue(xmlElement.GetAttribute(forAttribute).ToLower(),
+                            ArcherEditorMod.BaseArcherByNameDict.TryGetValue(xmlElement.GetAttribute(forAttribute).ToLower(),
                                 out var searchArcherData);
                             if (searchArcherData == null)
                             {
-                                foreach (var customData in ArcherLoaderMod.ArcherCustomDataDict)
+                                foreach (var customData in ArcherEditorMod.ArcherCustomDataDict)
                                 {
                                     if (customData.Value.ID == xmlElement.GetAttribute(forAttribute))
                                     {
@@ -303,17 +303,17 @@ namespace ArcherLoaderMod.Taunt
                             break;
                         }
 
-                        foreach (var customSpriteData in ArcherLoaderMod.customSpriteDataCategoryDict["taunt"])
+                        foreach (var customSpriteData in ArcherEditorMod.customSpriteDataCategoryDict["taunt"])
                         {
                             var xmlElement = customSpriteData.Element;
 
-                            var forAttribute = ArcherLoaderMod.GetForAttribute(xmlElement);
+                            var forAttribute = ArcherEditorMod.GetForAttribute(xmlElement);
                             if (string.IsNullOrEmpty(forAttribute)) continue;
-                            ArcherLoaderMod.BaseArcherByNameDict.TryGetValue(xmlElement.GetAttribute(forAttribute).ToLower(),
+                            ArcherEditorMod.BaseArcherByNameDict.TryGetValue(xmlElement.GetAttribute(forAttribute).ToLower(),
                                 out var searchArcherData);
                             if (searchArcherData == null)
                             {
-                                foreach (var customData in ArcherLoaderMod.ArcherCustomDataDict)
+                                foreach (var customData in ArcherEditorMod.ArcherCustomDataDict)
                                 {
                                     if (customData.Value.ID == xmlElement.GetAttribute(forAttribute))
                                     {

@@ -1,4 +1,4 @@
-﻿namespace ArcherLoaderMod
+﻿namespace ArcherEditorMod
 {
     public class ArcherCustomMeta
     {
@@ -10,6 +10,6 @@
         public string Url;
         public string Discord;
         public string Github;
-        public string ArcherLoaderVersion;
+        public string ArcherEditorVersion;
     }
 }

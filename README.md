@@ -9,7 +9,7 @@
 
 ![screenshot](https://raw.githubusercontent.com/amitmerchant1990/electron-markdownify/master/app/img/markdownify.gif) -->
 
-# ArcherLoader
+# ArcherEditor
 
 Add Custom Archers for Towerfall easily by just Drag n Drop and create Archers with custom hair, wings, ghost, particles, layers and even taunts and skins for archers.
 
@@ -32,25 +32,25 @@ Aside easily add new archers, you also can:
 * Drop Hat, on Right stick to the Right while Idle (Or L key)
 * Kill yourself, on Right stick to the Left while Aim an arrow (Or K key)
 
-Check how to create your custom archer [here](https://github.com/RedDude/ArcherLoader/wiki)
+Check how to create your custom archer [here](https://github.com/RedDude/ArcherEditor/wiki)
 
 ## Install
 <details><summary><b>Instructions</b></summary>
  
 - Install [FortRise](https://github.com/Terria-K/FortRise)
-- Download and Copy the "ArcherLoader" folder to "Mods" folder the game main folder (aka game Root)
+- Download and Copy the "ArcherEditor" folder to "Mods" folder the game main folder (aka game Root)
 (you game root is probably:C:\SteamLibrary\steamapps\common\TowerFall)
 - Download a custom character (for instance, [⁠Madeline & Badeline](https://discord.com/channels/248961953656078337/1109196498849239082) or ⁠[Skeleton Archer](https://discord.com/channels/248961953656078337/1110725737461329950))
 - Then you can put the custom archer *FOLDER* in any of the following folders:
 
 ```  
-{Game Main folder}\Mods\ArcherLoader\CustomArchers
+{Game Main folder}\Mods\ArcherEditor\CustomArchers
   
 {Game Main folder}\CustomArchers
   
 {Game Main folder}\Content\Mod\CustomArchers
   
-{Game Main folder}\Mods\ArcherLoader\Content\CustomArchers
+{Game Main folder}\Mods\ArcherEditor\Content\CustomArchers
 ```
 
 Install complete!
@@ -78,24 +78,24 @@ Check in [here](https://discord.com/channels/248961953656078337/1109173629918384
 </details>
 
 <details><summary><b>How can I create a custom Archers</b></summary>
-Check how to create your custom archer [here](https://github.com/RedDude/ArcherLoader/wiki)
+Check how to create your custom archer [here](https://github.com/RedDude/ArcherEditor/wiki)
 </details>
 
  
 <details><b><summary>The custom character is not showing up, that I should do?</b></summary>
   
 * Check if FortRise is correcly installed by checking if the Mod option is in the main menu
-* Check if ArcherLoader is correcly installed by checking if it is inside the Mod options
+* Check if ArcherEditor is correcly installed by checking if it is inside the Mod options
 * Check you added the whole archer folder in one of the following folders:
 
 ```  
-{Game Main folder}\Mods\ArcherLoader\CustomArchers
+{Game Main folder}\Mods\ArcherEditor\CustomArchers
   
 {Game Main folder}\CustomArchers
   
 {Game Main folder}\Content\Mod\CustomArchers
   
-{Game Main folder}\Mods\ArcherLoader\Content\CustomArchers
+{Game Main folder}\Mods\ArcherEditor\Content\CustomArchers
 ```
   * Ask help in the [discord](https://discord.com/channels/248961953656078337/825482637216186421) channel  
 </details>

@@ -8,13 +8,16 @@ using Monocle;
 using MonoMod.Utils;
 using TowerFall;
 
-namespace ArcherLoaderMod.Source.Features.PortraitLayers
+namespace ArcherEditorMod.Source.Features.PortraitLayers
 {
     // <PortraitLayer>...</PortraitLayer> or <PortraitLayers><PortraitLayer/><PortraitLayer/>...</PortraitLayers>
     // AttachTo is one of Joined/NotJoined/Won/Lose (default Lose, matching the original behavior).
     public sealed class PortraitLayersFeature : IArcherFeature
     {
         private static readonly Dictionary<ArcherData, List<PortraitLayerInfo>> layersByArcher = new();
+
+        public static IReadOnlyList<PortraitLayerInfo> GetLayers(ArcherData archer) =>
+            layersByArcher.TryGetValue(archer, out var infos) ? infos : System.Array.Empty<PortraitLayerInfo>();
 
         public string Name => "PortraitLayers";
 

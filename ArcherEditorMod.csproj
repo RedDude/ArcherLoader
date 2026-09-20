@@ -74,5 +74,19 @@
 
   <ItemGroup>
     <PackageReference Include="FortRise.Configuration" Version="1.6.2" />
+    <PackageReference Include="ImGui.NET" Version="1.91.6.1" />
   </ItemGroup>
+
+  <!-- FortRise loads native libs from Unmanaged/<rid>, same layout as FortRise.ImGui -->
+  <ItemGroup>
+    <LinuxMove Include="$(TargetDir)/runtimes/linux-x64/native/**/*"/>
+    <WinMove Include="$(TargetDir)/runtimes/win-x64/native/**/*"/>
+    <OSXMove Include="$(TargetDir)/runtimes/osx-x64/native/**/*"/>
+  </ItemGroup>
+
+  <Target Name="MoveNativeRuntime" AfterTargets="CoreCompile">
+    <Copy SourceFiles="@(LinuxMove)" DestinationFolder="$(TargetDir)/Unmanaged/linux-x64"/>
+    <Copy SourceFiles="@(WinMove)" DestinationFolder="$(TargetDir)/Unmanaged/win-x64"/>
+    <Copy SourceFiles="@(OSXMove)" DestinationFolder="$(TargetDir)/Unmanaged/osx"/>
+  </Target>
 </Project>

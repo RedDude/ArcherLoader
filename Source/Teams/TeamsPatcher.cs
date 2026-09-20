@@ -6,7 +6,7 @@ using Monocle;
 using MonoMod.Utils;
 using TowerFall;
 
-namespace ArcherLoaderMod.Teams
+namespace ArcherEditorMod.Teams
 {
     public class TeamsPatcher
     {
@@ -38,7 +38,7 @@ namespace ArcherLoaderMod.Teams
             if (FortEntrance.Instance.Settings.DisableTeamColors)
                 return;
 
-            harmony = new Harmony("mod.archerloader.teams");
+            harmony = new Harmony("mod.archereditor.teams");
             
             // Patch methods
             harmony.Patch(

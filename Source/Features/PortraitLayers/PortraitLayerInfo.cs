@@ -1,7 +1,7 @@
 #nullable enable
 using Microsoft.Xna.Framework;
 
-namespace ArcherLoaderMod.Source.Features.PortraitLayers
+namespace ArcherEditorMod.Source.Features.PortraitLayers
 {
     public sealed class PortraitLayerInfo
     {

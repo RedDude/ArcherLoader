@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using ArcherLoaderMod.Source.Layers.PortraitLayers;
+using ArcherEditorMod.Source.Layers.PortraitLayers;
 using HarmonyLib;
 using Monocle;
 using MonoMod.Utils;
 using TowerFall;
 
-namespace ArcherLoaderMod.Skin
+namespace ArcherEditorMod.Skin
 {
     public class SkinPatcher
     {
@@ -23,7 +23,7 @@ namespace ArcherLoaderMod.Skin
         {
             if (FortEntrance.Instance.Settings.DisableLayers) return;
 
-            harmony = new Harmony("mod.archerloader.skin");
+            harmony = new Harmony("mod.archereditor.skin");
 
             // Patch methods
             harmony.Patch(
@@ -223,9 +223,9 @@ namespace ArcherLoaderMod.Skin
             }
 
             var originalName = skinCustomData.originalName;
-            if (!ArcherLoaderMod.BaseArcherByNameDict.TryGetValue(skinCustomData.originalName.ToLower(), out var data))
+            if (!ArcherEditorMod.BaseArcherByNameDict.TryGetValue(skinCustomData.originalName.ToLower(), out var data))
             {
-                foreach (var archerCustomData in ArcherLoaderMod.ArcherCustomDataDict)
+                foreach (var archerCustomData in ArcherEditorMod.ArcherCustomDataDict)
                 {
                     if (archerCustomData.Value.ID != skinCustomData.originalName) continue;
                     data = archerCustomData.Key;
@@ -272,7 +272,7 @@ namespace ArcherLoaderMod.Skin
             var skinArcherData = skinCustomData.ToArcherData();
 
             SkinArcherCustomToArcher[skinCustomData] = skinArcherData;
-            ArcherLoaderMod.ArcherCustomDataDict[skinArcherData] = skinCustomData;
+            ArcherEditorMod.ArcherCustomDataDict[skinArcherData] = skinCustomData;
 
             for (var i = 0; i < TFGame.Players.Length; i++)
             {

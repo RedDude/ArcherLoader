@@ -1,6 +1,6 @@
 ﻿using TowerFall;
 
-namespace ArcherLoaderMod.Layers
+namespace ArcherEditorMod.Layers
 {
     public enum LayerAttachType
     {

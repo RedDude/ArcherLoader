@@ -1,7 +1,7 @@
 ﻿using System;
 using Monocle;
 
-namespace ArcherLoaderMod.Taunt
+namespace ArcherEditorMod.Taunt
 {
     public class TauntInfo
     {

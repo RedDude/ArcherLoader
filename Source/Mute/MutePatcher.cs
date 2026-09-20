@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 using Monocle;
 using TowerFall;
 
-namespace ArcherLoaderMod.Mute
+namespace ArcherEditorMod.Mute
 {
     public class MutePatcher
     {
@@ -15,7 +15,7 @@ namespace ArcherLoaderMod.Mute
         {
             // if(FortEntrance.Settings.DisableMutes) return;
             
-            harmony = new Harmony("mod.archerloader.mute");
+            harmony = new Harmony("mod.archereditor.mute");
             enabled = true;
             
             // Patch Player.EnterDodge (private in the current FortRise Player patch)

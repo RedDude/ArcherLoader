@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace ArcherLoaderMod.Rainbow
+namespace ArcherEditorMod.Rainbow
 {
     public class RainbowManager
     {

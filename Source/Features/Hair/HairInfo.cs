@@ -1,10 +1,12 @@
-#nullable enable
+﻿#nullable enable
 using Microsoft.Xna.Framework;
 
-namespace ArcherLoaderMod.Source.Features.Hair
+namespace ArcherEditorMod.Source.Features.Hair
 {
     public sealed class HairInfo
     {
+        // editor label only, saved as <Name>
+        public string? Name;
         public Vector2 Position;
         public string HairSprite = "player/hair";
         public string HairEndSprite = "player/hairEnd";

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TilesetData>
-  <Tileset id="ArcherEditor" image="ArcherLoader/tilesets/archerEditorTileset">
+  <Tileset id="ArcherEditor" image="ArcherEditor/tilesets/archerEditorTileset">
     <Center>0,0,0,0,0,0,0,0,0,0,1,2,3,4,5,6,7</Center>
     <Top>8,9,10,11</Top>
     <Bottom>12,13,14,15</Bottom>

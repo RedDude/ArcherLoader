@@ -1,7 +1,7 @@
 ﻿using Monocle;
 using TowerFall;
 
-namespace ArcherLoaderMod.Taunt
+namespace ArcherEditorMod.Taunt
 {
     public class TauntState
     {

@@ -1,7 +1,7 @@
 #nullable enable
 using FortRise;
 
-namespace ArcherLoaderMod.Source.ModImport
+namespace ArcherEditorMod.Source.ModImport
 {
     // Subset of FortRise.Content's public API, obtained through Context.Interop.GetApi (proxied by FortRise).
     public interface IFortRiseContentApi

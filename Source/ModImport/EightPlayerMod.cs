@@ -1,7 +1,7 @@
 using MonoMod.ModInterop;
 using System;
 
-namespace ArcherLoaderMod 
+namespace ArcherEditorMod 
 {
     [ModImportName("com.fortrise.EightPlayerMod")]
     public class EightPlayerImport

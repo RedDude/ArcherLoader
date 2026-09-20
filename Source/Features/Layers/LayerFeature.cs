@@ -8,13 +8,16 @@ using Monocle;
 using MonoMod.Utils;
 using TowerFall;
 
-namespace ArcherLoaderMod.Source.Features.Layers
+namespace ArcherEditorMod.Source.Features.Layers
 {
     // <Layer>...</Layer> or <Layers><Layer/><Layer/>...</Layers>
     // See LayerInfo for the fields; AttachTo is one of Head/Body/Bow/Corpse (default Body).
     public sealed class LayerFeature : IArcherFeature
     {
         private static readonly Dictionary<ArcherData, List<LayerInfo>> layersByArcher = new();
+
+        public static IReadOnlyList<LayerInfo> GetLayers(ArcherData archer) =>
+            layersByArcher.TryGetValue(archer, out var infos) ? infos : System.Array.Empty<LayerInfo>();
 
         public string Name => "Layers";
 

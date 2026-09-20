@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using ArcherLoaderMod.Source.Layers.PortraitLayers;
+using ArcherEditorMod.Source.Layers.PortraitLayers;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
 using TowerFall;
 
-namespace ArcherLoaderMod.Rainbow
+namespace ArcherEditorMod.Rainbow
 {
     public class PrismaticPatcher
     {
@@ -17,7 +17,7 @@ namespace ArcherLoaderMod.Rainbow
 
         public static void Load()
         {
-            harmony = new Harmony("mod.archerloader.prismatic");
+            harmony = new Harmony("mod.archereditor.prismatic");
             
             // Patch methods
             harmony.Patch(
@@ -60,7 +60,7 @@ namespace ArcherLoaderMod.Rainbow
         [HarmonyPostfix]
         private static void Player_Added_Postfix(Player __instance)
         {
-            if (!ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(__instance.ArcherData, out var archerCustomData)) 
+            if (!ArcherEditorMod.ArcherCustomDataDict.TryGetValue(__instance.ArcherData, out var archerCustomData)) 
                 return;
 
             __instance.Add(new PrismaticMainColorsComponent(__instance.ArcherData, archerCustomData, true, true));
@@ -93,7 +93,7 @@ namespace ArcherLoaderMod.Rainbow
             var playerIndex = DynamicData.For(__instance).Get<int>("playerIndex");
             var archerData = ArcherData.Get(TFGame.Characters[playerIndex], TFGame.AltSelect[playerIndex]);
             
-            if (!ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(archerData, out var archerCustomData) || 
+            if (!ArcherEditorMod.ArcherCustomDataDict.TryGetValue(archerData, out var archerCustomData) || 
                 !archerCustomData.IsPrismaticGem) 
                 return;
 
@@ -104,7 +104,7 @@ namespace ArcherLoaderMod.Rainbow
         [HarmonyPrefix]
         private static void ArcherPortrait_Update_Prefix(ArcherPortrait __instance)
         {
-            if (!ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(__instance.ArcherData, out var data) || 
+            if (!ArcherEditorMod.ArcherCustomDataDict.TryGetValue(__instance.ArcherData, out var data) || 
                 !data.IsPrismaticGem) 
                 return;
 
@@ -122,7 +122,7 @@ namespace ArcherLoaderMod.Rainbow
             var playerIndex = DynamicData.For(__instance).Get<int>("playerIndex");
             var archerData = ArcherData.Get(TFGame.Characters[playerIndex], TFGame.AltSelect[playerIndex]);
             
-            if (!ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(archerData, out var archerCustomData)) 
+            if (!ArcherEditorMod.ArcherCustomDataDict.TryGetValue(archerData, out var archerCustomData)) 
                 return;
 
             var gem = DynamicData.For(__instance).Get<Sprite<string>>("gem");

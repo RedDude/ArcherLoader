@@ -8,13 +8,73 @@ using Microsoft.Xna.Framework;
 using Monocle;
 using TowerFall;
 
-namespace ArcherLoaderMod.Source.Features.Particles
+namespace ArcherEditorMod.Source.Features.Particles
 {
     // <Particle>...</Particle> or <Particles><Particle/><Particle/>...</Particles>
     // See ParticlesInfo for the fields, all optional.
     public sealed class ParticlesFeature : IArcherFeature
     {
         private static readonly Dictionary<ArcherData, List<ParticlesInfo>> particlesByArcher = new();
+
+        // Particles created from the archer editor, attached on top of the archer's own ones.
+        private static readonly Dictionary<ArcherData, List<ParticlesInfo>> editorParticles = new();
+
+        // ---- Editor access ----
+
+        public static ParticlesInfo NewParticlesInfo(string? name = null) => new()
+        {
+            Name = name,
+            Source = "fireParticle",
+            Direction = -(float)Math.PI / 2f,
+            DirectionRange = (float)Math.PI / 6f
+        };
+
+        /// <summary>Puts back the archer's own and editor particles (undo); null / empty removes them.</summary>
+        public static void SetLists(ArcherData archer, List<ParticlesInfo>? own, List<ParticlesInfo>? editor)
+        {
+            if (own == null) particlesByArcher.Remove(archer); else particlesByArcher[archer] = own;
+            if (editor == null || editor.Count == 0) editorParticles.Remove(archer); else editorParticles[archer] = editor;
+        }
+
+        public static List<ParticlesInfo>? GetOwnParticles(ArcherData archer) =>
+            particlesByArcher.TryGetValue(archer, out var infos) ? infos : null;
+
+        public static IReadOnlyList<ParticlesInfo> GetEditorParticles(ArcherData archer) =>
+            editorParticles.TryGetValue(archer, out var infos) ? infos : Array.Empty<ParticlesInfo>();
+
+        // Own + editor particles, for export
+        public static List<ParticlesInfo> GetAllParticles(ArcherData archer)
+        {
+            var all = new List<ParticlesInfo>();
+            if (particlesByArcher.TryGetValue(archer, out var own)) all.AddRange(own);
+            if (editorParticles.TryGetValue(archer, out var editor)) all.AddRange(editor);
+            return all;
+        }
+
+        public static void RemoveOwnParticles(ArcherData archer, int index)
+        {
+            if (!particlesByArcher.TryGetValue(archer, out var infos) || index < 0 || index >= infos.Count)
+                return;
+            infos.RemoveAt(index);
+            if (infos.Count == 0)
+                particlesByArcher.Remove(archer);
+        }
+
+        public static void AddEditorParticles(ArcherData archer, string? name)
+        {
+            if (!editorParticles.TryGetValue(archer, out var infos))
+                editorParticles[archer] = infos = new List<ParticlesInfo>();
+            infos.Add(NewParticlesInfo(name));
+        }
+
+        public static void RemoveEditorParticles(ArcherData archer, int index)
+        {
+            if (!editorParticles.TryGetValue(archer, out var infos) || index < 0 || index >= infos.Count)
+                return;
+            infos.RemoveAt(index);
+            if (infos.Count == 0)
+                editorParticles.Remove(archer);
+        }
 
         public string Name => "Particles";
 
@@ -59,6 +119,7 @@ namespace ArcherLoaderMod.Source.Features.Particles
 
             return new ParticlesInfo
             {
+                Name = xml.ChildText("Name", null),
                 Source = source,
                 Position = xml.ChildPosition("Position", Vector2.Zero),
                 Amount = xml.ChildInt("Amount", 1),
@@ -118,8 +179,8 @@ namespace ArcherLoaderMod.Source.Features.Particles
 
         private static void Player_Added_Postfix(Player __instance)
         {
-            if (!particlesByArcher.TryGetValue(__instance.ArcherData, out var infos))
-                return;
+            // the archer's own particles first, then the ones created in the editor
+            var infos = GetAllParticles(__instance.ArcherData);
 
             foreach (var info in infos)
                 __instance.Add(new ArcherParticlesComponent(info, true, true));

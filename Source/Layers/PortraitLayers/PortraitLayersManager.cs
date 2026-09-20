@@ -3,7 +3,7 @@ using Monocle;
 using MonoMod.Utils;
 using TowerFall;
 
-namespace ArcherLoaderMod.Source.Layers.PortraitLayers
+namespace ArcherEditorMod.Source.Layers.PortraitLayers
 {
     public class PortraitLayersManager
     {
@@ -112,11 +112,11 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
              
         public static void CreateSelectionLayersComponents(ArcherPortrait archerPortrait, ArcherData data)
         {
-            var exist = ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(data, out var archerCustomData);
+            var exist = ArcherEditorMod.ArcherCustomDataDict.TryGetValue(data, out var archerCustomData);
             List<PortraitLayerInfo> layerInfos = null;
             if (!exist)
             {
-                var xml = ArcherLoaderMod.FindSpriteDataXmlOnCategories("portraitLayer", data);
+                var xml = ArcherEditorMod.FindSpriteDataXmlOnCategories("portraitLayer", data);
                 if (xml != null)
                 {
                     layerInfos = PortraitLayerParser.Parse(xml);
@@ -166,11 +166,11 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
         
         public static List<PortraitLayerSpriteComponent> CreateWonLoseLayersComponents(Entity entity, ArcherData data)
         {
-            var exist = ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(data, out var archerCustomData);
+            var exist = ArcherEditorMod.ArcherCustomDataDict.TryGetValue(data, out var archerCustomData);
             List<PortraitLayerInfo> layerInfos = null;
             if (!exist)
             {
-                var xml = ArcherLoaderMod.FindSpriteDataXmlOnCategories("portraitLayer", data);
+                var xml = ArcherEditorMod.FindSpriteDataXmlOnCategories("portraitLayer", data);
                 if (xml != null)
                 {
                     layerInfos = PortraitLayerParser.Parse(xml);

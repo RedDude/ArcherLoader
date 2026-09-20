@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using ArcherLoaderMod.Hair;
-using ArcherLoaderMod.Layer;
-using ArcherLoaderMod.Layers;
-using ArcherLoaderMod.Particles;
-using ArcherLoaderMod.Source.Layers.PortraitLayers;
+using ArcherEditorMod.Hair;
+using ArcherEditorMod.Layer;
+using ArcherEditorMod.Layers;
+using ArcherEditorMod.Particles;
+using ArcherEditorMod.Source.Layers.PortraitLayers;
 using Microsoft.Xna.Framework;
 using Monocle;
 using TowerFall;
 
-namespace ArcherLoaderMod
+namespace ArcherEditorMod
 {
   public class ArcherCustomData
   {
@@ -477,20 +477,20 @@ namespace ArcherLoaderMod
         sfxName = xml["CustomSFX"].ChildText("Name", ID);
         if (archerData == null)
         {
-          originalIndex = ArcherLoaderMod.CheckForBaseSFXArchers(originalName.ToUpper());
+          originalIndex = ArcherEditorMod.CheckForBaseSFXArchers(originalName.ToUpper());
           if (originalIndex != -1){
             SFXID = originalIndex;
           }
           if (originalIndex == -1)
           {
-            var items = new List<ArcherCustomData>(ArcherLoaderMod.ArcherCustomDataDict.Values);
+            var items = new List<ArcherCustomData>(ArcherEditorMod.ArcherCustomDataDict.Values);
             var data = items.First(o => o.ID.ToUpper() == originalName.ToUpper());
             originalIndex = items.IndexOf(data);
           }
           if (originalIndex == -1)
           {
               var originalName = xml["CustomSFX"].ChildText("Fallback", "GREEN");
-              originalIndex = ArcherLoaderMod.CheckForBaseSFXArchers(originalName);
+              originalIndex = ArcherEditorMod.CheckForBaseSFXArchers(originalName);
               if (originalIndex == -1)
                 SFXID = originalIndex;
           }
@@ -504,7 +504,7 @@ namespace ArcherLoaderMod
       var originalAudiosPath = Audio.LOAD_PREFIX;
       Audio.LOAD_PREFIX = $"{FolderPath}SFX{Path.DirectorySeparatorChar.ToString()}";
       CharacterSounds = new CharacterSounds(sfxName, Sounds.Characters[SFXID]);
-      ArcherLoaderMod.customSFXList.Add(CharacterSounds);
+      ArcherEditorMod.customSFXList.Add(CharacterSounds);
       victory = CharacterSounds.Load("VICTORY");
       Audio.LOAD_PREFIX = originalAudiosPath;
     }
@@ -521,7 +521,7 @@ namespace ArcherLoaderMod
         Discord = xml.ChildText("Discord", archerData?.Meta.Discord),
         Github = xml.ChildText("Github", archerData?.Meta.Github),
         Url = xml.ChildText("Github", archerData?.Meta.Url),
-        ArcherLoaderVersion = xml.ChildText("ArcherLoaderVersion", archerData?.Meta.ArcherLoaderVersion),
+        ArcherEditorVersion = xml.ChildText("ArcherEditorVersion", archerData?.Meta.ArcherEditorVersion),
       };
     }
 

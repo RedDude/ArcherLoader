@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.Xml;
-using ArcherLoaderMod.Layers;
-using ArcherLoaderMod.Rainbow;
+using ArcherEditorMod.Layers;
+using ArcherEditorMod.Rainbow;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
 using TowerFall;
 
-namespace ArcherLoaderMod.Source.Layers.PortraitLayers
+namespace ArcherEditorMod.Source.Layers.PortraitLayers
 {
     public class PrismaticQuestGemColorsComponent : Component
     {

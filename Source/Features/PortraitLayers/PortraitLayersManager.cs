@@ -4,7 +4,7 @@ using Monocle;
 using MonoMod.Utils;
 using TowerFall;
 
-namespace ArcherLoaderMod.Source.Features.PortraitLayers
+namespace ArcherEditorMod.Source.Features.PortraitLayers
 {
     internal static class PortraitLayersManager
     {

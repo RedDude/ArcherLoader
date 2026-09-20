@@ -3,7 +3,7 @@ using System.Xml;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace ArcherLoaderMod.Particles
+namespace ArcherEditorMod.Particles
 {
     public class ParticleParser
     {

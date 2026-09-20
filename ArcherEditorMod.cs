@@ -4,16 +4,16 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Xml;
-using ArcherLoaderMod.Hair;
-using ArcherLoaderMod.Layers;
-using ArcherLoaderMod.Mute;
-using ArcherLoaderMod.Particles;
-using ArcherLoaderMod.Patch;
-using ArcherLoaderMod.Rainbow;
-using ArcherLoaderMod.Skin;
-using ArcherLoaderMod.Source.Layers.PortraitLayers;
-using ArcherLoaderMod.Taunt;
-using ArcherLoaderMod.Teams;
+using ArcherEditorMod.Hair;
+using ArcherEditorMod.Layers;
+using ArcherEditorMod.Mute;
+using ArcherEditorMod.Particles;
+using ArcherEditorMod.Patch;
+using ArcherEditorMod.Rainbow;
+using ArcherEditorMod.Skin;
+using ArcherEditorMod.Source.Layers.PortraitLayers;
+using ArcherEditorMod.Taunt;
+using ArcherEditorMod.Teams;
 
 using FortRise;
 using Monocle;
@@ -21,9 +21,9 @@ using MonoMod.ModInterop;
 using MonoMod.Utils;
 using TowerFall;
 
-namespace ArcherLoaderMod
+namespace ArcherEditorMod
 {
-    public class ArcherLoaderMod
+    public class ArcherEditorMod
     {
         private static string _separator;
         // private static string _contentCustomArchersPath;
@@ -49,7 +49,7 @@ namespace ArcherLoaderMod
         private static List<ArcherCustomData> allCustomArchers = new List<ArcherCustomData>();
 
         public static List<ArcherData> originalArchersList = new List<ArcherData>();
-        private static ArcherLoaderSettings settings;
+        private static ArcherEditorSettings settings;
 
         // public static void LoadContent(FortContent fortContent)
         // {
@@ -61,7 +61,7 @@ namespace ArcherLoaderMod
 
         public static void Load()
         {
-            // Console.WriteLine("Custom Archer Loader is here!");
+            // Console.WriteLine("Custom Archer Editor is here!");
             typeof(EightPlayerImport).ModInterop();
 
             _separator = Path.DirectorySeparatorChar.ToString();
@@ -89,9 +89,9 @@ namespace ArcherLoaderMod
             // TeamsPatcher.Load();
             MutePatcher.Load();
             
-            ArcherEditor.Load();
+            ArcherEditorScreen.Load();
 
-            ArcherEditor.HandleQuickStart();
+            ArcherEditorScreen.HandleQuickStart();
         }
         
 
@@ -614,7 +614,7 @@ namespace ArcherLoaderMod
             PrismaticPatcher.Unload();
             TeamsPatcher.Unload();
             MutePatcher.Unload();
-            ArcherEditor.Unload();
+            ArcherEditorScreen.Unload();
         }
 
         public static void OnVariantsRegister(IModuleContext variants)

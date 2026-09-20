@@ -1,10 +1,12 @@
 #nullable enable
 using Microsoft.Xna.Framework;
 
-namespace ArcherLoaderMod.Source.Features.Particles
+namespace ArcherEditorMod.Source.Features.Particles
 {
     public sealed class ParticlesInfo
     {
+        // editor label only, saved as <Name>
+        public string? Name;
         public string Source = null!;
         public int Amount = 1;
         public Vector2 Position;

@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 using Monocle;
 using TowerFall;
 
-namespace ArcherLoaderMod.Hair
+namespace ArcherEditorMod.Hair
 {
   public class HairParser
   {
@@ -17,7 +17,7 @@ namespace ArcherLoaderMod.Hair
 
       if (archerData != null)
       {
-        ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(archerData, out var customArcher);
+        ArcherEditorMod.ArcherCustomDataDict.TryGetValue(archerData, out var customArcher);
         if (customArcher != null)
         {
           hairInfo = customArcher.HairInfo;

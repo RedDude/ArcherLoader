@@ -4,7 +4,7 @@ using System.Xml;
 using Monocle;
 using TowerFall;
 
-namespace ArcherLoaderMod
+namespace ArcherEditorMod
 {
   public class ArcherCustomDataValidator
   {
@@ -82,7 +82,7 @@ namespace ArcherLoaderMod
         return false;
       }
       
-      foreach (var customAtlas in ArcherLoaderMod.customAtlasList)
+      foreach (var customAtlas in ArcherEditorMod.customAtlasList)
       {
         if (!customAtlas.Contains(sprite)) continue;
         error.Add(new ValidatorMessage($" - \"{sprite}\" found in another custom atlas ({customAtlas.XmlPath}), this is valid but not recommended and can cause unexpected errors") { type = ValidatorMessageType.WARN});
@@ -136,11 +136,11 @@ namespace ArcherLoaderMod
         return true;
       }
 
-      foreach (var customAtlas in ArcherLoaderMod.customSpriteDataList)
+      foreach (var customAtlas in ArcherEditorMod.customSpriteDataList)
       {
         if (!customAtlas.Contains(dataId)) continue;
         error.Add(new ValidatorMessage(
-            $" - \"{dataId}\" found in another custom spriteData ({ArcherLoaderMod.customSpriteDataPath[customAtlas]}), this is valid but not recommended and can cause unexpected errors")
+            $" - \"{dataId}\" found in another custom spriteData ({ArcherEditorMod.customSpriteDataPath[customAtlas]}), this is valid but not recommended and can cause unexpected errors")
           {type = ValidatorMessageType.WARN});
         element = customAtlas.GetXML(dataId);
         return true;

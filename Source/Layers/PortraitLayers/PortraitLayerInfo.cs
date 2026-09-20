@@ -1,7 +1,7 @@
-﻿using ArcherLoaderMod.Layers;
+﻿using ArcherEditorMod.Layers;
 using Microsoft.Xna.Framework;
 
-namespace ArcherLoaderMod.Source.Layers.PortraitLayers
+namespace ArcherEditorMod.Source.Layers.PortraitLayers
 {
     public class PortraitLayerInfo
     {

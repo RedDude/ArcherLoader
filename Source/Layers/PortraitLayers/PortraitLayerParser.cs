@@ -3,7 +3,7 @@ using System.Xml;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace ArcherLoaderMod.Source.Layers.PortraitLayers
+namespace ArcherEditorMod.Source.Layers.PortraitLayers
 {
     public class PortraitLayerParser
     {

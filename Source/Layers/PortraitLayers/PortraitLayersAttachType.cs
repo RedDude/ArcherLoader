@@ -1,4 +1,4 @@
-﻿namespace ArcherLoaderMod.Source.Layers.PortraitLayers
+﻿namespace ArcherEditorMod.Source.Layers.PortraitLayers
 {
     public enum PortraitLayersAttachType
     {

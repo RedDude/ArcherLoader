@@ -1,4 +1,4 @@
-namespace ArcherLoaderMod.Source.Features.Layers
+namespace ArcherEditorMod.Source.Features.Layers
 {
     public enum LayerAttachType
     {

@@ -1,4 +1,4 @@
-﻿namespace ArcherLoaderMod
+﻿namespace ArcherEditorMod
 {
     public class ValidatorMessage
     {

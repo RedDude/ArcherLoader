@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Xml;
-using ArcherLoaderMod.Taunt;
+using ArcherEditorMod.Taunt;
 using FortRise;
 using HarmonyLib;
 using Microsoft.Extensions.Logging;
@@ -12,7 +12,7 @@ using Monocle;
 using MonoMod.Utils;
 using TowerFall;
 
-namespace ArcherLoaderMod.Source.Features.Taunt
+namespace ArcherEditorMod.Source.Features.Taunt
 {
     // <Taunt>
     //   <Id>myArcherTaunt</Id>                  required: a spriteData id the mod registers itself, with
@@ -126,6 +126,112 @@ namespace ArcherLoaderMod.Source.Features.Taunt
             info.NoHatTextureRed = FindTexture(decoration, element, "NoHatTextureRed");
             info.CrownTextureRed = FindTexture(decoration, element, "CrownTextureRed");
 
+            info.IdText = id;
+            foreach (var tag in TextureTags)
+            {
+                var textureName = element.ChildText(tag, "");
+                if (!string.IsNullOrWhiteSpace(textureName))
+                    info.TextureNames[tag] = textureName.Trim();
+            }
+            info.SfxName = element.ChildText("SFX", null);
+            info.SfxLoopedName = element.ChildText("SFXLooped", null);
+            info.SfxVariedName = element.ChildText("SFXVaried", null);
+
+            ApplyFlags(info, spriteEntry);
+
+            if (!info.HasTaunt && !info.HasTauntNoHat && !info.HasTauntCrown &&
+                !info.HasTauntBlue && !info.HasTauntNoHatBlue && !info.HasTauntCrownBlue &&
+                !info.HasTauntRed && !info.HasTauntNoHatRed && !info.HasTauntCrownRed)
+                throw new System.Exception("<Taunt> needs at least one Texture/NoHatTexture/CrownTexture (with a matching animation on the Id sprite)");
+
+            info.Sound = LoadSound(decoration, element);
+
+            tauntByArcher[decoration.ArcherData] = info;
+            return true;
+        }
+
+        // ---- Editor access ----
+
+        // Element names of the nine texture slots: normal / no hat / crown, each for neutral, blue and red teams.
+        public static readonly string[] TextureTags =
+        {
+            "Texture", "NoHatTexture", "CrownTexture",
+            "TextureBlue", "NoHatTextureBlue", "CrownTextureBlue",
+            "TextureRed", "NoHatTextureRed", "CrownTextureRed"
+        };
+
+        /// <summary>The editor is open: the taunt works for everyone without the Taunt variant switched on.</summary>
+        public static bool ForceEnabled;
+
+        public static bool TryGet(ArcherData archer, out TauntInfo info) => tauntByArcher.TryGetValue(archer, out info!);
+
+        public static void Set(ArcherData archer, TauntInfo info) => tauntByArcher[archer] = info;
+
+        public static void Remove(ArcherData archer) => tauntByArcher.Remove(archer);
+
+        public static Subtexture? GetTexture(TauntInfo info, string tag) => tag switch
+        {
+            "Texture" => info.TauntTexture,
+            "NoHatTexture" => info.NoHatTexture,
+            "CrownTexture" => info.CrownTexture,
+            "TextureBlue" => info.TauntTextureBlue,
+            "NoHatTextureBlue" => info.NoHatTextureBlue,
+            "CrownTextureBlue" => info.CrownTextureBlue,
+            "TextureRed" => info.TauntTextureRed,
+            "NoHatTextureRed" => info.NoHatTextureRed,
+            "CrownTextureRed" => info.CrownTextureRed,
+            _ => null
+        };
+
+        public static void SetTexture(TauntInfo info, string tag, Subtexture? texture)
+        {
+            switch (tag)
+            {
+                case "Texture": info.TauntTexture = texture; break;
+                case "NoHatTexture": info.NoHatTexture = texture; break;
+                case "CrownTexture": info.CrownTexture = texture; break;
+                case "TextureBlue": info.TauntTextureBlue = texture; break;
+                case "NoHatTextureBlue": info.NoHatTextureBlue = texture; break;
+                case "CrownTextureBlue": info.CrownTextureBlue = texture; break;
+                case "TextureRed": info.TauntTextureRed = texture; break;
+                case "NoHatTextureRed": info.NoHatTextureRed = texture; break;
+                case "CrownTextureRed": info.CrownTextureRed = texture; break;
+            }
+        }
+
+        /// <summary>Spritedata ids that have at least one taunt animation: what an &lt;Id&gt; can point at.</summary>
+        public static List<string> SpriteIdsWithTaunt()
+        {
+            var result = new List<string>();
+            foreach (var (id, xml) in TFGame.SpriteData.GetSprites())
+            {
+                var animations = xml["Animations"];
+                if (animations == null) continue;
+
+                foreach (XmlElement anim in animations.GetElementsByTagName("Anim"))
+                {
+                    if (anim.GetAttribute("id") is "taunt" or "tauntNoHat" or "tauntCrown")
+                    {
+                        result.Add(id);
+                        break;
+                    }
+                }
+            }
+            result.Sort();
+            return result;
+        }
+
+        /// <summary>Recomputes which taunt variants exist after the id or a texture changed. Throws if the sprite is gone.</summary>
+        public static void Rebuild(TauntInfo info)
+        {
+            if (string.IsNullOrEmpty(info.SpriteId) || !TFGame.SpriteData.Contains(info.SpriteId))
+                throw new System.Exception($"'{info.SpriteId}' is not a spriteData entry");
+
+            ApplyFlags(info, TFGame.SpriteData.GetSpriteString(info.SpriteId));
+        }
+
+        private static void ApplyFlags(TauntInfo info, Sprite<string> spriteEntry)
+        {
             info.HasTaunt = spriteEntry.ContainsAnimation("taunt") && info.TauntTexture != null;
             info.HasTauntNoHat = spriteEntry.ContainsAnimation("tauntNoHat") && info.NoHatTexture != null;
             info.HasTauntCrown = spriteEntry.ContainsAnimation("tauntCrown") && info.CrownTexture != null;
@@ -137,16 +243,6 @@ namespace ArcherLoaderMod.Source.Features.Taunt
             info.HasTauntRed = spriteEntry.ContainsAnimation("taunt") && info.TauntTextureRed != null;
             info.HasTauntNoHatRed = spriteEntry.ContainsAnimation("tauntNoHat") && info.NoHatTextureRed != null;
             info.HasTauntCrownRed = spriteEntry.ContainsAnimation("tauntCrown") && info.CrownTextureRed != null;
-
-            if (!info.HasTaunt && !info.HasTauntNoHat && !info.HasTauntCrown &&
-                !info.HasTauntBlue && !info.HasTauntNoHatBlue && !info.HasTauntCrownBlue &&
-                !info.HasTauntRed && !info.HasTauntNoHatRed && !info.HasTauntCrownRed)
-                throw new System.Exception("<Taunt> needs at least one Texture/NoHatTexture/CrownTexture (with a matching animation on the Id sprite)");
-
-            info.Sound = LoadSound(decoration, element);
-
-            tauntByArcher[decoration.ArcherData] = info;
-            return true;
         }
 
         private static Subtexture? FindTexture(ArcherDecoration decoration, XmlElement element, string childName)
@@ -181,13 +277,24 @@ namespace ArcherLoaderMod.Source.Features.Taunt
                 return null;
             }
 
+            // Sound names are relative to the xml declaring them first, then to the mod root and its
+            // Content / Content/SFX folders.
+            var xmlDir = Path.GetDirectoryName(decoration.Resource.Path.TrimStart('/', '\\')) ?? "";
+            var bases = new[]
+            {
+                Path.Combine(folder, xmlDir),
+                folder,
+                Path.Combine(folder, "Content"),
+                Path.Combine(folder, "Content", "SFX"),
+                Path.Combine(folder, "SFX"),
+            };
+
             var originalPrefix = Audio.LOAD_PREFIX;
-            Audio.LOAD_PREFIX = folder + Path.DirectorySeparatorChar;
             try
             {
                 if (sfx != null)
                 {
-                    if (Exists(sfx))
+                    if (SelectBase(bases, sfx, false))
                     {
                         var looped = LoadLooped(sfx);
                         if (looped != null)
@@ -198,22 +305,22 @@ namespace ArcherLoaderMod.Source.Features.Taunt
                     }
                     else
                     {
-                        logger?.LogWarning("[{modName}] Taunt <SFX>{sfx}</SFX> not found at '{path}'", modName, sfx, $"{Audio.LOAD_PREFIX}{sfx}.wav");
+                        logger?.LogWarning("[{modName}] Taunt <SFX>{sfx}</SFX> not found (looked for {name}.wav in: {bases})", modName, sfx, sfx, string.Join("; ", bases));
                     }
                 }
 
                 if (sfxLooped != null)
                 {
-                    if (Exists(sfxLooped))
+                    if (SelectBase(bases, sfxLooped, false))
                         return LoadLooped(sfxLooped);
-                    logger?.LogWarning("[{modName}] Taunt <SFXLooped>{sfxLooped}</SFXLooped> not found at '{path}'", modName, sfxLooped, $"{Audio.LOAD_PREFIX}{sfxLooped}.wav");
+                    logger?.LogWarning("[{modName}] Taunt <SFXLooped>{sfxLooped}</SFXLooped> not found (looked for {name}.wav in: {bases})", modName, sfxLooped, sfxLooped, string.Join("; ", bases));
                 }
 
                 if (sfxVaried != null)
                 {
-                    if (Exists(sfxVaried))
+                    if (SelectBase(bases, sfxVaried, true))
                         return LoadVaried(sfxVaried);
-                    logger?.LogWarning("[{modName}] Taunt <SFXVaried>{sfxVaried}</SFXVaried> not found at '{path}'", modName, sfxVaried, $"{Audio.LOAD_PREFIX}{sfxVaried}_01.wav");
+                    logger?.LogWarning("[{modName}] Taunt <SFXVaried>{sfxVaried}</SFXVaried> not found (looked for {name}_01.wav in: {bases})", modName, sfxVaried, sfxVaried, string.Join("; ", bases));
                 }
 
                 return null;
@@ -224,10 +331,29 @@ namespace ArcherLoaderMod.Source.Features.Taunt
             }
         }
 
+        // Points Audio.LOAD_PREFIX at the first base directory containing the sound; false if none does.
+        private static bool SelectBase(string[] bases, string name, bool varied)
+        {
+            foreach (var dir in bases)
+            {
+                var prefix = dir.EndsWith(Path.DirectorySeparatorChar.ToString()) ? dir : dir + Path.DirectorySeparatorChar;
+                if (File.Exists(prefix + name + (varied ? "_01" : "") + ".wav"))
+                {
+                    Audio.LOAD_PREFIX = prefix;
+                    return true;
+                }
+            }
+            return false;
+        }
+
         private static void Player_Update_Postfix(Player __instance)
         {
-            var matchVariants = __instance.Level.Session.MatchSettings.Variants;
-            var variantEnabled = variant != null && matchVariants.GetCustomVariant(variant.Name)?[__instance.PlayerIndex] == true;
+            var variantEnabled = ForceEnabled;
+            if (!variantEnabled)
+            {
+                var matchVariants = __instance.Level.Session.MatchSettings.Variants;
+                variantEnabled = variant != null && matchVariants.GetCustomVariant(variant.Name)?[__instance.PlayerIndex] == true;
+            }
 
             if (!variantEnabled || __instance.State == Player.PlayerStates.Frozen)
                 return;
@@ -253,7 +379,7 @@ namespace ArcherLoaderMod.Source.Features.Taunt
 
         private static void SelfKill(Player self, PlayerInput playerInput, InputState input)
         {
-            if (!FortEntrance.Instance.Settings.SelfKill)
+            if (!FortEntrance.Instance.Settings.SelfKill || self is MockPlayer)
                 return;
 
             var killButton = playerInput switch
@@ -269,7 +395,7 @@ namespace ArcherLoaderMod.Source.Features.Taunt
 
         private static void LoseHat(Player self, PlayerInput playerInput, InputState input)
         {
-            if (!FortEntrance.Instance.Settings.DropHat)
+            if (!FortEntrance.Instance.Settings.DropHat || self is MockPlayer)
                 return;
 
             var dropButton = playerInput switch

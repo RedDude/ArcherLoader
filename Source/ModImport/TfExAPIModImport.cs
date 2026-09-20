@@ -2,7 +2,7 @@
 using FortRise;
 using MonoMod.ModInterop;
 
-namespace ArcherLoaderMod.Source.ModImport
+namespace ArcherEditorMod.Source.ModImport
 {
     [ModImportName("TF.EX.API")]
     public class TfExAPIModImport

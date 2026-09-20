@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "sourcegraph-towerfall": {
+      "command": "sourcegraph-mcp",
+      "args": ["serve", "--solution", "C:/Users/user/Documents/towerfall-source/Towerfall.sln"]
+    },
+    "sourcegraph-fortrise": {
+      "command": "sourcegraph-mcp",
+      "args": ["serve", "--solution", "E:/Projects/FortRise/FortRise.sln"]
+    }
+  }
+}

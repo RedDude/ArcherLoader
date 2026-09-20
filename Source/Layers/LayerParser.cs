@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Xml;
-using ArcherLoaderMod.Layers;
+using ArcherEditorMod.Layers;
 using Microsoft.Xna.Framework;
 using Monocle;
 
-namespace ArcherLoaderMod.Layer
+namespace ArcherEditorMod.Layer
 {
     public class LayerParser
     {

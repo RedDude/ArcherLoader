@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using ArcherLoaderMod.Rainbow;
+using ArcherEditorMod.Rainbow;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Monocle;
 using TowerFall;
 
-namespace ArcherLoaderMod.Hair
+namespace ArcherEditorMod.Hair
 {
     public class HairPatcher
     {
@@ -25,7 +25,7 @@ namespace ArcherLoaderMod.Hair
 
         public static void Load()
         {
-            harmony = new Harmony("mod.archerloader.hair");
+            harmony = new Harmony("mod.archereditor.hair");
             
             // Patch methods
             harmony.Patch(
@@ -62,7 +62,7 @@ namespace ArcherLoaderMod.Hair
         {
             if (__instance.Hair == null) return;
             
-            if (!ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(__instance.ArcherData, out var archerCustomData)) 
+            if (!ArcherEditorMod.ArcherCustomDataDict.TryGetValue(__instance.ArcherData, out var archerCustomData)) 
                 return;
                 
             __instance.Hair.Visible = archerCustomData.HairInfo?.VisibleWithHat ?? true;
@@ -78,7 +78,7 @@ namespace ArcherLoaderMod.Hair
                 hairInfo = corpseData.HairInfo;
             }
             else if (follow is Player player && 
-                     ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(player.ArcherData, out var playerData))
+                     ArcherEditorMod.ArcherCustomDataDict.TryGetValue(player.ArcherData, out var playerData))
             {
                 Hairs[player.PlayerIndex] = playerData;
                 hairInfo = playerData.HairInfo;

@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 using Monocle;
 using TowerFall;
 
-namespace ArcherLoaderMod.Patch
+namespace ArcherEditorMod.Patch
 {
     public class ContentLoaderPatcher
     {
@@ -15,7 +15,7 @@ namespace ArcherLoaderMod.Patch
         
         public static void Load()
         {
-            harmony = new Harmony("mod.archerloader.content");
+            harmony = new Harmony("mod.archereditor.content");
             
             // Patch methods
             harmony.Patch(
@@ -57,14 +57,14 @@ namespace ArcherLoaderMod.Patch
         [HarmonyPostfix]
         private static void ArcherData_Initialize_Postfix()
         {
-            ArcherLoaderMod.LoadArcherContents();
-            ArcherLoaderMod.Start();
+            ArcherEditorMod.LoadArcherContents();
+            ArcherEditorMod.Start();
         }
         
         [HarmonyPostfix]
         private static void Sounds_Load_Postfix()
         {
-            ArcherLoaderMod.FixSFX();
+            ArcherEditorMod.FixSFX();
         }
         
         [HarmonyPrefix]
@@ -100,19 +100,19 @@ namespace ArcherLoaderMod.Patch
         private static T FindInCustomSpriteData<T>(string id, Func<Monocle.SpriteData, T> getter)
         {
             // Check cached sprite data first
-            foreach (var cachedSpriteData in ArcherLoaderMod.cachedCustomSpriteDataList)
+            foreach (var cachedSpriteData in ArcherEditorMod.cachedCustomSpriteDataList)
             {
                 if (cachedSpriteData.Contains(id))
                     return getter(cachedSpriteData);
             }
 
             // Check all custom sprite data
-            foreach (var customSpriteData in ArcherLoaderMod.customSpriteDataList)
+            foreach (var customSpriteData in ArcherEditorMod.customSpriteDataList)
             {
                 if (!customSpriteData.Contains(id)) continue;
                 
-                if (!ArcherLoaderMod.cachedCustomSpriteDataList.Contains(customSpriteData))
-                    ArcherLoaderMod.cachedCustomSpriteDataList.Add(customSpriteData);
+                if (!ArcherEditorMod.cachedCustomSpriteDataList.Contains(customSpriteData))
+                    ArcherEditorMod.cachedCustomSpriteDataList.Add(customSpriteData);
                     
                 return getter(customSpriteData);
             }
@@ -138,7 +138,7 @@ namespace ArcherLoaderMod.Patch
             }
 
             // Check cached custom atlases
-            foreach (var atlas in ArcherLoaderMod.cachedCustomAtlasList)
+            foreach (var atlas in ArcherEditorMod.cachedCustomAtlasList)
             {
                 if (atlas.Contains(name))
                 {
@@ -148,12 +148,12 @@ namespace ArcherLoaderMod.Patch
             }
 
             // Check all custom atlases
-            foreach (var atlas in ArcherLoaderMod.customAtlasList)
+            foreach (var atlas in ArcherEditorMod.customAtlasList)
             {
                 if (!atlas.Contains(name)) continue;
                 
-                if (!ArcherLoaderMod.cachedCustomAtlasList.Contains(atlas))
-                    ArcherLoaderMod.cachedCustomAtlasList.Add(atlas);
+                if (!ArcherEditorMod.cachedCustomAtlasList.Contains(atlas))
+                    ArcherEditorMod.cachedCustomAtlasList.Add(atlas);
                     
                 __result = atlas[name];
                 return false;

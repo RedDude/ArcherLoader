@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace ArcherLoaderMod.Layers
+namespace ArcherEditorMod.Layers
 {
     public class LayerInfo
     {

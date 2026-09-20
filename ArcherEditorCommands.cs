@@ -1,16 +1,16 @@
 ﻿using System.Reflection;
-using ArcherLoaderMod.Hair;
+using ArcherEditorMod.Hair;
 using FortRise;
 using Monocle;
 using MonoMod.Utils;
 using TowerFall;
-using HairInfo = ArcherLoaderMod.Hair.HairInfo;
+using HairInfo = ArcherEditorMod.Hair.HairInfo;
 
-namespace ArcherLoaderMod
+namespace ArcherEditorMod
 {
-    public class ArcherLoaderCommands
+    public class ArcherEditorCommands
     {
-        public ArcherLoaderCommands(IModuleContext context)
+        public ArcherEditorCommands(IModuleContext context)
         {
             context.Registry.Commands.RegisterCommands("SetHat", new CommandConfiguration()
             {
@@ -163,7 +163,7 @@ namespace ArcherLoaderMod
         if (Engine.Instance.Scene is not Level level) return null;
         var player = (Player) level.Players[index];
 
-        var exist = ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(player.ArcherData, out var archerCustomData);
+        var exist = ArcherEditorMod.ArcherCustomDataDict.TryGetValue(player.ArcherData, out var archerCustomData);
         if (!exist) return null;
         HairPatcher.Hairs[player.PlayerIndex] = archerCustomData;
         return archerCustomData.HairInfo;
@@ -183,11 +183,11 @@ namespace ArcherLoaderMod
         if (Engine.Instance.Scene is not Level level) return;
         var player = (Player) level.Players[index];
 
-        var exist = ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(player.ArcherData, out var archerCustomData);
+        var exist = ArcherEditorMod.ArcherCustomDataDict.TryGetValue(player.ArcherData, out var archerCustomData);
         if (!exist) return;
 
-        ArcherLoaderMod.LoadArcherContents();
-        ArcherLoaderMod.Start();
+        ArcherEditorMod.LoadArcherContents();
+        ArcherEditorMod.Start();
 
         
         // foreach (var customData in Mod.LoadContentAtPath(archerCustomData.FolderPath, ContentAccess.Content))

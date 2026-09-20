@@ -1,12 +1,12 @@
 #nullable enable
-using ArcherLoaderMod.Rainbow;
+using ArcherEditorMod.Rainbow;
 using Monocle;
 using MonoMod.Utils;
 using TowerFall;
 
-namespace ArcherLoaderMod.Source.Features.Layers
+namespace ArcherEditorMod.Source.Features.Layers
 {
-    // Same rendering logic as the old ArcherLoaderMod.Layers.LayerSpriteComponent, driven by ArcherData
+    // Same rendering logic as the old ArcherEditorMod.Layers.LayerSpriteComponent, driven by ArcherData
     // directly (ColorA/ColorB/Corpse already live there) instead of the old ArcherCustomData wrapper.
     public sealed class LayerSpriteComponent : Component
     {

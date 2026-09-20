@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace ArcherLoaderMod.Hair
+namespace ArcherEditorMod.Hair
 {
     public class HairInfo
     {

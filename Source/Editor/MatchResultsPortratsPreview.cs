@@ -1,5 +1,5 @@
-using ArcherLoaderMod.Layers;
-using ArcherLoaderMod.Source.Layers.PortraitLayers;
+using ArcherEditorMod.Layers;
+using ArcherEditorMod.Source.Layers.PortraitLayers;
 using Microsoft.Xna.Framework;
 using Monocle;
 using TowerFall;

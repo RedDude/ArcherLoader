@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using ArcherLoaderMod.Rainbow;
-using ArcherLoaderMod.Skin;
+using ArcherEditorMod.Rainbow;
+using ArcherEditorMod.Skin;
 using HarmonyLib;
 using Microsoft.Xna.Framework;
 using Monocle;
 using MonoMod.Utils;
 using TowerFall;
 
-namespace ArcherLoaderMod.Source.Layers.PortraitLayers
+namespace ArcherEditorMod.Source.Layers.PortraitLayers
 {
     public class PortraitLayerPatch
     {
@@ -20,7 +20,7 @@ namespace ArcherLoaderMod.Source.Layers.PortraitLayers
             if (FortEntrance.Instance.Settings.DisableLayers)
                 return;
 
-            harmony = new Harmony("mod.archerloader.portraitlayers");
+            harmony = new Harmony("mod.archereditor.portraitlayers");
             
             // Patch methods
             harmony.Patch(

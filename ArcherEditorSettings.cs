@@ -1,31 +1,43 @@
-using FortRise;
+﻿using FortRise;
 
-namespace ArcherLoaderMod
+namespace ArcherEditorMod
 {
-    public class ArcherLoaderSettings : ModuleSettings
+    public class ArcherEditorSettings : ModuleSettings
     {
-        public bool TauntAlwaysOn;
-        public bool QuickStart;
-        public int Player1CharacterIndex;
-        public int Player2CharacterIndex = -1;
-        public int Player3CharacterIndex;
-        public bool TauntTooExplode;
-        public bool DropHat = true;
-        public bool SelfKill = false;
-        public bool HideArrowsWhileTaunt = true;
-        public bool DisableParticles = false;
-        public bool DisableHairs = false;
-        public bool DisableLayers = false;
-        public bool DisableTeamColors = true;
-        public bool DisableCustomGhosts = false;
-        public bool DisableCustomWings = false;
-        public bool Validate = true;
+        public bool TauntAlwaysOn { get; set; }
+        public bool QuickStart { get; set; }
+        public int Player1CharacterIndex { get; set; }
+        public int Player2CharacterIndex { get; set; } = -1;
+        public int Player3CharacterIndex { get; set; }
+        // Archer editor selection (saved from the in-game editor windows)
+        public int EditorPlayerIndex { get; set; }
+        public int EditorArcherIndex { get; set; } = -1;
+        public int EditorArcherType { get; set; }
+        public int PickerViewMode { get; set; }
+
+        // mock sections: which one is shown and, per section, the versus tower / level it is spawned on
+        public int MockSectionIndex { get; set; }
+        public int[] MockSectionTowers { get; set; } = new int[8];
+        public int[] MockSectionLevels { get; set; } = new int[8];
+        public bool TauntTooExplode { get; set; }
+        public bool DropHat { get; set; } = true;
+        public bool SelfKill { get; set; } = false;
+        public bool HideArrowsWhileTaunt { get; set; } = true;
+        public bool DisableParticles { get; set; } = false;
+        public bool DisableHairs { get; set; } = false;
+        public bool DisableLayers { get; set; } = false;
+        public bool DisableTeamColors { get; set; } = true;
+        public bool DisableCustomGhosts { get; set; } = false;
+        public bool DisableCustomWings { get; set; } = false;
+        public bool Validate { get; set; } = true;
 
         // FortRise side (robust, fixes every mod with this pattern): change MainMenu.cs:155 from ToStartSelected = list[1]; to ToStartSelected = list.FirstOrDefault(b => b is not OptionsButtonHeader); so initial focus never lands on a header regardless of how a mod orders its items./
         public override void Create(ISettingsCreate settings)
         {
            
-            settings.CreateButton("OPEN EDITOR", () => ArcherEditor.OpenEditor() );
+            settings.CreateButton("OPEN EDITOR", () => ArcherEditorScreen.OpenEditor() );
+            settings.CreateButton("OPEN ATLAS VIEWER", () => ArcherEditorScreen.OpenAtlasViewer());
+            settings.CreateButton("EDIT UNLOADED ARCHER (EXPERIMENTAL)", () => ArcherEditorScreen.OpenUnloadedEditor());
             settings.CreateHeader("QUICK START");
             settings.CreateOnOff("QUICK START", QuickStart, v => QuickStart = v,
                 "SKIP THE MAIN MENU AND JUMP STRAIGHT TO THE EDITOR.");

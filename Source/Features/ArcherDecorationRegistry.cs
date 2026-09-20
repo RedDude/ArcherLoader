@@ -4,16 +4,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Xml;
-using ArcherLoaderMod.Source.ModImport;
+using ArcherEditorMod.Source.ModImport;
 using FortRise;
 using Microsoft.Extensions.Logging;
 using Microsoft.Xna.Framework.Graphics;
 using Monocle;
 using TowerFall;
 
-namespace ArcherLoaderMod.Source.Features
+namespace ArcherEditorMod.Source.Features
 {
-    // Reads archerCustomData.xml from mods that (optionally) depend on ArcherLoader and, once FortRise has
+    // Reads archerCustomData.xml from mods that (optionally) depend on ArcherEditor and, once FortRise has
     // registered every archer, hands each entry to the standalone features.
     //
     // <Archers>
@@ -68,10 +68,10 @@ namespace ArcherLoaderMod.Source.Features
             };
         }
 
-        // ArcherLoader's own OnBeforeModInstantiation has already fired by the time FortEntrance's
+        // ArcherEditor's own OnBeforeModInstantiation has already fired by the time FortEntrance's
         // constructor runs Load() and subscribes to it, so it can never see its own bundled content
         // through that event. FortEntrance calls this directly instead, right after Load(), to register
-        // ArcherLoader's built-in atlas (Content/CustomArchers/CustomGhostsForBaseArchers/atlas.xml) and
+        // ArcherEditor's built-in atlas (Content/CustomArchers/CustomGhostsForBaseArchers/atlas.xml) and
         // read its own ArcherCustomData/archerCustomData.xml the same way any dependent mod's would be.
         public static void LoadSelfContent(IModContent content, IModRegistry registry)
         {
@@ -133,7 +133,7 @@ namespace ArcherLoaderMod.Source.Features
         private static void OnBeforeModInstantiation(object? sender, BeforeModInstantiationEventArgs e)
         {
             var content = e.ModContent;
-            if (!DependsOnArcherLoader(content.Metadata))
+            if (!DependsOnArcherEditor(content.Metadata))
                 return;
 
             try
@@ -151,7 +151,7 @@ namespace ArcherLoaderMod.Source.Features
         }
 
         // FortRise's Interop.IsModDepends only looks at required dependencies, optional ones count too here.
-        private static bool DependsOnArcherLoader(ModuleMetadata metadata)
+        private static bool DependsOnArcherEditor(ModuleMetadata metadata)
         {
             var name = FortEntrance.Instance.Meta.Name;
             foreach (var dependency in metadata.Dependencies ?? [])
@@ -169,13 +169,17 @@ namespace ArcherLoaderMod.Source.Features
             return false;
         }
 
-        private static IEnumerable<string> GetPaths(IModContent content)
+        private static IEnumerable<string> GetPaths(IModContent content) =>
+            GetLoaderPaths(content, LoaderId, DefaultPath);
+
+        // Paths a mod declared for one of FortRise.Content's loaders (content.json), or the default.
+        private static IEnumerable<string> GetLoaderPaths(IModContent content, string loaderId, string defaultPath)
         {
             // Only consult FortRise.Content's own loader configuration API when the mod actually ships a
             // content.json: that API only recognizes FortRise.Content's own built-in loader names and
             // logs an error for any id it doesn't own, which "archerCustomData" never will be.
             if (!content.Root.ExistsRelativePath("content.json"))
-                return [DefaultPath];
+                return [defaultPath];
 
             if (!contentApiResolved)
             {
@@ -186,19 +190,137 @@ namespace ArcherLoaderMod.Source.Features
                 }
                 catch (Exception ex)
                 {
-                    logger.LogWarning(ex, "Could not get {mod} API, using the default {file} path", ContentModName, LoaderId);
+                    logger.LogWarning(ex, "Could not get {mod} API, using the default {file} path", ContentModName, loaderId);
                 }
             }
 
-            // content.json may declare a custom "archerCustomData" loader to move or split the file.
-            var loader = contentApi?.LoaderApi.GetContentConfiguration(content.Metadata)?.GetLoader(LoaderId);
+            // content.json may declare a custom loader to move or split the file.
+            var loader = contentApi?.LoaderApi.GetContentConfiguration(content.Metadata)?.GetLoader(loaderId);
             if (loader == null)
-                return [DefaultPath];
+                return [defaultPath];
 
             if (!loader.Enabled || loader.Path == null)
                 return [];
 
             return loader.Path;
+        }
+
+        public sealed record ArcherSource(
+            string EntryName, string ModName, string LocalId, ArcherEntryType Type, string? BaseName,
+            IModContent? Content, string? ModDirectory, string? ArcherDataFile);
+
+        // Backtracks an ArcherData to the mod that registered it and, for mods on disk, to the archerData.xml
+        // holding its element. Null for archers FortRise did not register (the base game's).
+        public static ArcherSource? FindArcherSource(ArcherData data)
+        {
+            foreach (var entry in context.Registry.Archers.RegisteredArchers.Values)
+            {
+                if (entry.ArcherData != data)
+                    continue;
+
+                var slash = entry.Name.IndexOf('/');
+                var modName = slash > 0 ? entry.Name[..slash] : "";
+                var localId = slash > 0 ? entry.Name[(slash + 1)..] : entry.Name;
+                var mod = modName.Length > 0 ? context.Interop.GetMod(modName) : null;
+                var directory = mod != null && !string.IsNullOrEmpty(mod.Metadata.PathDirectory) ? mod.Metadata.PathDirectory : null;
+
+                string? file = null;
+                if (mod != null && directory != null)
+                {
+                    foreach (var path in GetLoaderPaths(mod.Content, "archerData", "Content/Atlas/GameData/archerData.xml"))
+                    {
+                        if (!mod.Content.Root.TryGetRelativePath(path, out var resource))
+                            continue;
+
+                        var archers = resource.Xml?["Archers"];
+                        if (archers == null)
+                            continue;
+
+                        foreach (XmlNode node in archers)
+                        {
+                            if (node is XmlElement element && element.GetAttribute("id") == localId)
+                            {
+                                file = Path.Combine(directory, path.TrimStart('/', '\\'));
+                                break;
+                            }
+                        }
+
+                        if (file != null)
+                            break;
+                    }
+                }
+
+                var baseName = entry.Configuration.AltFor?.Name ?? entry.Configuration.SecretFor?.Name;
+                return new ArcherSource(entry.Name, modName, localId, entry.Type, baseName, mod?.Content, directory, file);
+            }
+
+            return null;
+        }
+
+        // Paths of the archerCustomData.xml files a mod reads (content.json may move them).
+        public static IReadOnlyList<string> GetCustomDataPaths(IModContent content) => new List<string>(GetPaths(content));
+
+        // The id an archerCustomData.xml entry uses for this archer: "local" is the short id inside the archer's own
+        // mod, otherwise the full "Mod/id" name; base game archers use their name ("Green").
+        public static string? DecorationId(ArcherData data, ArcherSource? source, bool local)
+        {
+            if (source != null)
+                return local ? source.LocalId : source.EntryName;
+
+            var group = Array.IndexOf(ArcherData.AltArchers, data) >= 0 ? ArcherData.AltArchers
+                : Array.IndexOf(ArcherData.SecretArchers, data) >= 0 ? ArcherData.SecretArchers
+                : ArcherData.Archers;
+            var index = Array.IndexOf(group, data);
+            return index >= 0 && index < BaseArcherNames.Length ? BaseArcherNames[index] : null;
+        }
+
+        public static ArcherData.ArcherTypes TypeOf(ArcherData data) =>
+            Array.IndexOf(ArcherData.AltArchers, data) >= 0 ? ArcherData.ArcherTypes.Alt
+            : Array.IndexOf(ArcherData.SecretArchers, data) >= 0 ? ArcherData.ArcherTypes.Secret
+            : ArcherData.ArcherTypes.Normal;
+
+        // The name FortRise expects in an Alt="" / Secret="" attribute for a given archer.
+        public static string? ArcherReferenceName(ArcherData data)
+        {
+            foreach (var entry in context.Registry.Archers.RegisteredArchers.Values)
+            {
+                if (entry.ArcherData == data)
+                    return entry.Name;
+            }
+
+            var index = Array.IndexOf(ArcherData.Archers, data);
+            return index >= 0 && index < BaseArcherNames.Length ? BaseArcherNames[index] : null;
+        }
+
+        // Backtracks a registered sprite id ("ModName/PlayerBody") to the spriteData.xml on disk that defined it.
+        // Null for base game sprites and for mods that are zipped (nothing editable on disk).
+        public static string? FindSpriteDataFile(string spriteId, out string localId)
+        {
+            localId = spriteId;
+            var slash = spriteId.IndexOf('/');
+            if (slash <= 0)
+                return null;
+
+            var modName = spriteId[..slash];
+            localId = spriteId[(slash + 1)..];
+
+            var mod = context.Interop.GetMod(modName);
+            if (mod == null || string.IsNullOrEmpty(mod.Metadata.PathDirectory))
+                return null;
+
+            foreach (var path in GetLoaderPaths(mod.Content, "spriteData", "Content/Atlas/SpriteData/spriteData.xml"))
+            {
+                if (!mod.Content.Root.TryGetRelativePath(path, out var resource))
+                    continue;
+
+                foreach (XmlNode node in resource.Xml?["SpriteData"] ?? (XmlNode)new XmlDocument())
+                {
+                    if (node is XmlElement element && element.GetAttribute("id") == localId)
+                        return Path.Combine(mod.Metadata.PathDirectory, path.TrimStart('/', '\\'));
+                }
+            }
+
+            return null;
         }
 
         private static void ReadFile(IModContent content, IResourceInfo resource, IModRegistry? registry)
@@ -253,8 +375,24 @@ namespace ArcherLoaderMod.Source.Features
             }
         }
 
+        // one line per archer a mod registered (the base game's are skipped): "NAME SUBNAME (Alt)  [Mod/id]"
+        private static void LogLoadedArchers()
+        {
+            foreach (var entry in context.Registry.Archers.RegisteredArchers.Values)
+            {
+                if (!entry.Name.Contains('/'))
+                    continue;
+
+                var archer = entry.ArcherData;
+                var name = archer == null ? "?" : $"{archer.Name0} {archer.Name1}".Trim();
+                logger.LogInformation("Archer loaded: {name} ({type})  [{id}]", name, entry.Type, entry.Name);
+            }
+        }
+
         private static void ApplyAll()
         {
+            LogLoadedArchers();
+
             foreach (var entry in pending)
             {
                 var modName = entry.ModContent.Metadata.Name;

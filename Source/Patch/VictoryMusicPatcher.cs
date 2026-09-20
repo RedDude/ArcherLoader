@@ -2,7 +2,7 @@
 using Monocle;
 using TowerFall;
 
-namespace ArcherLoaderMod.Patch
+namespace ArcherEditorMod.Patch
 {
     public class VictoryMusicPatcher
     {
@@ -10,7 +10,7 @@ namespace ArcherLoaderMod.Patch
 
         public static void Load()
         {
-            harmony = new Harmony("mod.archerloader.victorymusic");
+            harmony = new Harmony("mod.archereditor.victorymusic");
             harmony.Patch(
                 typeof(ArcherData).GetMethod("PlayVictoryMusic"),
                 prefix: new HarmonyMethod(typeof(VictoryMusicPatcher), nameof(PlayVictoryMusic_Prefix))
@@ -25,7 +25,7 @@ namespace ArcherLoaderMod.Patch
         [HarmonyPrefix]
         private static bool PlayVictoryMusic_Prefix(ArcherData __instance)
         {
-            if (!ArcherLoaderMod.ArcherCustomDataDict.TryGetValue(__instance, out var custom) || 
+            if (!ArcherEditorMod.ArcherCustomDataDict.TryGetValue(__instance, out var custom) || 
                 custom?.victory == null)
             {
                 // Continue to original method if no custom victory music

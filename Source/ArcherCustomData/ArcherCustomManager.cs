@@ -4,7 +4,7 @@ using System.Xml;
 using Monocle;
 using TowerFall;
 
-namespace ArcherLoaderMod
+namespace ArcherEditorMod
 {
   public class ArcherCustomManager
   {
@@ -92,7 +92,7 @@ namespace ArcherLoaderMod
         if (xml.Name == "AltArcher")
         {
           // var xml = xmlDocument["AltArcher"];
-          var forAttribute = ArcherLoaderMod.GetForAttribute(xml);
+          var forAttribute = ArcherEditorMod.GetForAttribute(xml);
           if (string.IsNullOrEmpty(forAttribute) && awarnFor)
           {
             ArcherCustomDataValidator.PrintLineWithColor(
@@ -122,7 +122,7 @@ namespace ArcherLoaderMod
         // if (xml["SecretArcher"] != null)
         if (xml.Name == "SecretArcher")
         {
-          var forAttribute = ArcherLoaderMod.GetForAttribute(xml);
+          var forAttribute = ArcherEditorMod.GetForAttribute(xml);
           if (string.IsNullOrEmpty(forAttribute) && awarnFor)
           {
             ArcherCustomDataValidator.PrintLineWithColor(
@@ -146,7 +146,7 @@ namespace ArcherLoaderMod
 
         if (xml.Name == "SkinArcher")
         {
-          var forAttribute = ArcherLoaderMod.GetForAttribute(xml);
+          var forAttribute = ArcherEditorMod.GetForAttribute(xml);
           if (string.IsNullOrEmpty(forAttribute) && awarnFor)
           {
             ArcherCustomDataValidator.PrintLineWithColor(

@@ -7,7 +7,7 @@ using Monocle;
 using MonoMod.Utils;
 using TowerFall;
 
-namespace ArcherLoaderMod.Source.Features.Ghost
+namespace ArcherEditorMod.Source.Features.Ghost
 {
     // <Ghost>
     //   <Texture>player/ghost/kermit</Texture>   optional
@@ -30,6 +30,20 @@ namespace ArcherLoaderMod.Source.Features.Ghost
                 AccessTools.Method(typeof(PlayerGhost), nameof(PlayerGhost.Added)),
                 postfix: new HarmonyMethod(typeof(GhostFeature), nameof(PlayerGhost_Added_Postfix)));
         }
+
+        // Editor access. Applied to ghosts when they are created, so refresh the preview after changing.
+        public static bool TryGet(ArcherData archer, out Subtexture? texture, out Color? color)
+        {
+            var found = ghosts.TryGetValue(archer, out var info);
+            texture = info?.Texture;
+            color = info?.BlendColor;
+            return found;
+        }
+
+        public static void Set(ArcherData archer, Subtexture? texture, Color? color) =>
+            ghosts[archer] = new GhostInfo(texture, color);
+
+        public static void Remove(ArcherData archer) => ghosts.Remove(archer);
 
         public bool Decorate(ArcherDecoration decoration)
         {
